@@ -85,7 +85,7 @@ func TestUserHandler_GetByID(t *testing.T) {
 	})
 }
 
-func TestUserHandler_Create_Validasi(t *testing.T) {
+func TestUserHandler_Create_Validation(t *testing.T) {
 	t.Parallel()
 
 	body := `{"email":"not-an-email","full_name":"ab","password":"123"}`

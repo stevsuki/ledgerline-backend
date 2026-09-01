@@ -9,11 +9,10 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
+	"github.com/stevensuki/ledgerline-backend/internal/repository/postgres/model"
 )
 
-// defaultUserOrder: fallback when the filter arrives without OrderBy.
-// Columns are table-qualified: every query below joins roles, which has
-// created_at and id of its own.
+// defaultUserOrder: fallback without OrderBy, qualified because every query joins roles.
 const defaultUserOrder = "users.created_at DESC, users.id ASC"
 
 type userRepository struct {
@@ -25,31 +24,28 @@ func NewUserRepository(db *gorm.DB) domain.UserRepository {
 	return &userRepository{db: db}
 }
 
-// withRole: users plus the name of the role they point at. The join stays here
-// rather than in roleRepository because ORDER BY roles.name and LIMIT have to
-// run in the same statement; resolving names in Go would break sorted paging.
-// LEFT JOIN so a soft-deleted role hides the name, never the user itself.
+// withRole: users plus their role name, joined here so ORDER BY roles.name can page.
 func (r *userRepository) withRole(ctx context.Context) *gorm.DB {
 	return dbFrom(ctx, r.db).
-		Model(&userModel{}).
+		Model(&model.UserModel{}).
 		Select("users.*, roles.name AS role_name").
 		Joins("LEFT JOIN roles ON roles.id = users.role_id")
 }
 
 func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
-	model := userFromDomain(user)
-	if err := dbFrom(ctx, r.db).Create(&model).Error; err != nil {
+	row := model.UserFromDomain(user)
+	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
 		return wrapErr("create user", err)
 	}
 
 	// Columns with database defaults come back via RETURNING.
-	user.Status = domain.Status(model.Status)
-	user.PasswordChangedAt = model.PasswordChangedAt
-	user.CreatedAt = model.CreatedAt
-	user.UpdatedAt = model.UpdatedAt
+	user.Status = domain.Status(row.Status)
+	user.PasswordChangedAt = row.PasswordChangedAt
+	user.CreatedAt = row.CreatedAt
+	user.UpdatedAt = row.UpdatedAt
 
 	// RETURNING cannot reach the joined role name, so the row is read back once.
-	var created userModel
+	var created model.UserModel
 	if err := r.withRole(ctx).Where("users.id = ?", user.ID).Take(&created).Error; err == nil {
 		user.RoleName = created.RoleName
 	}
@@ -57,24 +53,24 @@ func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 }
 
 func (r *userRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
-	var model userModel
-	if err := r.withRole(ctx).Where("users.id = ?", id).Take(&model).Error; err != nil {
+	var row model.UserModel
+	if err := r.withRole(ctx).Where("users.id = ?", id).Take(&row).Error; err != nil {
 		return nil, wrapErr("get user", err)
 	}
-	return model.toDomain(), nil
+	return row.ToDomain(), nil
 }
 
 func (r *userRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
-	var model userModel
-	err := r.withRole(ctx).Where("users.email = ?", strings.ToLower(email)).Take(&model).Error
+	var row model.UserModel
+	err := r.withRole(ctx).Where("users.email = ?", strings.ToLower(email)).Take(&row).Error
 	if err != nil {
 		return nil, wrapErr("get user", err)
 	}
-	return model.toDomain(), nil
+	return row.ToDomain(), nil
 }
 
 func (r *userRepository) List(ctx context.Context, filter domain.UserFilter) ([]domain.User, int, error) {
-	query := dbFrom(ctx, r.db).Model(&userModel{})
+	query := dbFrom(ctx, r.db).Model(&model.UserModel{})
 
 	if filter.Search != "" {
 		keyword := "%" + strings.ToLower(filter.Search) + "%"
@@ -94,20 +90,20 @@ func (r *userRepository) List(ctx context.Context, filter domain.UserFilter) ([]
 		orderBy = defaultUserOrder
 	}
 
-	var models []userModel
+	var rows []model.UserModel
 	err := query.
 		Select("users.*, roles.name AS role_name").
 		Joins("LEFT JOIN roles ON roles.id = users.role_id").
-		Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).Find(&models).Error
+		Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).Find(&rows).Error
 	if err != nil {
 		return nil, 0, wrapErr("list users", err)
 	}
-	return usersToDomain(models), int(total), nil
+	return model.UsersToDomain(rows), int(total), nil
 }
 
 func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
 	result := dbFrom(ctx, r.db).
-		Model(&userModel{ID: user.ID}).
+		Model(&model.UserModel{ID: user.ID}).
 		Updates(map[string]any{
 			"full_name": user.FullName,
 			"role_id":   user.RoleID,
@@ -120,7 +116,7 @@ func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
 	}
 
 	// Re-read what the database owns: updated_at, plus the joined role name.
-	var refreshed userModel
+	var refreshed model.UserModel
 	if err := r.withRole(ctx).Where("users.id = ?", user.ID).Take(&refreshed).Error; err == nil {
 		user.UpdatedAt = refreshed.UpdatedAt
 		user.RoleName = refreshed.RoleName
@@ -130,7 +126,7 @@ func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
 
 // Delete: soft delete via the deleted_at column.
 func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := dbFrom(ctx, r.db).Delete(&userModel{}, "id = ?", id)
+	result := dbFrom(ctx, r.db).Delete(&model.UserModel{}, "id = ?", id)
 	if result.Error != nil {
 		return wrapErr("delete user", result.Error)
 	}
@@ -142,7 +138,7 @@ func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
 
 func (r *userRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	var count int64
-	err := dbFrom(ctx, r.db).Model(&userModel{}).
+	err := dbFrom(ctx, r.db).Model(&model.UserModel{}).
 		Where("email = ?", strings.ToLower(email)).
 		Limit(1).Count(&count).Error
 	if err != nil {
@@ -151,11 +147,10 @@ func (r *userRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 	return count > 0, nil
 }
 
-// UpdatePassword is kept separate from Update so the user PATCH endpoint can
-// never reach these columns, whatever the client sends.
+// UpdatePassword is separate from Update so the PATCH endpoint cannot reach these columns.
 func (r *userRepository) UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error {
 	result := dbFrom(ctx, r.db).
-		Model(&userModel{}).
+		Model(&model.UserModel{}).
 		Where("id = ?", userID).
 		Updates(map[string]any{
 			"password_hash":       passwordHash,
@@ -170,9 +165,7 @@ func (r *userRepository) UpdatePassword(ctx context.Context, userID uuid.UUID, p
 	return nil
 }
 
-// IncrementFailedLogin counts one rejected sign-in and returns the new total.
-// One statement on purpose: read-then-write would let parallel attempts share
-// a count and slip past the limit.
+// IncrementFailedLogin returns the new total; one statement so parallel attempts cannot share it.
 func (r *userRepository) IncrementFailedLogin(ctx context.Context, userID uuid.UUID) (int, error) {
 	const q = `
 		UPDATE users SET failed_login_attempts = failed_login_attempts + 1, updated_at = now()
@@ -189,7 +182,7 @@ func (r *userRepository) IncrementFailedLogin(ctx context.Context, userID uuid.U
 // LockUntil closes the account to sign-ins until the given time.
 func (r *userRepository) LockUntil(ctx context.Context, userID uuid.UUID, until time.Time) error {
 	err := dbFrom(ctx, r.db).
-		Model(&userModel{}).
+		Model(&model.UserModel{}).
 		Where("id = ?", userID).
 		Update("locked_until", until).Error
 	if err != nil {
@@ -201,7 +194,7 @@ func (r *userRepository) LockUntil(ctx context.Context, userID uuid.UUID, until 
 // ClearFailedLogins wipes the counter after a successful login.
 func (r *userRepository) ClearFailedLogins(ctx context.Context, userID uuid.UUID) error {
 	err := dbFrom(ctx, r.db).
-		Model(&userModel{}).
+		Model(&model.UserModel{}).
 		Where("id = ?", userID).
 		Updates(map[string]any{"failed_login_attempts": 0, "locked_until": nil}).Error
 	if err != nil {

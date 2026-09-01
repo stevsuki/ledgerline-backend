@@ -17,13 +17,11 @@ type Role struct {
 	UpdatedAt   time.Time
 	// Filled by the list query only; a single-role read leaves it zero.
 	UserCount int
-	// Written together with the role on create; on read only single-role
-	// queries fill it, the list leaves it nil.
+	// Written with the role on create; on read only a single-role query fills it.
 	Permissions []RoleMenuPermission
 }
 
-// RoleMenuPermission: what one role may do on one menu.
-// Identified by the role/menu pair, so it carries no id of its own.
+// RoleMenuPermission: what one role may do on one menu, keyed by the role/menu pair.
 type RoleMenuPermission struct {
 	RoleID     uuid.UUID
 	MenuID     uuid.UUID
@@ -57,10 +55,10 @@ type RoleRepository interface {
 type CreateRoleInput struct {
 	Name        string
 	Description string
-	Permissions []CreateRoleMenuPermissionRequest
+	Permissions []CreateRoleMenuPermissionInput
 }
 
-type CreateRoleMenuPermissionRequest struct {
+type CreateRoleMenuPermissionInput struct {
 	MenuID     uuid.UUID
 	CanCreate  bool
 	CanRead    bool
@@ -73,7 +71,7 @@ type UpdateRoleInput struct {
 	Name        *string
 	Description *string
 	// nil leaves the permissions untouched; an empty slice clears them.
-	Permissions *[]CreateRoleMenuPermissionRequest
+	Permissions *[]CreateRoleMenuPermissionInput
 }
 
 type RoleService interface {

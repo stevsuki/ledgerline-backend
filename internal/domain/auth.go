@@ -9,18 +9,16 @@ import (
 )
 
 type RequestMeta struct {
-	IpAdress  string
+	IPAddress string
 	UserAgent string
 }
 
 // NewRequestMeta normalizes the address to IPv4 where one exists.
 func NewRequestMeta(ipAddress, userAgent string) RequestMeta {
-	return RequestMeta{IpAdress: toIPv4(ipAddress), UserAgent: userAgent}
+	return RequestMeta{IPAddress: toIPv4(ipAddress), UserAgent: userAgent}
 }
 
-// toIPv4 prefers the IPv4 form: an IPv4-mapped address such as ::ffff:1.2.3.4
-// becomes 1.2.3.4, and the IPv6 loopback ::1 becomes 127.0.0.1. A real IPv6
-// address has no IPv4 equivalent, so it is kept as it is rather than dropped.
+// toIPv4 prefers the IPv4 form, keeping a real IPv6 address as it is.
 func toIPv4(address string) string {
 	ip := net.ParseIP(address)
 	if ip == nil {

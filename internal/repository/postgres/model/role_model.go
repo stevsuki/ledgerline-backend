@@ -1,4 +1,4 @@
-package postgres
+package model
 
 import (
 	"time"
@@ -9,7 +9,7 @@ import (
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
 )
 
-type roleModel struct {
+type RoleModel struct {
 	ID          uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Name        string    `gorm:"size:50;not null"`
 	Description string    `gorm:"size:255"`
@@ -21,9 +21,9 @@ type roleModel struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
-func (roleModel) TableName() string { return "roles" }
+func (RoleModel) TableName() string { return "roles" }
 
-func (m roleModel) toDomain() *domain.Role {
+func (m RoleModel) ToDomain() *domain.Role {
 	return &domain.Role{
 		ID:          m.ID,
 		Name:        m.Name,
@@ -35,8 +35,8 @@ func (m roleModel) toDomain() *domain.Role {
 	}
 }
 
-func roleFromDomain(r *domain.Role) roleModel {
-	return roleModel{
+func RoleFromDomain(r *domain.Role) RoleModel {
+	return RoleModel{
 		ID:          r.ID,
 		Name:        r.Name,
 		Description: r.Description,
@@ -46,15 +46,15 @@ func roleFromDomain(r *domain.Role) roleModel {
 	}
 }
 
-func rolesToDomain(models []roleModel) []domain.Role {
+func RolesToDomain(models []RoleModel) []domain.Role {
 	out := make([]domain.Role, 0, len(models))
 	for _, m := range models {
-		out = append(out, *m.toDomain())
+		out = append(out, *m.ToDomain())
 	}
 	return out
 }
 
-type roleMenuPermissionModel struct {
+type RoleMenuPermissionModel struct {
 	RoleID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 	MenuID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 	CanCreate  bool      `gorm:"not null;default:false"`
@@ -66,9 +66,9 @@ type roleMenuPermissionModel struct {
 	UpdatedAt  time.Time
 }
 
-func (roleMenuPermissionModel) TableName() string { return "role_menu_permissions" }
+func (RoleMenuPermissionModel) TableName() string { return "role_menu_permissions" }
 
-func (m roleMenuPermissionModel) toDomain() *domain.RoleMenuPermission {
+func (m RoleMenuPermissionModel) ToDomain() *domain.RoleMenuPermission {
 	return &domain.RoleMenuPermission{
 		RoleID:     m.RoleID,
 		MenuID:     m.MenuID,
@@ -82,16 +82,16 @@ func (m roleMenuPermissionModel) toDomain() *domain.RoleMenuPermission {
 	}
 }
 
-func roleMenuPermissionsToDomain(models []roleMenuPermissionModel) []domain.RoleMenuPermission {
+func RoleMenuPermissionsToDomain(models []RoleMenuPermissionModel) []domain.RoleMenuPermission {
 	out := make([]domain.RoleMenuPermission, 0, len(models))
 	for _, m := range models {
-		out = append(out, *m.toDomain())
+		out = append(out, *m.ToDomain())
 	}
 	return out
 }
 
-func roleMenuPermissionFromDomain(p *domain.RoleMenuPermission) roleMenuPermissionModel {
-	return roleMenuPermissionModel{
+func RoleMenuPermissionFromDomain(p *domain.RoleMenuPermission) RoleMenuPermissionModel {
+	return RoleMenuPermissionModel{
 		RoleID:     p.RoleID,
 		MenuID:     p.MenuID,
 		CanCreate:  p.CanCreate,

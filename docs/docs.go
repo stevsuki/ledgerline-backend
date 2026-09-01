@@ -80,7 +80,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogResponse"
+                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogResponseDTO"
                                             }
                                         }
                                     }
@@ -198,7 +198,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOptionsResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOptionsResponseDTO"
                                         }
                                     }
                                 }
@@ -235,7 +235,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOverviewResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOverviewResponseDTO"
                                         }
                                     }
                                 }
@@ -265,7 +265,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ForgotPasswordRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ForgotPasswordRequestDTO"
                         }
                     }
                 ],
@@ -311,7 +311,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.LoginRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.LoginRequestDTO"
                         }
                     }
                 ],
@@ -327,7 +327,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponseDTO"
                                         }
                                     }
                                 }
@@ -375,7 +375,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ProfileResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ProfileResponseDTO"
                                         }
                                     }
                                 }
@@ -411,7 +411,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RefreshTokenRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RefreshTokenRequestDTO"
                         }
                     }
                 ],
@@ -427,7 +427,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponseDTO"
                                         }
                                     }
                                 }
@@ -463,7 +463,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RegisterRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RegisterRequestDTO"
                         }
                     }
                 ],
@@ -479,7 +479,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO"
                                         }
                                     }
                                 }
@@ -521,7 +521,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetPasswordRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetPasswordRequestDTO"
                         }
                     }
                 ],
@@ -567,7 +567,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.VerifyOTPResetPasswordRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.VerifyOTPResetPasswordRequestDTO"
                         }
                     }
                 ],
@@ -583,7 +583,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetTokenResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetTokenResponseDTO"
                                         }
                                     }
                                 }
@@ -678,7 +678,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponse"
+                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponseDTO"
                                             }
                                         }
                                     }
@@ -711,7 +711,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateCategoryRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateCategoryRequestDTO"
                         }
                     }
                 ],
@@ -727,7 +727,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponseDTO"
                                         }
                                     }
                                 }
@@ -784,7 +784,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponseDTO"
                                         }
                                     }
                                 }
@@ -866,7 +866,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateCategoryRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateCategoryRequestDTO"
                         }
                     }
                 ],
@@ -882,7 +882,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponseDTO"
                                         }
                                     }
                                 }
@@ -1000,7 +1000,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponse"
+                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponseDTO"
                                             }
                                         }
                                     }
@@ -1033,7 +1033,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleRequestDTO"
                         }
                     }
                 ],
@@ -1049,7 +1049,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponseDTO"
                                         }
                                     }
                                 }
@@ -1112,7 +1112,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponseDTO"
                                         }
                                     }
                                 }
@@ -1200,7 +1200,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRoleRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRoleRequestDTO"
                         }
                     }
                 ],
@@ -1216,7 +1216,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponseDTO"
                                         }
                                     }
                                 }
@@ -1313,7 +1313,7 @@ const docTemplate = `{
                                         "data": {
                                             "type": "array",
                                             "items": {
-                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse"
+                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO"
                                             }
                                         }
                                     }
@@ -1346,7 +1346,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateUserRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateUserRequestDTO"
                         }
                     }
                 ],
@@ -1362,7 +1362,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO"
                                         }
                                     }
                                 }
@@ -1419,7 +1419,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO"
                                         }
                                     }
                                 }
@@ -1501,7 +1501,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateUserRequest"
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateUserRequestDTO"
                         }
                     }
                 ],
@@ -1517,7 +1517,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse"
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO"
                                         }
                                     }
                                 }
@@ -1535,7 +1535,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ActorOption": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ActorOptionDTO": {
             "type": "object",
             "properties": {
                 "label": {
@@ -1552,36 +1552,36 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOptionsResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOptionsResponseDTO": {
             "type": "object",
             "properties": {
                 "actors": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ActorOption"
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ActorOptionDTO"
                     }
                 },
                 "modules": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOption"
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOptionDTO"
                     }
                 },
                 "severities": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOption"
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOptionDTO"
                     }
                 },
                 "statuses": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOption"
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOptionDTO"
                     }
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOverviewResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOverviewResponseDTO": {
             "type": "object",
             "properties": {
                 "events": {
@@ -1617,7 +1617,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogResponseDTO": {
             "type": "object",
             "properties": {
                 "action": {
@@ -1679,7 +1679,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponseDTO": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -1704,7 +1704,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateCategoryRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateCategoryRequestDTO": {
             "type": "object",
             "required": [
                 "name",
@@ -1727,7 +1727,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequestDTO": {
             "type": "object",
             "required": [
                 "menu_id"
@@ -1759,7 +1759,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleRequestDTO": {
             "type": "object",
             "required": [
                 "name"
@@ -1779,12 +1779,12 @@ const docTemplate = `{
                 "permissions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequest"
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequestDTO"
                     }
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateUserRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateUserRequestDTO": {
             "type": "object",
             "required": [
                 "email",
@@ -1815,7 +1815,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOption": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOptionDTO": {
             "type": "object",
             "properties": {
                 "label": {
@@ -1828,7 +1828,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ForgotPasswordRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ForgotPasswordRequestDTO": {
             "type": "object",
             "required": [
                 "email"
@@ -1840,7 +1840,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.LoginRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.LoginRequestDTO": {
             "type": "object",
             "required": [
                 "email",
@@ -1859,7 +1859,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuAccessResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuAccessResponseDTO": {
             "type": "object",
             "properties": {
                 "can_approve": {
@@ -1884,16 +1884,16 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponseDTO": {
             "type": "object",
             "properties": {
                 "access": {
-                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuAccessResponse"
+                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuAccessResponseDTO"
                 },
                 "children": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponse"
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponseDTO"
                     }
                 },
                 "code": {
@@ -1916,21 +1916,21 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ProfileResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ProfileResponseDTO": {
             "type": "object",
             "properties": {
                 "menus": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponse"
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponseDTO"
                     }
                 },
                 "user": {
-                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse"
+                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO"
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RefreshTokenRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RefreshTokenRequestDTO": {
             "type": "object",
             "required": [
                 "refresh_token"
@@ -1942,7 +1942,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RegisterRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RegisterRequestDTO": {
             "type": "object",
             "required": [
                 "email",
@@ -1968,7 +1968,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetPasswordRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetPasswordRequestDTO": {
             "type": "object",
             "required": [
                 "confirm_new_password",
@@ -1992,7 +1992,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetTokenResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetTokenResponseDTO": {
             "type": "object",
             "properties": {
                 "expires_in": {
@@ -2005,7 +2005,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleMenuPermissionResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleMenuPermissionResponseDTO": {
             "type": "object",
             "properties": {
                 "can_approve": {
@@ -2029,13 +2029,12 @@ const docTemplate = `{
                     "example": true
                 },
                 "menu_id": {
-                    "description": "RoleID     uuid.UUID ` + "`" + `json:\"role_id\" example:\"00000000-0000-0000-0000-000000000001\"` + "`" + `",
                     "type": "string",
                     "example": "b0000000-0000-0000-0000-000000000002"
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponseDTO": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -2062,7 +2061,7 @@ const docTemplate = `{
                 "permissions": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleMenuPermissionResponse"
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleMenuPermissionResponseDTO"
                     }
                 },
                 "updated_at": {
@@ -2076,7 +2075,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponseDTO": {
             "type": "object",
             "properties": {
                 "access_token": {
@@ -2097,7 +2096,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateCategoryRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateCategoryRequestDTO": {
             "type": "object",
             "properties": {
                 "name": {
@@ -2116,7 +2115,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRoleRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRoleRequestDTO": {
             "type": "object",
             "properties": {
                 "description": {
@@ -2134,12 +2133,12 @@ const docTemplate = `{
                     "description": "Omitted leaves the permissions untouched; an empty array clears them.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequest"
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequestDTO"
                     }
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateUserRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateUserRequestDTO": {
             "type": "object",
             "properties": {
                 "full_name": {
@@ -2154,7 +2153,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO": {
             "type": "object",
             "properties": {
                 "created_at": {
@@ -2191,7 +2190,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.VerifyOTPResetPasswordRequest": {
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.VerifyOTPResetPasswordRequestDTO": {
             "type": "object",
             "required": [
                 "email",

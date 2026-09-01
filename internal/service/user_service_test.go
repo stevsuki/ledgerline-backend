@@ -132,8 +132,7 @@ func TestUserService_Update(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 
-	// An unknown role id is caught by the foreign key; an empty one never
-	// reaches the database, so the service has to reject it itself.
+	// An unknown role id is caught by the foreign key; an empty one must be rejected here.
 	t.Run("fails because role_id is empty", func(t *testing.T) {
 		t.Parallel()
 

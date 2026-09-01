@@ -6,8 +6,7 @@ import (
 	"strings"
 )
 
-// Money: an amount in the currency's smallest unit — rupiah for IDR, cents for
-// USD. Integer on purpose: float64 cannot hold money exactly.
+// Money: an amount in the currency's smallest unit, integer because float64 loses cents.
 type Money struct {
 	Amount   int64  `json:"amount"`
 	Currency string `json:"currency"`
@@ -17,8 +16,7 @@ const CurrencyIDR = "IDR"
 
 func IDR(amount int64) Money { return Money{Amount: amount, Currency: CurrencyIDR} }
 
-// String renders the amount for display. IDR has no minor unit, so it prints
-// whole rupiah; anything else falls back to two decimals.
+// String prints whole rupiah for IDR, two decimals for anything else.
 func (m Money) String() string {
 	if m.Currency == CurrencyIDR {
 		return "Rp" + groupThousands(m.Amount)

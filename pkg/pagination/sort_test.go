@@ -30,8 +30,8 @@ func TestSortable_OrderBy(t *testing.T) {
 	}{
 		{"empty falls back to default", "", "created_at DESC, id ASC"},
 		{"whitespace counts as empty", "   ", "created_at DESC, id ASC"},
-		{"ascending tanpa prefix", "name", "name ASC, id ASC"},
-		{"descending pakai prefix minus", "-name", "name DESC, id ASC"},
+		{"ascending without a prefix", "name", "name ASC, id ASC"},
+		{"descending with a minus prefix", "-name", "name DESC, id ASC"},
 		{"multiple columns follow input order", "type,-created_at", "type ASC, created_at DESC, id ASC"},
 		{"whitespace between columns is cleaned up", " type , -name ", "type ASC, name DESC, id ASC"},
 		{"tie breaker is not duplicated", "-created_at", "created_at DESC, id ASC"},
@@ -48,19 +48,19 @@ func TestSortable_OrderBy(t *testing.T) {
 	}
 }
 
-func TestSortable_OrderBy_Ditolak(t *testing.T) {
+func TestSortable_OrderBy_Rejects(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
 		name string
 		raw  string
 	}{
-		{"kolom di luar whitelist", "password"},
-		{"upaya sql injection", "name; DROP TABLE users"},
+		{"a column outside the whitelist", "password"},
+		{"an sql injection attempt", "name; DROP TABLE users"},
 		{"subquery", "(SELECT 1)"},
-		{"kolom kembar", "name,-name"},
+		{"a duplicated column", "name,-name"},
 		{"exceeds the column limit", "name,type,created_at,updated_at"},
-		{"prefix minus tanpa kolom", "-"},
+		{"a minus prefix with no column", "-"},
 	}
 
 	for _, tt := range tests {
@@ -75,7 +75,7 @@ func TestSortable_OrderBy_Ditolak(t *testing.T) {
 }
 
 // Without TieBreaker, the result is purely the requested columns.
-func TestSortable_TanpaTieBreaker(t *testing.T) {
+func TestSortable_WithoutTieBreaker(t *testing.T) {
 	t.Parallel()
 
 	s := pagination.Sortable{Allowed: pagination.Whitelist{"name": "name"}, Default: "name"}

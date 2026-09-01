@@ -27,16 +27,16 @@ var auditLogSort = pagination.Sortable{
 	TieBreaker: "audit_logs.id",
 }
 
-type ListAuditLogQuery struct {
-	AuditLogRange
+type ListAuditLogQueryDTO struct {
+	AuditLogRangeDTO
 	Sort    string `form:"sort" example:"-created_at"`
 	Page    int    `form:"page" binding:"omitempty,min=1" example:"1"`
 	PerPage int    `form:"per_page" binding:"omitempty,min=1,max=100" example:"10"`
 }
 
-func (q ListAuditLogQuery) OrderBy() (string, error) { return auditLogSort.OrderBy(q.Sort) }
+func (q ListAuditLogQueryDTO) OrderBy() (string, error) { return auditLogSort.OrderBy(q.Sort) }
 
-type AuditLogResponse struct {
+type AuditLogResponseDTO struct {
 	ID           string `json:"id" example:"01a05b87-ac4c-7332-a78c-c60bcec135de"`
 	Action       string `json:"action" example:"auth.login"`
 	UserFullName string `json:"user_full_name" example:"Rangga Aditama"`
@@ -53,8 +53,8 @@ type AuditLogResponse struct {
 	CreatedAt string `json:"created_at" example:"2026-08-27 19:41:00"`
 }
 
-func NewAuditLogResponse(a domain.AuditLog) AuditLogResponse {
-	res := AuditLogResponse{
+func NewAuditLogResponseDTO(a domain.AuditLog) AuditLogResponseDTO {
+	res := AuditLogResponseDTO{
 		ID:           a.ID.String(),
 		Action:       a.Action,
 		UserFullName: a.UserFullName,
@@ -73,17 +73,16 @@ func NewAuditLogResponse(a domain.AuditLog) AuditLogResponse {
 	return res
 }
 
-func NewAuditLogResponses(a []domain.AuditLog) []AuditLogResponse {
-	var res []AuditLogResponse
-	for _, v := range a {
-		res = append(res, NewAuditLogResponse(v))
+func NewAuditLogResponseDTOs(logs []domain.AuditLog) []AuditLogResponseDTO {
+	out := make([]AuditLogResponseDTO, 0, len(logs))
+	for _, l := range logs {
+		out = append(out, NewAuditLogResponseDTO(l))
 	}
-	return res
+	return out
 }
 
-// AuditLogOverviewResponse feeds the four cards above the audit table. Plain
-// counts, not rendered cards: the labels, tones and wording stay in the UI.
-type AuditLogOverviewResponse struct {
+// AuditLogOverviewResponseDTO feeds the audit cards; labels and wording stay in the UI.
+type AuditLogOverviewResponseDTO struct {
 	// WindowDays is the period every count below covers.
 	WindowDays int `json:"window_days" example:"7"`
 	Events     int `json:"events" example:"28"`
@@ -96,8 +95,8 @@ type AuditLogOverviewResponse struct {
 	RetentionDays int `json:"retention_days" example:"365"`
 }
 
-func NewAuditLogOverviewResponse(o domain.AuditLogOverview) AuditLogOverviewResponse {
-	return AuditLogOverviewResponse{
+func NewAuditLogOverviewResponseDTO(o domain.AuditLogOverview) AuditLogOverviewResponseDTO {
+	return AuditLogOverviewResponseDTO{
 		WindowDays:            o.WindowDays,
 		Events:                o.Events,
 		Modules:               o.Modules,
@@ -108,28 +107,27 @@ func NewAuditLogOverviewResponse(o domain.AuditLogOverview) AuditLogOverviewResp
 	}
 }
 
-// FilterOption: one entry of a filter dropdown.
-type FilterOption struct {
+// FilterOptionDTO: one entry of a filter dropdown.
+type FilterOptionDTO struct {
 	Value string `json:"value" example:"auth"`
 	Label string `json:"label" example:"Auth"`
 }
 
-// ActorOption carries the role so the dropdown can show it beside the name.
-type ActorOption struct {
+// ActorOptionDTO carries the role so the dropdown can show it beside the name.
+type ActorOptionDTO struct {
 	Value string `json:"value" example:"01a05b87-ac4c-7332-a78c-c60bcec135de"`
 	Label string `json:"label" example:"Rangga Aditama"`
 	Role  string `json:"role" example:"Owner"`
 }
 
-type AuditLogOptionsResponse struct {
-	Actors     []ActorOption  `json:"actors"`
-	Modules    []FilterOption `json:"modules"`
-	Statuses   []FilterOption `json:"statuses"`
-	Severities []FilterOption `json:"severities"`
+type AuditLogOptionsResponseDTO struct {
+	Actors     []ActorOptionDTO  `json:"actors"`
+	Modules    []FilterOptionDTO `json:"modules"`
+	Statuses   []FilterOptionDTO `json:"statuses"`
+	Severities []FilterOptionDTO `json:"severities"`
 }
 
-// Display labels live here, not in the domain: they are presentation, and this
-// is the only place that has to change to translate them.
+// Display labels live here, not in the domain: the only place to change to translate them.
 var auditModuleLabels = map[domain.AuditModule]string{
 	domain.AuditModuleAuth:         "Auth",
 	domain.AuditModuleBudgets:      "Budgets",
@@ -156,27 +154,27 @@ var auditSeverityLabels = map[domain.AuditSeverity]string{
 	domain.AuditSeverityCritical: "Critical",
 }
 
-func NewAuditLogOptionsResponse(o domain.AuditLogOptions) AuditLogOptionsResponse {
-	res := AuditLogOptionsResponse{
-		Actors:     make([]ActorOption, 0, len(o.Actors)),
-		Modules:    make([]FilterOption, 0, len(o.Modules)),
-		Statuses:   make([]FilterOption, 0, len(o.Statuses)),
-		Severities: make([]FilterOption, 0, len(o.Severities)),
+func NewAuditLogOptionsResponseDTO(o domain.AuditLogOptions) AuditLogOptionsResponseDTO {
+	res := AuditLogOptionsResponseDTO{
+		Actors:     make([]ActorOptionDTO, 0, len(o.Actors)),
+		Modules:    make([]FilterOptionDTO, 0, len(o.Modules)),
+		Statuses:   make([]FilterOptionDTO, 0, len(o.Statuses)),
+		Severities: make([]FilterOptionDTO, 0, len(o.Severities)),
 	}
 
 	for _, a := range o.Actors {
-		res.Actors = append(res.Actors, ActorOption{
+		res.Actors = append(res.Actors, ActorOptionDTO{
 			Value: a.UserID.String(), Label: a.FullName, Role: a.RoleName,
 		})
 	}
 	for _, m := range o.Modules {
-		res.Modules = append(res.Modules, FilterOption{Value: string(m), Label: auditModuleLabels[m]})
+		res.Modules = append(res.Modules, FilterOptionDTO{Value: string(m), Label: auditModuleLabels[m]})
 	}
 	for _, s := range o.Statuses {
-		res.Statuses = append(res.Statuses, FilterOption{Value: string(s), Label: auditStatusLabels[s]})
+		res.Statuses = append(res.Statuses, FilterOptionDTO{Value: string(s), Label: auditStatusLabels[s]})
 	}
 	for _, s := range o.Severities {
-		res.Severities = append(res.Severities, FilterOption{Value: string(s), Label: auditSeverityLabels[s]})
+		res.Severities = append(res.Severities, FilterOptionDTO{Value: string(s), Label: auditSeverityLabels[s]})
 	}
 	return res
 }
@@ -184,9 +182,8 @@ func NewAuditLogOptionsResponse(o domain.AuditLogOptions) AuditLogOptionsRespons
 // auditDateLayout: the date a picker sends, without a time part.
 const auditDateLayout = "2006-01-02"
 
-// AuditLogRange is the shared filter of the list and the export, so a CSV can
-// never contain a different set of rows than the table it was exported from.
-type AuditLogRange struct {
+// AuditLogRangeDTO is shared by the list and the export, so a CSV matches its table.
+type AuditLogRangeDTO struct {
 	Search   string `form:"search" example:"login"`
 	UserID   string `form:"user_id"`
 	Status   string `form:"status" example:"failed"`
@@ -197,7 +194,7 @@ type AuditLogRange struct {
 }
 
 // ToFilter validates the free-text parameters and turns them into a filter.
-func (q AuditLogRange) ToFilter() (domain.AuditLogFilter, error) {
+func (q AuditLogRangeDTO) ToFilter() (domain.AuditLogFilter, error) {
 	filter := domain.AuditLogFilter{Search: q.Search}
 
 	if q.UserID != "" {
@@ -252,7 +249,7 @@ func (q AuditLogRange) ToFilter() (domain.AuditLogFilter, error) {
 }
 
 // ExportFilename names the download after the range it covers.
-func (q AuditLogRange) ExportFilename() string {
+func (q AuditLogRangeDTO) ExportFilename() string {
 	switch {
 	case q.From != "" && q.To != "":
 		return fmt.Sprintf("audit-log_%s_%s.csv", q.From, q.To)

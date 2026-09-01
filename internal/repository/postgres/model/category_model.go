@@ -1,4 +1,4 @@
-package postgres
+package model
 
 import (
 	"time"
@@ -9,7 +9,7 @@ import (
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
 )
 
-type categoryModel struct {
+type CategoryModel struct {
 	ID        uuid.UUID `gorm:"type:uuid;primaryKey"`
 	UserID    uuid.UUID `gorm:"type:uuid;not null;index"`
 	Name      string    `gorm:"size:100;not null"`
@@ -19,9 +19,9 @@ type categoryModel struct {
 	DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
-func (categoryModel) TableName() string { return "categories" }
+func (CategoryModel) TableName() string { return "categories" }
 
-func (m categoryModel) toDomain() *domain.Category {
+func (m CategoryModel) ToDomain() *domain.Category {
 	return &domain.Category{
 		ID:        m.ID,
 		UserID:    m.UserID,
@@ -32,8 +32,8 @@ func (m categoryModel) toDomain() *domain.Category {
 	}
 }
 
-func categoryFromDomain(c *domain.Category) categoryModel {
-	return categoryModel{
+func CategoryFromDomain(c *domain.Category) CategoryModel {
+	return CategoryModel{
 		ID:        c.ID,
 		UserID:    c.UserID,
 		Name:      c.Name,
@@ -43,10 +43,10 @@ func categoryFromDomain(c *domain.Category) categoryModel {
 	}
 }
 
-func categoriesToDomain(models []categoryModel) []domain.Category {
+func CategoriesToDomain(models []CategoryModel) []domain.Category {
 	out := make([]domain.Category, 0, len(models))
 	for _, m := range models {
-		out = append(out, *m.toDomain())
+		out = append(out, *m.ToDomain())
 	}
 	return out
 }

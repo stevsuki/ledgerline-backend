@@ -1,27 +1,26 @@
-// Package postgres: repository implementation using GORM.
-//
-// Persistence models live in one <entity>_model.go per entity. Only this layer
-// knows about GORM tags; entities in internal/domain stay plain, with none.
-package postgres
+// Package database: PostgreSQL connection and pool setup for GORM.
+package database
 
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 
 	"github.com/stevensuki/ledgerline-backend/internal/config"
 )
 
-// NewDB opens the connection, configures the pool, then pings.
-func NewDB(ctx context.Context, cfg config.Database, gormLog logger.Interface) (*gorm.DB, error) {
+// slowQueryThreshold: anything slower is logged as a warning.
+const slowQueryThreshold = 200 * time.Millisecond
+
+// New opens the connection, configures the pool, then pings.
+func New(ctx context.Context, cfg config.Database, log *slog.Logger, debug bool) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{
-		Logger: gormLog,
-		// TranslateError maps driver errors into GORM errors
-		// (e.g. gorm.ErrDuplicatedKey), so the repository never needs to know SQLSTATE.
+		Logger: newSlogLogger(log, slowQueryThreshold, debug),
+		// TranslateError maps driver errors to GORM errors, so no repository reads SQLSTATE.
 		TranslateError: true,
 		NowFunc:        func() time.Time { return time.Now().UTC() },
 	})

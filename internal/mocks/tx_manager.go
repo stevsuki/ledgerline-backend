@@ -6,8 +6,7 @@ import (
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
 )
 
-// TxManager runs the unit of work inline. Transaction behaviour belongs to the
-// database, so service tests only need the callback to be executed.
+// TxManager runs the unit of work inline; service tests only need fn executed.
 type TxManager struct{}
 
 var _ domain.TxManager = (*TxManager)(nil)

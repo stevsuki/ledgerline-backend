@@ -7,8 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// AuditStatus: did the action succeed. Kept apart from AuditSeverity, which
-// says how much the entry matters, not whether it worked.
+// AuditStatus: did the action succeed, unlike AuditSeverity which says how much it matters.
 type AuditStatus string
 
 const (
@@ -32,8 +31,7 @@ func (s AuditSeverity) Valid() bool {
 	return s == AuditSeverityInfo || s == AuditSeverityWarning || s == AuditSeverityCritical
 }
 
-// AuditModule mirrors the module filter in the web UI. Values match menus.code
-// where a matching menu exists; auth and data_export have no menu of their own.
+// AuditModule mirrors the module filter in the web UI, matching menus.code where one exists.
 type AuditModule string
 
 const (
@@ -88,14 +86,12 @@ func AuditSeverities() []AuditSeverity {
 type AuditLog struct {
 	ID     uuid.UUID
 	UserID uuid.UUID
-	// UserFullName and RoleName are the actor as they were when the entry was
-	// written; they do not follow later renames or role changes.
+	// The actor as they were when the entry was written, not following later renames.
 	UserFullName string
 	RoleName     string
 	Action       string
 	Details      AuditDetail
-	// DetailText is Details rendered for people, filled when the entry is
-	// written. Details stays the source of truth; this can be rebuilt from it.
+	// DetailText is Details rendered for people; Details stays the source of truth.
 	DetailText string
 	Status     AuditStatus
 	Severity   AuditSeverity
@@ -108,18 +104,13 @@ type AuditLog struct {
 }
 
 type AuditLogFilter struct {
-	Search  string
-	Limit   int
-	Offset  int
-	OrderBy string // ORDER BY clause, may only be filled via pagination.Sortable
-	UserID  uuid.UUID
-	// UserFullName and RoleName are the actor as they were when the entry was
-	// written; they do not follow later renames or role changes.
-	UserFullName string
-	RoleName     string
-	Status       AuditStatus
-	Severity     AuditSeverity
-	MenuID       uuid.UUID
+	Search   string
+	Limit    int
+	Offset   int
+	OrderBy  string // ORDER BY clause, may only be filled via pagination.Sortable
+	UserID   uuid.UUID
+	Status   AuditStatus
+	Severity AuditSeverity
 	// From and To bound created_at; To is already the exclusive upper bound.
 	From   *time.Time
 	To     *time.Time
@@ -143,8 +134,7 @@ type AuditLogService interface {
 	Export(ctx context.Context, filter AuditLogFilter, yield func([]AuditLog) error) error
 }
 
-// AuditLogOverview: the counters behind the cards above the audit table.
-// Every count covers the same window, so the four read as one picture.
+// AuditLogOverview: the cards above the audit table, every count over the same window.
 type AuditLogOverview struct {
 	WindowDays int
 	// Events and Modules answer "Events, 7 days · Across N modules".
@@ -152,25 +142,21 @@ type AuditLogOverview struct {
 	Modules int
 	// Sensitive is everything above info severity.
 	Sensitive int
-	// FailedSignIns and FailedSignInAddresses answer
-	// "Failed sign-ins · From N addresses".
+	// These two answer "Failed sign-ins · From N addresses".
 	FailedSignIns         int
 	FailedSignInAddresses int
 	// RetentionDays is policy, not a measurement.
 	RetentionDays int
 }
 
-// AuditActorOption: one entry of the actor dropdown. Name and role come from
-// the entries themselves, so someone who has been renamed or deleted still
-// appears as they were.
+// AuditActorOption: one actor dropdown entry, named as the log recorded them.
 type AuditActorOption struct {
 	UserID   uuid.UUID
 	FullName string
 	RoleName string
 }
 
-// AuditLogOptions: what the filter dropdowns can offer. Actors come from what
-// has actually been recorded; the rest are the fixed vocabularies above.
+// AuditLogOptions: the filter dropdowns; actors are recorded, the rest are fixed.
 type AuditLogOptions struct {
 	Actors     []AuditActorOption
 	Modules    []AuditModule

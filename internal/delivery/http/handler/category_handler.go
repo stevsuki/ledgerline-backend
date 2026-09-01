@@ -27,8 +27,8 @@ func NewCategoryHandler(categoryService domain.CategoryService) *CategoryHandler
 //	@Accept		json
 //	@Produce	json
 //	@Security	BearerAuth
-//	@Param		request	body		dto.CreateCategoryRequest	true	"Category data"
-//	@Success	201		{object}	response.Success{data=dto.CategoryResponse}
+//	@Param		request	body		dto.CreateCategoryRequestDTO	true	"Category data"
+//	@Success	201		{object}	response.Success{data=dto.CategoryResponseDTO}
 //	@Failure	409		{object}	response.Error
 //	@Failure	422		{object}	response.Error
 //	@Router		/categories [post]
@@ -39,7 +39,7 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 		return
 	}
 
-	var req dto.CreateCategoryRequest
+	var req dto.CreateCategoryRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return
@@ -50,7 +50,7 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusCreated, "category created", dto.NewCategoryResponse(category))
+	response.OK(c, http.StatusCreated, "category created", dto.NewCategoryResponseDTO(category))
 }
 
 // List godoc
@@ -64,7 +64,7 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 //	@Param		sort		query		string	false	"Order: name, type, created_at, updated_at. Prefix - for desc"	default(-created_at)
 //	@Param		page		query		int		false	"Page"			default(1)
 //	@Param		per_page	query		int		false	"Items per page"	default(10)
-//	@Success	200			{object}	response.Success{data=[]dto.CategoryResponse}
+//	@Success	200			{object}	response.Success{data=[]dto.CategoryResponseDTO}
 //	@Router		/categories [get]
 func (h *CategoryHandler) List(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
@@ -73,7 +73,7 @@ func (h *CategoryHandler) List(c *gin.Context) {
 		return
 	}
 
-	var query dto.ListCategoryQuery
+	var query dto.ListCategoryQueryDTO
 	if err := c.ShouldBindQuery(&query); err != nil {
 		handleBindError(c, err)
 		return
@@ -99,7 +99,7 @@ func (h *CategoryHandler) List(c *gin.Context) {
 		return
 	}
 
-	response.Paginated(c, http.StatusOK, "success", dto.NewCategoryResponses(categories), response.Meta{
+	response.Paginated(c, http.StatusOK, "success", dto.NewCategoryResponseDTOs(categories), response.Meta{
 		Page:       params.Page,
 		PerPage:    params.PerPage,
 		TotalItems: total,
@@ -114,7 +114,7 @@ func (h *CategoryHandler) List(c *gin.Context) {
 //	@Produce	json
 //	@Security	BearerAuth
 //	@Param		id	path		string	true	"Category ID (UUID)"
-//	@Success	200	{object}	response.Success{data=dto.CategoryResponse}
+//	@Success	200	{object}	response.Success{data=dto.CategoryResponseDTO}
 //	@Failure	404	{object}	response.Error
 //	@Router		/categories/{id} [get]
 func (h *CategoryHandler) GetByID(c *gin.Context) {
@@ -134,7 +134,7 @@ func (h *CategoryHandler) GetByID(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "success", dto.NewCategoryResponse(category))
+	response.OK(c, http.StatusOK, "success", dto.NewCategoryResponseDTO(category))
 }
 
 // Update godoc
@@ -145,8 +145,8 @@ func (h *CategoryHandler) GetByID(c *gin.Context) {
 //	@Produce	json
 //	@Security	BearerAuth
 //	@Param		id		path		string						true	"Category ID (UUID)"
-//	@Param		request	body		dto.UpdateCategoryRequest	true	"Fields to update"
-//	@Success	200		{object}	response.Success{data=dto.CategoryResponse}
+//	@Param		request	body		dto.UpdateCategoryRequestDTO	true	"Fields to update"
+//	@Success	200		{object}	response.Success{data=dto.CategoryResponseDTO}
 //	@Failure	404		{object}	response.Error
 //	@Router		/categories/{id} [patch]
 func (h *CategoryHandler) Update(c *gin.Context) {
@@ -161,7 +161,7 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req dto.UpdateCategoryRequest
+	var req dto.UpdateCategoryRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return
@@ -172,7 +172,7 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "category updated", dto.NewCategoryResponse(category))
+	response.OK(c, http.StatusOK, "category updated", dto.NewCategoryResponseDTO(category))
 }
 
 // Delete godoc

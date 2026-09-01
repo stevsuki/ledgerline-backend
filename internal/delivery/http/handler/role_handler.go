@@ -29,10 +29,10 @@ func NewRoleHandler(roleService domain.RoleService) *RoleHandler {
 //	@Param		sort		query		string	false	"Order: name, is_system, user_count, created_at, updated_at. Prefix - for desc"	default(-is_system,name)
 //	@Param		page		query		int		false	"Page"			default(1)
 //	@Param		per_page	query		int		false	"Items per page"	default(10)
-//	@Success	200			{object}	response.Success{data=[]dto.RoleResponse}
+//	@Success	200			{object}	response.Success{data=[]dto.RoleResponseDTO}
 //	@Router		/roles [get]
 func (h *RoleHandler) List(c *gin.Context) {
-	var query dto.ListRoleQuery
+	var query dto.ListRoleQueryDTO
 	if err := c.ShouldBindQuery(&query); err != nil {
 		handleBindError(c, err)
 		return
@@ -56,7 +56,7 @@ func (h *RoleHandler) List(c *gin.Context) {
 		return
 	}
 
-	response.Paginated(c, http.StatusOK, "roles", dto.NewRoleResponses(roles), response.Meta{
+	response.Paginated(c, http.StatusOK, "roles", dto.NewRoleResponseDTOs(roles), response.Meta{
 		Page:       params.Page,
 		PerPage:    params.PerPage,
 		TotalItems: total,
@@ -71,7 +71,7 @@ func (h *RoleHandler) List(c *gin.Context) {
 //	@Produce	json
 //	@Security	BearerAuth
 //	@Param		id	path		string	true	"Role ID (UUID)"
-//	@Success	200	{object}	response.Success{data=dto.RoleResponse}
+//	@Success	200	{object}	response.Success{data=dto.RoleResponseDTO}
 //	@Failure	404	{object}	response.Error
 //	@Router		/roles/{id} [get]
 func (h *RoleHandler) GetByID(c *gin.Context) {
@@ -85,7 +85,7 @@ func (h *RoleHandler) GetByID(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "role", dto.NewRoleResponse(role))
+	response.OK(c, http.StatusOK, "role", dto.NewRoleResponseDTO(role))
 }
 
 // Create godoc
@@ -95,14 +95,14 @@ func (h *RoleHandler) GetByID(c *gin.Context) {
 //	@Accept		json
 //	@Produce	json
 //	@Security	BearerAuth
-//	@Param		request	body		dto.CreateRoleRequest	true	"Role data"
-//	@Success	201		{object}	response.Success{data=dto.RoleResponse}
+//	@Param		request	body		dto.CreateRoleRequestDTO	true	"Role data"
+//	@Success	201		{object}	response.Success{data=dto.RoleResponseDTO}
 //	@Failure	400		{object}	response.Error
 //	@Failure	422		{object}	response.Error
 //	@Failure	409		{object}	response.Error
 //	@Router		/roles [post]
 func (h *RoleHandler) Create(c *gin.Context) {
-	var req dto.CreateRoleRequest
+	var req dto.CreateRoleRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return
@@ -113,7 +113,7 @@ func (h *RoleHandler) Create(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusCreated, "role created", dto.NewRoleResponse(role))
+	response.OK(c, http.StatusCreated, "role created", dto.NewRoleResponseDTO(role))
 }
 
 // Update godoc
@@ -124,8 +124,8 @@ func (h *RoleHandler) Create(c *gin.Context) {
 //	@Produce	json
 //	@Security	BearerAuth
 //	@Param		id		path		string					true	"Role ID (UUID)"
-//	@Param		request	body		dto.UpdateRoleRequest	true	"Fields to update"
-//	@Success	200		{object}	response.Success{data=dto.RoleResponse}
+//	@Param		request	body		dto.UpdateRoleRequestDTO	true	"Fields to update"
+//	@Success	200		{object}	response.Success{data=dto.RoleResponseDTO}
 //	@Failure	400		{object}	response.Error
 //	@Failure	403		{object}	response.Error
 //	@Failure	404		{object}	response.Error
@@ -138,7 +138,7 @@ func (h *RoleHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req dto.UpdateRoleRequest
+	var req dto.UpdateRoleRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return
@@ -149,7 +149,7 @@ func (h *RoleHandler) Update(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "role updated", dto.NewRoleResponse(role))
+	response.OK(c, http.StatusOK, "role updated", dto.NewRoleResponseDTO(role))
 }
 
 // Delete godoc

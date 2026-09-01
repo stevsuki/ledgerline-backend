@@ -32,7 +32,7 @@ func TestManager_AccessToken(t *testing.T) {
 	assert.Equal(t, claims.RoleID, got.RoleID)
 }
 
-func TestManager_RefreshTokenTidakBisaDipakaiSebagaiAccessToken(t *testing.T) {
+func TestManager_RefreshTokenIsNotAcceptedAsAccessToken(t *testing.T) {
 	t.Parallel()
 
 	manager := jwt.NewManager("very-secret-key-for-unit-tests-32", "ledgerline", 15*time.Minute, time.Hour, 10*time.Minute)
@@ -47,7 +47,7 @@ func TestManager_RefreshTokenTidakBisaDipakaiSebagaiAccessToken(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestManager_TokenKedaluwarsa(t *testing.T) {
+func TestManager_ExpiredToken(t *testing.T) {
 	t.Parallel()
 
 	manager := jwt.NewManager("very-secret-key-for-unit-tests-32", "ledgerline", -time.Minute, time.Hour, 10*time.Minute)
@@ -59,7 +59,7 @@ func TestManager_TokenKedaluwarsa(t *testing.T) {
 	require.ErrorIs(t, err, domain.ErrTokenExpired)
 }
 
-func TestManager_SecretBerbedaDitolak(t *testing.T) {
+func TestManager_DifferentSecretIsRejected(t *testing.T) {
 	t.Parallel()
 
 	issuer := jwt.NewManager("secret-a-for-issuer-mismatch-test", "ledgerline", time.Minute, time.Hour, 10*time.Minute)

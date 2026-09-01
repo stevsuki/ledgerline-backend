@@ -13,8 +13,7 @@ const MaxSortFields = 3
 // ErrInvalidSort: the sort parameter failed the whitelist.
 var ErrInvalidSort = errors.New("invalid sort parameter")
 
-// Whitelist maps public names in the query string to database column names.
-// Values must be developer-written constants, never user input.
+// Whitelist maps public query names to columns; values must be constants, never user input.
 type Whitelist map[string]string
 
 // Sortable: the sort rules for one resource.
@@ -24,8 +23,7 @@ type Sortable struct {
 	TieBreaker string    // unique column that keeps ordering stable across pages
 }
 
-// OrderBy turns "-created_at,name" into a safe ORDER BY clause.
-// A "-" prefix means DESC, no prefix means ASC.
+// OrderBy turns "-created_at,name" into a safe ORDER BY; "-" means DESC.
 func (s Sortable) OrderBy(raw string) (string, error) {
 	if strings.TrimSpace(raw) == "" {
 		raw = s.Default

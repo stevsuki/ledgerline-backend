@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ActorOption:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ActorOptionDTO:
     properties:
       label:
         example: Rangga Aditama
@@ -12,26 +12,26 @@ definitions:
         example: 01a05b87-ac4c-7332-a78c-c60bcec135de
         type: string
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOptionsResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOptionsResponseDTO:
     properties:
       actors:
         items:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ActorOption'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ActorOptionDTO'
         type: array
       modules:
         items:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOption'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOptionDTO'
         type: array
       severities:
         items:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOption'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOptionDTO'
         type: array
       statuses:
         items:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOption'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOptionDTO'
         type: array
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOverviewResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOverviewResponseDTO:
     properties:
       events:
         example: 28
@@ -58,7 +58,7 @@ definitions:
         example: 7
         type: integer
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogResponseDTO:
     properties:
       action:
         example: auth.login
@@ -104,7 +104,7 @@ definitions:
         example: 01a05b87-ac4c-7332-a78c-c60bcec135de
         type: string
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponseDTO:
     properties:
       created_at:
         example: "2026-01-02T15:04:05Z"
@@ -122,7 +122,7 @@ definitions:
         example: "2026-01-02T15:04:05Z"
         type: string
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateCategoryRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateCategoryRequestDTO:
     properties:
       name:
         example: Gaji
@@ -139,7 +139,7 @@ definitions:
     - name
     - type
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequestDTO:
     properties:
       can_approve:
         example: true
@@ -162,7 +162,7 @@ definitions:
     required:
     - menu_id
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleRequestDTO:
     properties:
       description:
         example: Handles day to day transactions
@@ -175,12 +175,12 @@ definitions:
         type: string
       permissions:
         items:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequestDTO'
         type: array
     required:
     - name
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateUserRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateUserRequestDTO:
     properties:
       email:
         example: budi@example.com
@@ -205,7 +205,7 @@ definitions:
     - full_name
     - password
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOption:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOptionDTO:
     properties:
       label:
         example: Auth
@@ -214,7 +214,7 @@ definitions:
         example: auth
         type: string
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ForgotPasswordRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ForgotPasswordRequestDTO:
     properties:
       email:
         example: budi@example.com
@@ -222,7 +222,7 @@ definitions:
     required:
     - email
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.LoginRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.LoginRequestDTO:
     properties:
       email:
         example: budi@example.com
@@ -236,7 +236,7 @@ definitions:
     - email
     - password
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuAccessResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuAccessResponseDTO:
     properties:
       can_approve:
         example: false
@@ -254,13 +254,13 @@ definitions:
         example: true
         type: boolean
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponseDTO:
     properties:
       access:
-        $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuAccessResponse'
+        $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuAccessResponseDTO'
       children:
         items:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponse'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponseDTO'
         type: array
       code:
         example: transactions
@@ -276,16 +276,16 @@ definitions:
       path:
         type: string
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ProfileResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ProfileResponseDTO:
     properties:
       menus:
         items:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponse'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.MenuResponseDTO'
         type: array
       user:
-        $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse'
+        $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO'
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RefreshTokenRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RefreshTokenRequestDTO:
     properties:
       refresh_token:
         example: eyJhbGciOiJIUzI1NiIs...
@@ -293,7 +293,7 @@ definitions:
     required:
     - refresh_token
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RegisterRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RegisterRequestDTO:
     properties:
       email:
         example: budi@example.com
@@ -313,7 +313,7 @@ definitions:
     - full_name
     - password
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetPasswordRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetPasswordRequestDTO:
     properties:
       confirm_new_password:
         example: RahasiaBaru123!
@@ -331,7 +331,7 @@ definitions:
     - new_password
     - reset_token
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetTokenResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetTokenResponseDTO:
     properties:
       expires_in:
         example: 600
@@ -340,7 +340,7 @@ definitions:
         example: eyJhbGciOiJIUzI1NiIs...
         type: string
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleMenuPermissionResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleMenuPermissionResponseDTO:
     properties:
       can_approve:
         example: true
@@ -358,11 +358,10 @@ definitions:
         example: true
         type: boolean
       menu_id:
-        description: RoleID     uuid.UUID `json:"role_id" example:"00000000-0000-0000-0000-000000000001"`
         example: b0000000-0000-0000-0000-000000000002
         type: string
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponseDTO:
     properties:
       created_at:
         example: "2026-01-02T15:04:05Z"
@@ -383,7 +382,7 @@ definitions:
         type: string
       permissions:
         items:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleMenuPermissionResponse'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleMenuPermissionResponseDTO'
         type: array
       updated_at:
         example: "2026-01-02T15:04:05Z"
@@ -394,7 +393,7 @@ definitions:
         example: 12
         type: integer
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponseDTO:
     properties:
       access_token:
         example: eyJhbGciOiJIUzI1NiIs...
@@ -409,7 +408,7 @@ definitions:
         example: Bearer
         type: string
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateCategoryRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateCategoryRequestDTO:
     properties:
       name:
         example: Gaji Bulanan
@@ -423,7 +422,7 @@ definitions:
         example: expense
         type: string
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRoleRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRoleRequestDTO:
     properties:
       description:
         example: Approves transactions above the limit
@@ -438,10 +437,10 @@ definitions:
         description: Omitted leaves the permissions untouched; an empty array clears
           them.
         items:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequestDTO'
         type: array
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateUserRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateUserRequestDTO:
     properties:
       full_name:
         example: Budi Santoso
@@ -452,7 +451,7 @@ definitions:
         example: 00000000-0000-0000-0000-000000000001
         type: string
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO:
     properties:
       created_at:
         example: "2026-01-02T15:04:05Z"
@@ -479,7 +478,7 @@ definitions:
         example: "2026-01-02T15:04:05Z"
         type: string
     type: object
-  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.VerifyOTPResetPasswordRequest:
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.VerifyOTPResetPasswordRequestDTO:
     properties:
       email:
         example: budi@example.com
@@ -590,7 +589,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogResponse'
+                    $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogResponseDTO'
                   type: array
               type: object
       security:
@@ -667,7 +666,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOptionsResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOptionsResponseDTO'
               type: object
       security:
       - BearerAuth: []
@@ -688,7 +687,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOverviewResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.AuditLogOverviewResponseDTO'
               type: object
       security:
       - BearerAuth: []
@@ -706,7 +705,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ForgotPasswordRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ForgotPasswordRequestDTO'
       produces:
       - application/json
       responses:
@@ -736,7 +735,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.LoginRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.LoginRequestDTO'
       produces:
       - application/json
       responses:
@@ -747,7 +746,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponseDTO'
               type: object
         "401":
           description: Unauthorized
@@ -772,7 +771,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ProfileResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ProfileResponseDTO'
               type: object
         "401":
           description: Unauthorized
@@ -794,7 +793,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RefreshTokenRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RefreshTokenRequestDTO'
       produces:
       - application/json
       responses:
@@ -805,7 +804,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TokenResponseDTO'
               type: object
         "401":
           description: Unauthorized
@@ -825,7 +824,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RegisterRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RegisterRequestDTO'
       produces:
       - application/json
       responses:
@@ -836,7 +835,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO'
               type: object
         "409":
           description: Conflict
@@ -861,7 +860,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetPasswordRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetPasswordRequestDTO'
       produces:
       - application/json
       responses:
@@ -891,7 +890,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.VerifyOTPResetPasswordRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.VerifyOTPResetPasswordRequestDTO'
       produces:
       - application/json
       responses:
@@ -902,7 +901,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetTokenResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ResetTokenResponseDTO'
               type: object
         "400":
           description: Bad Request
@@ -959,7 +958,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponse'
+                    $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponseDTO'
                   type: array
               type: object
       security:
@@ -976,7 +975,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateCategoryRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateCategoryRequestDTO'
       produces:
       - application/json
       responses:
@@ -987,7 +986,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponseDTO'
               type: object
         "409":
           description: Conflict
@@ -1043,7 +1042,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponseDTO'
               type: object
         "404":
           description: Not Found
@@ -1068,7 +1067,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateCategoryRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateCategoryRequestDTO'
       produces:
       - application/json
       responses:
@@ -1079,7 +1078,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponseDTO'
               type: object
         "404":
           description: Not Found
@@ -1153,7 +1152,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponse'
+                    $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponseDTO'
                   type: array
               type: object
       security:
@@ -1170,7 +1169,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleRequestDTO'
       produces:
       - application/json
       responses:
@@ -1181,7 +1180,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponseDTO'
               type: object
         "400":
           description: Bad Request
@@ -1245,7 +1244,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponseDTO'
               type: object
         "404":
           description: Not Found
@@ -1270,7 +1269,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRoleRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRoleRequestDTO'
       produces:
       - application/json
       responses:
@@ -1281,7 +1280,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RoleResponseDTO'
               type: object
         "400":
           description: Bad Request
@@ -1342,7 +1341,7 @@ paths:
             - properties:
                 data:
                   items:
-                    $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse'
+                    $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO'
                   type: array
               type: object
       security:
@@ -1359,7 +1358,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateUserRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateUserRequestDTO'
       produces:
       - application/json
       responses:
@@ -1370,7 +1369,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO'
               type: object
         "403":
           description: Forbidden
@@ -1426,7 +1425,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO'
               type: object
         "404":
           description: Not Found
@@ -1451,7 +1450,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateUserRequest'
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateUserRequestDTO'
       produces:
       - application/json
       responses:
@@ -1462,7 +1461,7 @@ paths:
             - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
             - properties:
                 data:
-                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponse'
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO'
               type: object
         "404":
           description: Not Found

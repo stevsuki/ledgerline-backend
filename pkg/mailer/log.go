@@ -19,7 +19,7 @@ func NewLog(log *slog.Logger) *LogMailer {
 }
 
 func (m *LogMailer) SendPasswordResetOTP(_ context.Context, data domain.PasswordResetOTPMail) error {
-	m.log.Info("email OTP reset password (mode log)",
+	m.log.Info("password reset OTP email (log mode)",
 		slog.String("to", data.Email),
 		slog.String("otp", data.OTP),
 		slog.Duration("expires_in", data.ExpiresIn),

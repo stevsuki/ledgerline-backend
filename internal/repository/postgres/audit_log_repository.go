@@ -10,6 +10,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
+	"github.com/stevensuki/ledgerline-backend/internal/repository/postgres/model"
 )
 
 const defaultAuditLogOrder = "created_at DESC, id ASC"
@@ -22,14 +23,12 @@ func NewAuditLogRepository(db *gorm.DB) domain.AuditLogRepository {
 	return &auditLogRepository{db: db}
 }
 
-// filtered applies every condition in the filter, shared so the list, the
-// export and any future reader can never drift apart on what they select.
+// filtered applies every condition, shared so the list and the export cannot drift apart.
 func (r *auditLogRepository) filtered(ctx context.Context, filter domain.AuditLogFilter) *gorm.DB {
-	query := dbFrom(ctx, r.db).Model(&auditLogModel{})
+	query := dbFrom(ctx, r.db).Model(&model.AuditLogModel{})
 
 	if filter.Search != "" {
-		// Searches detail_text, not the raw jsonb: the JSON carries key names
-		// like "kind" and "label" that would match on words nobody typed.
+		// Searches detail_text, not the raw jsonb whose key names would match blindly.
 		keyword := "%" + strings.ToLower(filter.Search) + "%"
 		query = query.Where(
 			`(LOWER(user_full_name) LIKE ? OR LOWER(action) LIKE ?
@@ -65,14 +64,14 @@ func (r *auditLogRepository) ListRows(ctx context.Context, filter domain.AuditLo
 		orderBy = defaultAuditLogOrder
 	}
 
-	var logs []auditLogModel
+	var logs []model.AuditLogModel
 	err := r.filtered(ctx, filter).
 		Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).
 		Find(&logs).Error
 	if err != nil {
 		return nil, wrapErr("list audit logs", err)
 	}
-	return auditLogsToDomain(logs)
+	return model.AuditLogsToDomain(logs), nil
 }
 
 func (r *auditLogRepository) List(ctx context.Context, filter domain.AuditLogFilter) ([]domain.AuditLog, int, error) {
@@ -91,33 +90,28 @@ func (r *auditLogRepository) List(ctx context.Context, filter domain.AuditLogFil
 		orderBy = defaultAuditLogOrder
 	}
 
-	var logs []auditLogModel
+	var logs []model.AuditLogModel
 	err := query.Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).Find(&logs).Error
 	if err != nil {
 		return nil, 0, wrapErr("list audit logs", err)
 	}
-	out, err := auditLogsToDomain(logs)
-	if err != nil {
-		return nil, 0, err
-	}
-	return out, int(total), nil
+	return model.AuditLogsToDomain(logs), int(total), nil
 }
 
 func (r *auditLogRepository) Create(ctx context.Context, log *domain.AuditLog) error {
-	model, err := auditLogFromDomain(log)
+	row, err := model.AuditLogFromDomain(log)
 	if err != nil {
 		return err
 	}
-	if err := dbFrom(ctx, r.db).Create(&model).Error; err != nil {
+	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
 		return wrapErr("create audit log", err)
 	}
 
-	log.CreatedAt = model.CreatedAt
+	log.CreatedAt = row.CreatedAt
 	return nil
 }
 
-// Overview counts everything the cards need in one pass, so the four numbers
-// always describe the same window and the same rows.
+// Overview counts every card in one pass, so the numbers describe the same rows.
 func (r *auditLogRepository) Overview(ctx context.Context, window time.Duration) (domain.AuditLogOverview, error) {
 	const q = `
 		SELECT
@@ -142,12 +136,9 @@ func (r *auditLogRepository) Overview(ctx context.Context, window time.Duration)
 	return overview, nil
 }
 
-// DistinctActors: everyone who appears in the log, ordered by name.
-// DISTINCT ON keeps one row per person carrying their most recent name and
-// role; a plain DISTINCT would list them once per name they have ever had.
+// DistinctActors: one row per person with their latest name, ordered by name.
 func (r *auditLogRepository) DistinctActors(ctx context.Context) ([]domain.AuditActorOption, error) {
-	// Aliased to full_name: the scan matches on field name, and the column is
-	// user_full_name.
+	// Aliased to full_name: the scan matches on field name, not column name.
 	const q = `
 		SELECT user_id, user_full_name AS full_name, role_name FROM (
 			SELECT DISTINCT ON (user_id) user_id, user_full_name, role_name, created_at

@@ -47,8 +47,6 @@ func (g *Generator) Generate() (string, error) {
 	return fmt.Sprintf(g.format, n), nil
 }
 
-func (g *Generator) Length() int { return g.length }
-
 // Equal compares two codes in constant time so response latency leaks nothing.
 func Equal(a, b string) bool {
 	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1

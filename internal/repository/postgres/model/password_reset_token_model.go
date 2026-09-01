@@ -1,4 +1,4 @@
-package postgres
+package model
 
 import (
 	"time"
@@ -8,7 +8,7 @@ import (
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
 )
 
-type passwordResetTokenModel struct {
+type PasswordResetTokenModel struct {
 	ID        uuid.UUID `gorm:"type:uuid;primaryKey"`
 	UserID    uuid.UUID `gorm:"type:uuid;not null;index"`
 	OTPHash   string    `gorm:"size:255;not null"`
@@ -18,9 +18,9 @@ type passwordResetTokenModel struct {
 	UsedAt    *time.Time `gorm:"default:null"`
 }
 
-func (passwordResetTokenModel) TableName() string { return "password_reset_tokens" }
+func (PasswordResetTokenModel) TableName() string { return "password_reset_tokens" }
 
-func (m passwordResetTokenModel) toDomain() *domain.PasswordResetToken {
+func (m PasswordResetTokenModel) ToDomain() *domain.PasswordResetToken {
 	return &domain.PasswordResetToken{
 		ID:        m.ID,
 		UserID:    m.UserID,
@@ -32,8 +32,8 @@ func (m passwordResetTokenModel) toDomain() *domain.PasswordResetToken {
 	}
 }
 
-func passwordResetTokenFromDomain(t *domain.PasswordResetToken) passwordResetTokenModel {
-	return passwordResetTokenModel{
+func PasswordResetTokenFromDomain(t *domain.PasswordResetToken) PasswordResetTokenModel {
+	return PasswordResetTokenModel{
 		ID:        t.ID,
 		UserID:    t.UserID,
 		OTPHash:   t.OTPHash,

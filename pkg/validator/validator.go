@@ -31,10 +31,6 @@ func tagNameFunc(fld reflect.StructField) string {
 	return fld.Name
 }
 
-func Instance() *validator.Validate { return validate }
-
-func Struct(s any) error { return validate.Struct(s) }
-
 // RegisterGinValidator: apply the same configuration to the internal Gin validator.
 func RegisterGinValidator() {
 	v, ok := binding.Validator.Engine().(*validator.Validate)

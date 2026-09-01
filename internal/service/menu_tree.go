@@ -8,9 +8,7 @@ import (
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
 )
 
-// visibleMenuTree: flat menus -> sidebar tree, keeping only what the role may
-// read. A group survives when at least one of its children does, so the UI
-// never renders an empty header. Two levels deep, matching the menus seed.
+// visibleMenuTree: flat menus -> two-level sidebar tree, dropping groups with no readable child.
 func visibleMenuTree(menus []domain.Menu) []domain.Menu {
 	roots := make([]domain.Menu, 0, len(menus))
 	hasChildren := make(map[uuid.UUID]bool)
@@ -50,8 +48,7 @@ func visibleMenuTree(menus []domain.Menu) []domain.Menu {
 	return out
 }
 
-// sortMenus: display order, with code as tie-breaker so equal sort_order values
-// never come back in a different order between requests.
+// sortMenus: display order, with code as tie-breaker so equal sort_order stays stable.
 func sortMenus(menus []domain.Menu) {
 	sort.SliceStable(menus, func(i, j int) bool {
 		if menus[i].SortOrder != menus[j].SortOrder {

@@ -6,9 +6,7 @@ import (
 	"strings"
 )
 
-// AuditKind names the shape of an audit entry's details. Each kind has exactly
-// one struct below, and the struct is what decides the kind: pick the type and
-// the compiler enforces the fields that go with it.
+// AuditKind names the shape of an entry's details; one struct below per kind.
 type AuditKind string
 
 const (
@@ -25,11 +23,9 @@ const (
 	AuditKindAlertSent        AuditKind = "alert_sent"
 )
 
-// AuditDetail is what AuditLog.Details can hold. Build one with its New
-// constructor so kind and payload can never disagree.
+// AuditDetail is what AuditLog.Details can hold; build one with its New constructor.
 type AuditDetail interface {
-	// Text renders the entry for people to read. Part of the interface so a new
-	// kind cannot be added without one.
+	// Text renders the entry for people to read; required of every kind.
 	Text() string
 	AuditKind() AuditKind
 }
@@ -90,8 +86,7 @@ func NewSessionDetail(method SessionMethod, userAgent string) SessionDetail {
 
 func (SessionDetail) AuditKind() AuditKind { return AuditKindSession }
 
-// SessionFailedReason separates a rejected password from an attempt that never
-// got that far because the account was already locked.
+// SessionFailedReason: a rejected password, or an attempt an existing lock turned away.
 type SessionFailedReason string
 
 const (
@@ -258,9 +253,7 @@ func NewAlertSentDetail(subject string, thresholdPercent int) AlertSentDetail {
 
 func (AlertSentDetail) AuditKind() AuditKind { return AuditKindAlertSent }
 
-// RawAuditDetail is a detail read back from storage. Nothing in the backend
-// looks inside one, so it is carried and re-emitted as the JSON it was stored
-// as, which keeps the read path free of any per-kind decoding.
+// RawAuditDetail: a stored detail, re-emitted as the JSON it was written as.
 type RawAuditDetail json.RawMessage
 
 func (r RawAuditDetail) AuditKind() AuditKind {
@@ -280,8 +273,7 @@ func (r RawAuditDetail) MarshalJSON() ([]byte, error) {
 	return r, nil
 }
 
-// note appends a trailing remark. The web UI separates attributes with "·" and
-// a closing note with an em dash: "Auditor — read-only, 2 permissions".
+// note appends a trailing remark after an em dash, matching the web UI.
 func note(head, tail string) string {
 	if tail == "" {
 		return head
@@ -376,8 +368,7 @@ func (d PermissionChangeDetail) Text() string {
 }
 
 func (d DataJobDetail) Text() string {
-	// A sync reads as a sentence about its source; an export as a list of
-	// attributes: "BCA — 12 transactions imported" vs "CSV · 184 rows · August 2026".
+	// A sync reads as a sentence about its source, an export as a list of attributes.
 	if d.Job == DataJobSync {
 		imported := ""
 		if d.Rows > 0 {
@@ -414,6 +405,5 @@ func (d AlertSentDetail) Text() string {
 	return fmt.Sprintf("%s crossed %d%%", d.Subject, d.ThresholdPercent)
 }
 
-// Text is empty on the read path: the sentence was rendered when the entry was
-// written and is read back from its own column.
+// Text is empty on the read path: the sentence is read back from its own column.
 func (r RawAuditDetail) Text() string { return "" }

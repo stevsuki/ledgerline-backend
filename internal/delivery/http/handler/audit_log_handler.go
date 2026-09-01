@@ -14,13 +14,11 @@ import (
 )
 
 type AuditLogHandler struct {
-	auditLogUsecase domain.AuditLogService
+	auditLogService domain.AuditLogService
 }
 
-func NewAuditLogHandler(auditLogUsecase domain.AuditLogService) *AuditLogHandler {
-	return &AuditLogHandler{
-		auditLogUsecase: auditLogUsecase,
-	}
+func NewAuditLogHandler(auditLogService domain.AuditLogService) *AuditLogHandler {
+	return &AuditLogHandler{auditLogService: auditLogService}
 }
 
 // List godoc
@@ -34,10 +32,10 @@ func NewAuditLogHandler(auditLogUsecase domain.AuditLogService) *AuditLogHandler
 //	@Param			sort		query		string	false	"Order: user_full_name, role_name, action, detail_text, status, severity, module, user_id, ip_address, created_at. Prefix - for desc"	default(-created_at)
 //	@Param			page		query		int		false	"Page"				default(1)
 //	@Param			per_page	query		int		false	"Items per page"	default(10)
-//	@Success		200			{object}	response.Success{data=[]dto.AuditLogResponse}
+//	@Success		200			{object}	response.Success{data=[]dto.AuditLogResponseDTO}
 //	@Router			/audit-logs [get]
 func (h *AuditLogHandler) List(c *gin.Context) {
-	var query dto.ListAuditLogQuery
+	var query dto.ListAuditLogQueryDTO
 	if err := c.ShouldBindQuery(&query); err != nil {
 		handleBindError(c, err)
 		return
@@ -58,13 +56,13 @@ func (h *AuditLogHandler) List(c *gin.Context) {
 	params := pagination.Params{Page: query.Page, PerPage: query.PerPage}.Normalize()
 	filter.Limit, filter.Offset, filter.OrderBy = params.Limit(), params.Offset(), orderBy
 
-	auditLogs, total, err := h.auditLogUsecase.List(c.Request.Context(), filter)
+	auditLogs, total, err := h.auditLogService.List(c.Request.Context(), filter)
 	if err != nil {
 		handleError(c, err)
 		return
 	}
 
-	response.Paginated(c, http.StatusOK, "success", dto.NewAuditLogResponses(auditLogs), response.Meta{
+	response.Paginated(c, http.StatusOK, "success", dto.NewAuditLogResponseDTOs(auditLogs), response.Meta{
 		Page:       params.Page,
 		PerPage:    params.PerPage,
 		TotalItems: total,
@@ -79,15 +77,15 @@ func (h *AuditLogHandler) List(c *gin.Context) {
 //	@Tags			audit-logs
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Success		200	{object}	response.Success{data=dto.AuditLogOverviewResponse}
+//	@Success		200	{object}	response.Success{data=dto.AuditLogOverviewResponseDTO}
 //	@Router			/audit-logs/overview [get]
 func (h *AuditLogHandler) Overview(c *gin.Context) {
-	overview, err := h.auditLogUsecase.Overview(c.Request.Context())
+	overview, err := h.auditLogService.Overview(c.Request.Context())
 	if err != nil {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "success", dto.NewAuditLogOverviewResponse(overview))
+	response.OK(c, http.StatusOK, "success", dto.NewAuditLogOverviewResponseDTO(overview))
 }
 
 // Options godoc
@@ -97,15 +95,15 @@ func (h *AuditLogHandler) Overview(c *gin.Context) {
 //	@Tags			audit-logs
 //	@Produce		json
 //	@Security		BearerAuth
-//	@Success		200	{object}	response.Success{data=dto.AuditLogOptionsResponse}
+//	@Success		200	{object}	response.Success{data=dto.AuditLogOptionsResponseDTO}
 //	@Router			/audit-logs/options [get]
 func (h *AuditLogHandler) Options(c *gin.Context) {
-	options, err := h.auditLogUsecase.Options(c.Request.Context())
+	options, err := h.auditLogService.Options(c.Request.Context())
 	if err != nil {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "success", dto.NewAuditLogOptionsResponse(options))
+	response.OK(c, http.StatusOK, "success", dto.NewAuditLogOptionsResponseDTO(options))
 }
 
 // Export godoc
@@ -125,7 +123,7 @@ func (h *AuditLogHandler) Options(c *gin.Context) {
 //	@Success		200			{file}	string	"CSV file"
 //	@Router			/audit-logs/export [get]
 func (h *AuditLogHandler) Export(c *gin.Context) {
-	var query dto.AuditLogRange
+	var query dto.AuditLogRangeDTO
 	if err := c.ShouldBindQuery(&query); err != nil {
 		handleBindError(c, err)
 		return
@@ -137,8 +135,7 @@ func (h *AuditLogHandler) Export(c *gin.Context) {
 		return
 	}
 
-	// Headers go out before the first row: once writing starts the status is
-	// already sent and an error can no longer be reported as JSON.
+	// Headers go out first: once writing starts, an error can no longer be JSON.
 	c.Header("Content-Type", "text/csv; charset=utf-8")
 	c.Header("Content-Disposition", `attachment; filename="`+query.ExportFilename()+`"`)
 	c.Status(http.StatusOK)
@@ -149,7 +146,7 @@ func (h *AuditLogHandler) Export(c *gin.Context) {
 		return
 	}
 
-	err = h.auditLogUsecase.Export(c.Request.Context(), filter, func(batch []domain.AuditLog) error {
+	err = h.auditLogService.Export(c.Request.Context(), filter, func(batch []domain.AuditLog) error {
 		for _, entry := range batch {
 			if err := writer.Write(dto.AuditLogCSVRow(entry)); err != nil {
 				return err
@@ -159,8 +156,7 @@ func (h *AuditLogHandler) Export(c *gin.Context) {
 		return writer.Error()
 	})
 	if err != nil {
-		// The response is already streaming, so the client sees a truncated
-		// file; the log is the only place this can still be reported.
+		// Already streaming: the client gets a truncated file, the log is the only report.
 		logger.FromContext(c.Request.Context()).Error("export audit logs", slog.Any("error", err))
 		return
 	}

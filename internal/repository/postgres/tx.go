@@ -17,18 +17,14 @@ type txManager struct {
 
 func NewTxManager(db *gorm.DB) domain.TxManager { return &txManager{db: db} }
 
-// Do runs fn in a transaction. Nesting is safe: an inner Do joins the outer
-// transaction as a savepoint instead of opening a second, independent one.
+// Do runs fn in a transaction; a nested Do joins the outer one as a savepoint.
 func (m *txManager) Do(ctx context.Context, fn func(ctx context.Context) error) error {
 	return dbFrom(ctx, m.db).Transaction(func(tx *gorm.DB) error {
 		return fn(context.WithValue(ctx, txKey{}, tx))
 	})
 }
 
-// dbFrom returns the transaction carried by ctx, falling back to the pooled
-// connection. Every repository goes through this: without it a call made inside
-// TxManager.Do would quietly write on another connection, outside the
-// transaction it is supposed to be part of.
+// dbFrom returns the transaction ctx carries, else the pool; every repository goes through it.
 func dbFrom(ctx context.Context, db *gorm.DB) *gorm.DB {
 	if tx, ok := ctx.Value(txKey{}).(*gorm.DB); ok && tx != nil {
 		return tx

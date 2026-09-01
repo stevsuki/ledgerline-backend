@@ -12,7 +12,6 @@ var (
 	ErrInvalidCredentials  = errors.New("invalid email or password")
 	ErrTokenExpired        = errors.New("token expired")
 	ErrTokenInvalid        = errors.New("token invalid")
-	ErrInternal            = errors.New("internal server error")
 	ErrTooManyRequests     = errors.New("too many requests")
 	ErrInvalidOTP          = errors.New("invalid OTP")
 	ErrMaxAttemptsExceeded = errors.New("maximum OTP attempts exceeded")

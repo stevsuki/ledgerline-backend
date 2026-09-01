@@ -47,8 +47,6 @@ func (s *roleService) Create(ctx context.Context, input domain.CreateRoleInput) 
 		return nil, fmt.Errorf("%w: role name is required", domain.ErrInvalidInput)
 	}
 
-	fmt.Println("Masih sampe sini")
-
 	permissions, err := buildPermissions(input.Permissions)
 	if err != nil {
 		return nil, err
@@ -65,15 +63,14 @@ func (s *roleService) Create(ctx context.Context, input domain.CreateRoleInput) 
 		Description: strings.TrimSpace(input.Description),
 		Permissions: permissions,
 	}
-	// A duplicate name is rejected by the unique index, not here.
-	// The role and its permissions are written in one transaction.
+	// A duplicate name is rejected by the unique index; the repository writes both in one transaction.
 	if err := s.roleRepo.Create(ctx, role); err != nil {
 		return nil, err
 	}
 	return role, nil
 }
 
-func buildPermissions(input []domain.CreateRoleMenuPermissionRequest) ([]domain.RoleMenuPermission, error) {
+func buildPermissions(input []domain.CreateRoleMenuPermissionInput) ([]domain.RoleMenuPermission, error) {
 	if len(input) == 0 {
 		return nil, nil
 	}
@@ -146,8 +143,7 @@ func (s *roleService) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	// Roles are soft-deleted, so the ON DELETE RESTRICT on users.role_id never
-	// fires; the guard has to live here.
+	// Roles are soft-deleted, so ON DELETE RESTRICT never fires and the guard lives here.
 	if role.IsSystem {
 		return fmt.Errorf("%w: a built-in role cannot be deleted", domain.ErrForbidden)
 	}

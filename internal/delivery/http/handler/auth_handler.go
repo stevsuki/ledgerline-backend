@@ -26,13 +26,13 @@ func NewAuthHandler(authService domain.AuthService) *AuthHandler {
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		dto.RegisterRequest	true	"Registration data"
-//	@Success		201		{object}	response.Success{data=dto.UserResponse}
+//	@Param			request	body		dto.RegisterRequestDTO	true	"Registration data"
+//	@Success		201		{object}	response.Success{data=dto.UserResponseDTO}
 //	@Failure		409		{object}	response.Error
 //	@Failure		422		{object}	response.Error
 //	@Router			/auth/register [post]
 func (h *AuthHandler) Register(c *gin.Context) {
-	var req dto.RegisterRequest
+	var req dto.RegisterRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return
@@ -43,7 +43,7 @@ func (h *AuthHandler) Register(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusCreated, "registration successful", dto.NewUserResponse(user))
+	response.OK(c, http.StatusCreated, "registration successful", dto.NewUserResponseDTO(user))
 }
 
 // Login godoc
@@ -53,13 +53,13 @@ func (h *AuthHandler) Register(c *gin.Context) {
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		dto.LoginRequest	true	"Login credentials"
-//	@Success		200		{object}	response.Success{data=dto.TokenResponse}
+//	@Param			request	body		dto.LoginRequestDTO	true	"Login credentials"
+//	@Success		200		{object}	response.Success{data=dto.TokenResponseDTO}
 //	@Failure		401		{object}	response.Error
 //	@Failure		422		{object}	response.Error
 //	@Router			/auth/login [post]
 func (h *AuthHandler) Login(c *gin.Context) {
-	var req dto.LoginRequest
+	var req dto.LoginRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return
@@ -72,7 +72,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "login successful", dto.NewTokenResponse(tokens))
+	response.OK(c, http.StatusOK, "login successful", dto.NewTokenResponseDTO(tokens))
 }
 
 // Refresh godoc
@@ -82,12 +82,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		dto.RefreshTokenRequest	true	"Refresh token"
-//	@Success		200		{object}	response.Success{data=dto.TokenResponse}
+//	@Param			request	body		dto.RefreshTokenRequestDTO	true	"Refresh token"
+//	@Success		200		{object}	response.Success{data=dto.TokenResponseDTO}
 //	@Failure		401		{object}	response.Error
 //	@Router			/auth/refresh [post]
 func (h *AuthHandler) Refresh(c *gin.Context) {
-	var req dto.RefreshTokenRequest
+	var req dto.RefreshTokenRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return
@@ -98,7 +98,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "token refreshed", dto.NewTokenResponse(tokens))
+	response.OK(c, http.StatusOK, "token refreshed", dto.NewTokenResponseDTO(tokens))
 }
 
 // Me godoc
@@ -107,7 +107,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 //	@Tags		auth
 //	@Produce	json
 //	@Security	BearerAuth
-//	@Success	200	{object}	response.Success{data=dto.ProfileResponse}
+//	@Success	200	{object}	response.Success{data=dto.ProfileResponseDTO}
 //	@Failure	401	{object}	response.Error
 //	@Router		/auth/me [get]
 func (h *AuthHandler) Me(c *gin.Context) {
@@ -122,7 +122,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "success", dto.NewProfileResponse(profile))
+	response.OK(c, http.StatusOK, "success", dto.NewProfileResponseDTO(profile))
 }
 
 // ForgotPassword godoc
@@ -132,13 +132,13 @@ func (h *AuthHandler) Me(c *gin.Context) {
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		dto.ForgotPasswordRequest	true	"Destination email"
+//	@Param			request	body		dto.ForgotPasswordRequestDTO	true	"Destination email"
 //	@Success		200		{object}	response.Success
 //	@Failure		422		{object}	response.Error
 //	@Failure		429		{object}	response.Error
 //	@Router			/auth/forgot-password [post]
 func (h *AuthHandler) ForgotPassword(c *gin.Context) {
-	var req dto.ForgotPasswordRequest
+	var req dto.ForgotPasswordRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return
@@ -159,14 +159,14 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		dto.VerifyOTPResetPasswordRequest	true	"Email + OTP code"
-//	@Success		200		{object}	response.Success{data=dto.ResetTokenResponse}
+//	@Param			request	body		dto.VerifyOTPResetPasswordRequestDTO	true	"Email + OTP code"
+//	@Success		200		{object}	response.Success{data=dto.ResetTokenResponseDTO}
 //	@Failure		400		{object}	response.Error
 //	@Failure		422		{object}	response.Error
 //	@Failure		429		{object}	response.Error
 //	@Router			/auth/verify-otp [post]
 func (h *AuthHandler) VerifyOTPResetPassword(c *gin.Context) {
-	var req dto.VerifyOTPResetPasswordRequest
+	var req dto.VerifyOTPResetPasswordRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return
@@ -177,7 +177,7 @@ func (h *AuthHandler) VerifyOTPResetPassword(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "OTP verified", dto.NewResetTokenResponse(resetToken))
+	response.OK(c, http.StatusOK, "OTP verified", dto.NewResetTokenResponseDTO(resetToken))
 }
 
 // ResetPassword godoc
@@ -187,13 +187,13 @@ func (h *AuthHandler) VerifyOTPResetPassword(c *gin.Context) {
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
-//	@Param			request	body		dto.ResetPasswordRequest	true	"Reset token + new password"
+//	@Param			request	body		dto.ResetPasswordRequestDTO	true	"Reset token + new password"
 //	@Success		200		{object}	response.Success
 //	@Failure		400		{object}	response.Error
 //	@Failure		422		{object}	response.Error
 //	@Router			/auth/reset-password [post]
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
-	var req dto.ResetPasswordRequest
+	var req dto.ResetPasswordRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return

@@ -43,8 +43,7 @@ func Authenticate(tokenManager domain.TokenManager) gin.HandlerFunc {
 	}
 }
 
-// RequireRoles: restrict an endpoint by role id, mount after Authenticate.
-// Ids, not names, so renaming a role from the UI cannot widen or break access.
+// RequireRoles: restrict by role id (never name), mounted after Authenticate.
 func RequireRoles(roleIDs ...uuid.UUID) gin.HandlerFunc {
 	allowed := make(map[uuid.UUID]struct{}, len(roleIDs))
 	for _, id := range roleIDs {
@@ -54,7 +53,7 @@ func RequireRoles(roleIDs ...uuid.UUID) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims, ok := GetClaims(c)
 		if !ok {
-			response.Fail(c, http.StatusUnauthorized, "UNAUTHORIZED", "autentikasi dibutuhkan", nil)
+			response.Fail(c, http.StatusUnauthorized, "UNAUTHORIZED", "authentication is required", nil)
 			return
 		}
 		if _, ok := allowed[claims.RoleID]; !ok {
@@ -66,8 +65,7 @@ func RequireRoles(roleIDs ...uuid.UUID) gin.HandlerFunc {
 	}
 }
 
-// extractToken accepts only the "Bearer <token>" format per RFC 6750.
-// Headers without that prefix are rejected, not silently accepted.
+// extractToken accepts only "Bearer <token>" per RFC 6750, rejecting anything else.
 func extractToken(header string) string {
 	rest, found := strings.CutPrefix(strings.TrimSpace(header), bearerPrefix)
 	if !found {

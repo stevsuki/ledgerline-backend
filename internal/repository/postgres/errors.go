@@ -1,3 +1,4 @@
+// Package postgres: GORM repositories; the GORM-tagged models live in the model subpackage.
 package postgres
 
 import (

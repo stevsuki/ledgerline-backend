@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
+	"github.com/stevensuki/ledgerline-backend/internal/repository/postgres/model"
 )
 
 type roleRepository struct {
@@ -18,12 +19,11 @@ func NewRoleRepository(db *gorm.DB) domain.RoleRepository {
 	return &roleRepository{db: db}
 }
 
-// defaultRoleOrder: fallback when the filter arrives without OrderBy.
-// Built-in roles first, matching the default the DTO hands in.
+// defaultRoleOrder: fallback without OrderBy, built-in roles first as the DTO defaults.
 const defaultRoleOrder = "roles.is_system DESC, roles.name ASC"
 
 func (r *roleRepository) List(ctx context.Context, filter domain.RoleFilter) ([]domain.Role, int, error) {
-	query := dbFrom(ctx, r.db).Model(&roleModel{})
+	query := dbFrom(ctx, r.db).Model(&model.RoleModel{})
 
 	if filter.Search != "" {
 		keyword := "%" + strings.ToLower(filter.Search) + "%"
@@ -44,49 +44,46 @@ func (r *roleRepository) List(ctx context.Context, filter domain.RoleFilter) ([]
 		orderBy = defaultRoleOrder
 	}
 
-	// LEFT JOIN so a role nobody uses still comes back, with user_count 0.
-	// Soft-deleted users are excluded by hand; GORM's scope does not reach
-	// into a join written as a string.
-	var models []roleModel
+	// LEFT JOIN keeps unused roles at user_count 0; deleted_at is filtered by hand here.
+	var rows []model.RoleModel
 	err := query.
 		Select("roles.*, COUNT(users.id) AS user_count").
 		Joins("LEFT JOIN users ON users.role_id = roles.id AND users.deleted_at IS NULL").
 		Group("roles.id").
-		Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).Find(&models).Error
+		Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).Find(&rows).Error
 	if err != nil {
 		return nil, 0, wrapErr("list roles", err)
 	}
-	return rolesToDomain(models), int(total), nil
+	return model.RolesToDomain(rows), int(total), nil
 }
 
 func (r *roleRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Role, error) {
-	var model roleModel
-	if err := dbFrom(ctx, r.db).First(&model, "id = ?", id).Error; err != nil {
+	var row model.RoleModel
+	if err := dbFrom(ctx, r.db).First(&row, "id = ?", id).Error; err != nil {
 		return nil, wrapErr("get role", err)
 	}
-	return model.toDomain(), nil
+	return row.ToDomain(), nil
 }
 
-// Create writes the whole aggregate: the role plus role.Permissions, in one
-// transaction, so a rejected permission never leaves a half-built role behind.
+// Create writes the role and its permissions in one transaction.
 func (r *roleRepository) Create(ctx context.Context, role *domain.Role) error {
 	return dbFrom(ctx, r.db).Transaction(func(tx *gorm.DB) error {
-		model := roleFromDomain(role)
-		if err := tx.Create(&model).Error; err != nil {
+		row := model.RoleFromDomain(role)
+		if err := tx.Create(&row).Error; err != nil {
 			return wrapErr("create role", err)
 		}
 
-		role.CreatedAt = model.CreatedAt
-		role.UpdatedAt = model.UpdatedAt
+		role.CreatedAt = row.CreatedAt
+		role.UpdatedAt = row.UpdatedAt
 
 		if len(role.Permissions) == 0 {
 			return nil
 		}
 
-		permissions := make([]roleMenuPermissionModel, 0, len(role.Permissions))
+		permissions := make([]model.RoleMenuPermissionModel, 0, len(role.Permissions))
 		for i := range role.Permissions {
 			role.Permissions[i].RoleID = role.ID
-			permissions = append(permissions, roleMenuPermissionFromDomain(&role.Permissions[i]))
+			permissions = append(permissions, model.RoleMenuPermissionFromDomain(&role.Permissions[i]))
 		}
 
 		if err := tx.Create(&permissions).Error; err != nil {
@@ -102,20 +99,20 @@ func (r *roleRepository) Create(ctx context.Context, role *domain.Role) error {
 
 func (r *roleRepository) Update(ctx context.Context, role *domain.Role, permissions []domain.RoleMenuPermission) error {
 	return dbFrom(ctx, r.db).Transaction(func(tx *gorm.DB) error {
-		model := roleFromDomain(role)
-		if err := tx.Save(&model).Error; err != nil {
+		row := model.RoleFromDomain(role)
+		if err := tx.Save(&row).Error; err != nil {
 			return wrapErr("update role", err)
 		}
 
 		// Columns with database defaults come back via RETURNING.
-		role.UpdatedAt = model.UpdatedAt
+		role.UpdatedAt = row.UpdatedAt
 
 		if permissions == nil {
 			return nil
 		}
 
 		// The request carries the full matrix, so stale rows have to go first.
-		if err := tx.Where("role_id = ?", role.ID).Delete(&roleMenuPermissionModel{}).Error; err != nil {
+		if err := tx.Where("role_id = ?", role.ID).Delete(&model.RoleMenuPermissionModel{}).Error; err != nil {
 			return wrapErr("clear role permissions", err)
 		}
 		if len(permissions) == 0 {
@@ -123,17 +120,17 @@ func (r *roleRepository) Update(ctx context.Context, role *domain.Role, permissi
 			return nil
 		}
 
-		models := make([]roleMenuPermissionModel, 0, len(permissions))
+		rows := make([]model.RoleMenuPermissionModel, 0, len(permissions))
 		for i := range permissions {
 			permissions[i].RoleID = role.ID
-			models = append(models, roleMenuPermissionFromDomain(&permissions[i]))
+			rows = append(rows, model.RoleMenuPermissionFromDomain(&permissions[i]))
 		}
-		if err := tx.Create(&models).Error; err != nil {
+		if err := tx.Create(&rows).Error; err != nil {
 			return wrapErr("create role permissions", err)
 		}
-		for i := range models {
-			permissions[i].CreatedAt = models[i].CreatedAt
-			permissions[i].UpdatedAt = models[i].UpdatedAt
+		for i := range rows {
+			permissions[i].CreatedAt = rows[i].CreatedAt
+			permissions[i].UpdatedAt = rows[i].UpdatedAt
 		}
 		role.Permissions = permissions
 		return nil
@@ -141,20 +138,20 @@ func (r *roleRepository) Update(ctx context.Context, role *domain.Role, permissi
 }
 
 func (r *roleRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	if err := dbFrom(ctx, r.db).Delete(&roleModel{}, "id = ?", id).Error; err != nil {
+	if err := dbFrom(ctx, r.db).Delete(&model.RoleModel{}, "id = ?", id).Error; err != nil {
 		return wrapErr("delete role", err)
 	}
 	return nil
 }
 
 func (r *roleRepository) GetRolePermissions(ctx context.Context, roleID uuid.UUID) ([]domain.RoleMenuPermission, error) {
-	var models []roleMenuPermissionModel
+	var rows []model.RoleMenuPermissionModel
 	err := dbFrom(ctx, r.db).
 		Where("role_id = ?", roleID).
 		Order("menu_id").
-		Find(&models).Error
+		Find(&rows).Error
 	if err != nil {
 		return nil, wrapErr("get role permissions", err)
 	}
-	return roleMenuPermissionsToDomain(models), nil
+	return model.RoleMenuPermissionsToDomain(rows), nil
 }

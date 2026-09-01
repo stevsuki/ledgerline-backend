@@ -1,4 +1,5 @@
-package postgres
+// Package model: GORM persistence models, one file per entity, plus their mappers to and from the domain.
+package model
 
 import (
 	"time"
@@ -9,7 +10,7 @@ import (
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
 )
 
-type userModel struct {
+type UserModel struct {
 	ID           uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Email        string    `gorm:"size:255;not null"`
 	FullName     string    `gorm:"size:100;not null"`
@@ -27,9 +28,9 @@ type userModel struct {
 	DeletedAt           gorm.DeletedAt `gorm:"index"`
 }
 
-func (userModel) TableName() string { return "users" }
+func (UserModel) TableName() string { return "users" }
 
-func (m userModel) toDomain() *domain.User {
+func (m UserModel) ToDomain() *domain.User {
 	return &domain.User{
 		ID:                  m.ID,
 		Email:               m.Email,
@@ -46,8 +47,8 @@ func (m userModel) toDomain() *domain.User {
 	}
 }
 
-func userFromDomain(u *domain.User) userModel {
-	return userModel{
+func UserFromDomain(u *domain.User) UserModel {
+	return UserModel{
 		ID:                u.ID,
 		Email:             u.Email,
 		FullName:          u.FullName,
@@ -60,10 +61,10 @@ func userFromDomain(u *domain.User) userModel {
 	}
 }
 
-func usersToDomain(models []userModel) []domain.User {
+func UsersToDomain(models []UserModel) []domain.User {
 	out := make([]domain.User, 0, len(models))
 	for _, m := range models {
-		out = append(out, *m.toDomain())
+		out = append(out, *m.ToDomain())
 	}
 	return out
 }

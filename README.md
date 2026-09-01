@@ -12,11 +12,13 @@ A Go backend template built on **Clean Architecture** (repository + service patt
 ├── cmd/api/                     # entrypoint: read config, wire dependencies, start the server
 ├── internal/
 │   ├── config/                  # load & validate environment variables
+│   ├── database/                # PostgreSQL connection & pool setup (GORM)
 │   ├── domain/                  # entities + interfaces (ports) + sentinel errors  <- the core, no framework dependencies
-│   ├── repository/postgres/     # repository implementation (GORM) + persistence models
+│   ├── repository/postgres/     # repository implementation (GORM) + tx manager + error mapping
+│   │   └── model/               # GORM persistence models: xxx_model.go -> XxxModel + mappers
 │   ├── service/                 # business logic
 │   ├── delivery/http/
-│   │   ├── dto/                 # request/response models + mappers to the domain
+│   │   ├── dto/                 # request/response DTOs (XxxDTO) + mappers to the domain
 │   │   ├── handler/             # HTTP adapters + swagger annotations + error mapper
 │   │   ├── middleware/          # request id, logger, recovery, cors, auth, rate limit, timeout
 │   │   └── router/              # route registration
@@ -84,10 +86,13 @@ For endpoints marked `@Security BearerAuth`, click **Authorize** and enter `Bear
 | POST | `/api/v1/auth/register` | public |
 | POST | `/api/v1/auth/login` | public |
 | POST | `/api/v1/auth/refresh` | public |
+| POST | `/api/v1/auth/forgot-password`, `/verify-otp`, `/reset-password` | public |
 | GET | `/api/v1/auth/me` | authenticated |
 | GET | `/api/v1/users`, `/api/v1/users/:id` | authenticated |
-| POST/PATCH/DELETE | `/api/v1/users`, `/api/v1/users/:id` | admin |
+| POST/PATCH/DELETE | `/api/v1/users`, `/api/v1/users/:id` | authenticated (see the TODO in `router.go`: admin-only is not wired up yet) |
 | CRUD | `/api/v1/categories` | authenticated (per-user data) |
+| CRUD | `/api/v1/roles`, `/api/v1/roles/:id` | authenticated |
+| GET | `/api/v1/audit-logs`, `/overview`, `/options`, `/export` | authenticated |
 
 `categories` is a **complete example module** worth copying for new features — see [PANDUAN.md](PANDUAN.md).
 

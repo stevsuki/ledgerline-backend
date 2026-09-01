@@ -7,8 +7,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Built-in role ids, seeded by migration 000006. Code refers to roles by id
-// because a role name can be renamed from the UI, an id never is.
+// Built-in role ids, seeded by migration 000006; ids because a name can be renamed.
 var (
 	RoleIDAdmin = uuid.MustParse("00000000-0000-0000-0000-000000000001")
 	RoleIDUser  = uuid.MustParse("00000000-0000-0000-0000-000000000002")
@@ -42,8 +41,7 @@ type User struct {
 	RoleName          string // from the roles join, never written back
 	Status            Status
 	PasswordChangedAt time.Time
-	// FailedLoginAttempts resets on a successful login; LockedUntil is nil when
-	// the account was never locked or the lock has run out.
+	// Attempts reset on a successful login; LockedUntil is nil when no lock is active.
 	FailedLoginAttempts int
 	LockedUntil         *time.Time
 	CreatedAt           time.Time
@@ -86,7 +84,7 @@ type UpdateUserInput struct {
 	RoleID   *uuid.UUID
 }
 
-// UserService: kontrak business logic user.
+// UserService: the business logic contract for users.
 type UserService interface {
 	Create(ctx context.Context, input CreateUserInput) (*User, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*User, error)

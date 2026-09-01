@@ -71,8 +71,7 @@ func (s *auditLogService) Options(ctx context.Context) (domain.AuditLogOptions, 
 	}, nil
 }
 
-// auditExportBatch keeps a large export off the heap: rows are handed to the
-// writer batch by batch instead of collected first.
+// auditExportBatch keeps a large export off the heap by yielding batch by batch.
 const auditExportBatch = 500
 
 func (s *auditLogService) Export(

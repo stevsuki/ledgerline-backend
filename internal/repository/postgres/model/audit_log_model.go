@@ -1,4 +1,4 @@
-package postgres
+package model
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
 )
 
-type auditLogModel struct {
+type AuditLogModel struct {
 	ID           uuid.UUID  `gorm:"type:uuid;primaryKey"`
 	UserID       uuid.UUID  `gorm:"type:uuid;not null;index"`
 	UserFullName string     `gorm:"size:100;not null"`
@@ -26,9 +26,9 @@ type auditLogModel struct {
 	CreatedAt    time.Time
 }
 
-func (auditLogModel) TableName() string { return "audit_logs" }
+func (AuditLogModel) TableName() string { return "audit_logs" }
 
-func (m auditLogModel) toDomain() (*domain.AuditLog, error) {
+func (m AuditLogModel) ToDomain() *domain.AuditLog {
 	log := &domain.AuditLog{
 		ID:           m.ID,
 		UserID:       m.UserID,
@@ -43,25 +43,24 @@ func (m auditLogModel) toDomain() (*domain.AuditLog, error) {
 		Module:       domain.AuditModule(m.Module),
 		CreatedAt:    m.CreatedAt,
 	}
-	// Handed back as the JSON it was stored as: nothing here needs to know which
-	// kind it is, and decoding per kind would need a registry for no gain.
+	// Handed back as the JSON it was stored as; no reader here needs the kind.
 	if len(m.Details) > 0 {
 		log.Details = domain.RawAuditDetail(m.Details)
 	}
-	return log, nil
+	return log
 }
 
-func auditLogFromDomain(a *domain.AuditLog) (auditLogModel, error) {
+func AuditLogFromDomain(a *domain.AuditLog) (AuditLogModel, error) {
 	// Marshalling here is what keeps invalid JSON out of the jsonb column.
 	details := []byte("{}")
 	if a.Details != nil {
 		var err error
 		if details, err = json.Marshal(a.Details); err != nil {
-			return auditLogModel{}, fmt.Errorf("encode audit log details: %w", err)
+			return AuditLogModel{}, fmt.Errorf("encode audit log details: %w", err)
 		}
 	}
 
-	return auditLogModel{
+	return AuditLogModel{
 		ID:           a.ID,
 		UserID:       a.UserID,
 		UserFullName: a.UserFullName,
@@ -78,14 +77,10 @@ func auditLogFromDomain(a *domain.AuditLog) (auditLogModel, error) {
 	}, nil
 }
 
-func auditLogsToDomain(models []auditLogModel) ([]domain.AuditLog, error) {
+func AuditLogsToDomain(models []AuditLogModel) []domain.AuditLog {
 	out := make([]domain.AuditLog, 0, len(models))
 	for _, m := range models {
-		log, err := m.toDomain()
-		if err != nil {
-			return nil, err
-		}
-		out = append(out, *log)
+		out = append(out, *m.ToDomain())
 	}
-	return out, nil
+	return out
 }

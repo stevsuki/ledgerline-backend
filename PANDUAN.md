@@ -4,6 +4,18 @@ A real example: the **`categories`** module is already complete in this repo. Fo
 
 The order is always **inside out**: domain → migration → repository → service → dto → handler → route.
 
+## Naming convention
+
+The suffix tells you which layer a type belongs to, so the same entity never looks ambiguous:
+
+| Layer | Package | Example | Rule |
+|---|---|---|---|
+| Domain | `internal/domain` | `Role`, `CreateRoleInput` | plain name, no suffix |
+| Persistence | `internal/repository/postgres/model` | `RoleModel` | suffix `Model` |
+| Transport | `internal/delivery/http/dto` | `CreateRoleRequestDTO`, `RoleResponseDTO` | suffix `DTO` |
+
+Mappers follow the same rule: `RoleFromDomain()` / `(RoleModel).ToDomain()` in the model package, `(CreateRoleRequestDTO).ToInput()` / `NewRoleResponseDTO()` in the dto package.
+
 ---
 
 ## 1. Migration — create the table
@@ -58,7 +70,7 @@ func NewCategoryRepository(db *gorm.DB) domain.CategoryRepository { // return th
 
 Things you must watch out for:
 
-- First build a GORM-tagged persistence model in `<entity>_model.go` plus `toDomain()` / `fromDomain()` functions.
+- First build a GORM-tagged persistence model in `model/<entity>_model.go` (`CategoryModel`) plus its `ToDomain()` / `CategoryFromDomain()` mappers.
 - Wrap every error with `wrapErr()`: `gorm.ErrRecordNotFound` → `domain.ErrNotFound`, `gorm.ErrDuplicatedKey` → `domain.ErrConflict`.
 - Always use `WithContext(ctx)` so request timeouts & cancellation also cancel the query.
 - For later reporting/aggregation (SUM, GROUP BY), use `db.Raw(...).Scan(...)` — the ORM does not help there.
@@ -86,13 +98,13 @@ return nil, fmt.Errorf("%w: a category with that name already exists", domain.Er
 File: [internal/delivery/http/dto/category_dto.go](internal/delivery/http/dto/category_dto.go)
 
 ```go
-type CreateCategoryRequest struct {
+type CreateCategoryRequestDTO struct {
 	Name string `json:"name" binding:"required,min=2,max=100" example:"Salary"`
 	Type string `json:"type" binding:"required,oneof=income expense" example:"income"`
 }
 
-func (r CreateCategoryRequest) ToInput() domain.CreateCategoryInput { ... }  // mapper to the domain
-func NewCategoryResponse(c *domain.Category) CategoryResponse { ... }        // mapper to the response
+func (r CreateCategoryRequestDTO) ToInput() domain.CreateCategoryInput { ... }   // mapper to the domain
+func NewCategoryResponseDTO(c *domain.Category) CategoryResponseDTO { ... }     // mapper to the response
 ```
 
 The `binding` tag holds the validation rules. The `example` tag is the sample shown in Swagger. For PATCH, use pointers (`*string`) so fields that were not sent do not get updated.
@@ -142,7 +154,7 @@ Every handler always follows the same 4 working lines:
 //	@Accept		json
 //	@Produce	json
 //	@Security	BearerAuth
-//	@Param		request	body		dto.CreateCategoryRequest	true	"Category data"
+//	@Param		request	body		dto.CreateCategoryRequestDTO	true	"Category data"
 //	@Success	201		{object}	response.Success{data=dto.CategoryResponse}
 //	@Failure	409		{object}	response.Error
 //	@Router		/categories [post]
@@ -150,13 +162,13 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)              // 1. take the user from the token
 	if !ok { handleError(c, domain.ErrUnauthorized); return }
 
-	var req dto.CreateCategoryRequest                  // 2. bind + validate
+	var req dto.CreateCategoryRequestDTO                  // 2. bind + validate
 	if err := c.ShouldBindJSON(&req); err != nil { handleBindError(c, err); return }
 
 	category, err := h.categoryService.Create(c.Request.Context(), userID, req.ToInput())  // 3. call the service
 	if err != nil { handleError(c, err); return }
 
-	response.OK(c, http.StatusCreated, "category created", dto.NewCategoryResponse(category)) // 4. respond
+	response.OK(c, http.StatusCreated, "category created", dto.NewCategoryResponseDTO(category)) // 4. respond
 }
 ```
 
@@ -182,13 +194,13 @@ func registerCategoryRoutes(rg *gin.RouterGroup, deps Dependencies) {
 Then call `registerCategoryRoutes(v1, deps)` inside `New()`, add a `Category *handler.CategoryHandler` field to the `Dependencies` struct, and wire it up in [cmd/api/main.go](cmd/api/main.go):
 
 ```go
-categoryRepo := postgres.NewCategoryRepository(pool)
+categoryRepo := postgres.NewCategoryRepository(db)
 categoryService := service.NewCategoryService(categoryRepo)
 // ...
 Category: handler.NewCategoryHandler(categoryService),
 ```
 
-For admin-only endpoints, add the middleware: `middleware.RequireRoles(domain.RoleAdmin)`.
+For admin-only endpoints, add the middleware: `middleware.RequireRoles(domain.RoleIDAdmin)`.
 
 ## 8. Tests + Swagger
 
@@ -219,7 +231,7 @@ make lint
 
 - [ ] Migration up + down
 - [ ] `internal/domain/xxx.go` — entity + repository interface + service interface
-- [ ] `internal/repository/postgres/xxx_model.go` — persistence model + mappers to/from the domain
+- [ ] `internal/repository/postgres/model/xxx_model.go` — `XxxModel` + mappers to/from the domain
 - [ ] `internal/repository/postgres/xxx_repository.go` — return the interface, errors through `wrapErr()`
 - [ ] `internal/service/xxx_service.go` — business logic, errors using `%w` + domain sentinels
 - [ ] `internal/delivery/http/dto/xxx_dto.go` — request/response + mappers + sort whitelist

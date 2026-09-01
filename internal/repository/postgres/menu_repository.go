@@ -7,6 +7,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
+	"github.com/stevensuki/ledgerline-backend/internal/repository/postgres/model"
 )
 
 type menuRepository struct {
@@ -15,12 +16,11 @@ type menuRepository struct {
 
 func NewMenuRepository(db *gorm.DB) domain.MenuRepository { return &menuRepository{db: db} }
 
-// ListByRole: every active menu with the flags of one role. LEFT JOIN so menus
-// the role has no row for still come back, with every flag false.
+// ListByRole: every active menu with one role's flags, all false where no row exists.
 func (r *menuRepository) ListByRole(ctx context.Context, roleID uuid.UUID) ([]domain.Menu, error) {
-	var models []menuModel
+	var rows []model.MenuModel
 	err := dbFrom(ctx, r.db).
-		Model(&menuModel{}).
+		Model(&model.MenuModel{}).
 		Select(`menus.*,
 			COALESCE(p.can_create, FALSE)  AS can_create,
 			COALESCE(p.can_read, FALSE)    AS can_read,
@@ -30,9 +30,9 @@ func (r *menuRepository) ListByRole(ctx context.Context, roleID uuid.UUID) ([]do
 		Joins("LEFT JOIN role_menu_permissions p ON p.menu_id = menus.id AND p.role_id = ?", roleID).
 		Where("menus.is_active").
 		Order("menus.sort_order").
-		Find(&models).Error
+		Find(&rows).Error
 	if err != nil {
 		return nil, wrapErr("list menus by role", err)
 	}
-	return menusToDomain(models), nil
+	return model.MenusToDomain(rows), nil
 }

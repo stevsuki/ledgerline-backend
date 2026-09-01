@@ -1,4 +1,4 @@
-package postgres
+package model
 
 import (
 	"time"
@@ -8,7 +8,7 @@ import (
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
 )
 
-type menuModel struct {
+type MenuModel struct {
 	ID        uuid.UUID  `gorm:"type:uuid;primaryKey"`
 	ParentID  *uuid.UUID `gorm:"type:uuid"`
 	Code      string     `gorm:"size:100;not null"`
@@ -27,9 +27,9 @@ type menuModel struct {
 	CanApprove bool `gorm:"->;column:can_approve"`
 }
 
-func (menuModel) TableName() string { return "menus" }
+func (MenuModel) TableName() string { return "menus" }
 
-func (m menuModel) toDomain() *domain.Menu {
+func (m MenuModel) ToDomain() *domain.Menu {
 	menu := &domain.Menu{
 		ID:        m.ID,
 		ParentID:  m.ParentID,
@@ -53,10 +53,10 @@ func (m menuModel) toDomain() *domain.Menu {
 	return menu
 }
 
-func menusToDomain(models []menuModel) []domain.Menu {
+func MenusToDomain(models []MenuModel) []domain.Menu {
 	out := make([]domain.Menu, 0, len(models))
 	for _, m := range models {
-		out = append(out, *m.toDomain())
+		out = append(out, *m.ToDomain())
 	}
 	return out
 }

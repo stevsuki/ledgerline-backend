@@ -10,8 +10,8 @@ import (
 	"github.com/stevensuki/ledgerline-backend/pkg/pagination"
 )
 
-// CreateUserRequest: create user payload (admin only).
-type CreateUserRequest struct {
+// CreateUserRequestDTO: create user payload (admin only).
+type CreateUserRequestDTO struct {
 	Email    string `json:"email" binding:"required,email" example:"budi@example.com"`
 	FullName string `json:"full_name" binding:"required,min=3,max=100" example:"Budi Santoso"`
 	Password string `json:"password" binding:"required,min=8,max=72" example:"Rahasia123!"`
@@ -19,7 +19,7 @@ type CreateUserRequest struct {
 	RoleID uuid.UUID `json:"role_id" binding:"omitempty" example:"00000000-0000-0000-0000-000000000002"`
 }
 
-func (r CreateUserRequest) ToInput() domain.CreateUserInput {
+func (r CreateUserRequestDTO) ToInput() domain.CreateUserInput {
 	return domain.CreateUserInput{
 		Email:    r.Email,
 		FullName: r.FullName,
@@ -28,13 +28,13 @@ func (r CreateUserRequest) ToInput() domain.CreateUserInput {
 	}
 }
 
-// UpdateUserRequest: pointers so partial updates are detectable.
-type UpdateUserRequest struct {
+// UpdateUserRequestDTO: pointers so partial updates are detectable.
+type UpdateUserRequestDTO struct {
 	FullName *string    `json:"full_name" binding:"omitempty,min=3,max=100" example:"Budi Santoso"`
 	RoleID   *uuid.UUID `json:"role_id" binding:"omitempty" example:"00000000-0000-0000-0000-000000000001"`
 }
 
-func (r UpdateUserRequest) ToInput() domain.UpdateUserInput {
+func (r UpdateUserRequestDTO) ToInput() domain.UpdateUserInput {
 	return domain.UpdateUserInput{FullName: r.FullName, RoleID: r.RoleID}
 }
 
@@ -52,8 +52,8 @@ var userSort = pagination.Sortable{
 	TieBreaker: "users.id",
 }
 
-// ListUserQuery: query params for the user list.
-type ListUserQuery struct {
+// ListUserQueryDTO: query params for the user list.
+type ListUserQueryDTO struct {
 	Search  string `form:"search" example:"budi"`
 	Sort    string `form:"sort" binding:"omitempty,max=100" example:"-created_at,full_name"`
 	Page    int    `form:"page" binding:"omitempty,min=1" example:"1"`
@@ -61,10 +61,10 @@ type ListUserQuery struct {
 }
 
 // OrderBy: raw sort param -> whitelisted SQL clause.
-func (q ListUserQuery) OrderBy() (string, error) { return userSort.OrderBy(q.Sort) }
+func (q ListUserQueryDTO) OrderBy() (string, error) { return userSort.OrderBy(q.Sort) }
 
-// UserResponse: the user shape that is safe to send to clients.
-type UserResponse struct {
+// UserResponseDTO: the user shape that is safe to send to clients.
+type UserResponseDTO struct {
 	ID        uuid.UUID `json:"id" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
 	Email     string    `json:"email" example:"budi@example.com"`
 	FullName  string    `json:"full_name" example:"Budi Santoso"`
@@ -75,8 +75,8 @@ type UserResponse struct {
 	UpdatedAt time.Time `json:"updated_at" example:"2026-01-02T15:04:05Z"`
 }
 
-func NewUserResponse(u *domain.User) UserResponse {
-	return UserResponse{
+func NewUserResponseDTO(u *domain.User) UserResponseDTO {
+	return UserResponseDTO{
 		ID:        u.ID,
 		Email:     u.Email,
 		FullName:  u.FullName,
@@ -88,10 +88,10 @@ func NewUserResponse(u *domain.User) UserResponse {
 	}
 }
 
-func NewUserResponses(users []domain.User) []UserResponse {
-	out := make([]UserResponse, 0, len(users))
+func NewUserResponseDTOs(users []domain.User) []UserResponseDTO {
+	out := make([]UserResponseDTO, 0, len(users))
 	for i := range users {
-		out = append(out, NewUserResponse(&users[i]))
+		out = append(out, NewUserResponseDTO(&users[i]))
 	}
 	return out
 }

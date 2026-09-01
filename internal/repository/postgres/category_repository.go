@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
+	"github.com/stevensuki/ledgerline-backend/internal/repository/postgres/model"
 )
 
 // defaultCategoryOrder: fallback when the filter arrives without OrderBy.
@@ -22,28 +23,28 @@ func NewCategoryRepository(db *gorm.DB) domain.CategoryRepository {
 }
 
 func (r *categoryRepository) Create(ctx context.Context, category *domain.Category) error {
-	model := categoryFromDomain(category)
-	if err := dbFrom(ctx, r.db).Create(&model).Error; err != nil {
+	row := model.CategoryFromDomain(category)
+	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
 		return wrapErr("create category", err)
 	}
 
-	category.CreatedAt = model.CreatedAt
-	category.UpdatedAt = model.UpdatedAt
+	category.CreatedAt = row.CreatedAt
+	category.UpdatedAt = row.UpdatedAt
 	return nil
 }
 
 // GetByID always includes user_id so other users cannot reach this data.
 func (r *categoryRepository) GetByID(ctx context.Context, id, userID uuid.UUID) (*domain.Category, error) {
-	var model categoryModel
-	err := dbFrom(ctx, r.db).First(&model, "id = ? AND user_id = ?", id, userID).Error
+	var row model.CategoryModel
+	err := dbFrom(ctx, r.db).First(&row, "id = ? AND user_id = ?", id, userID).Error
 	if err != nil {
 		return nil, wrapErr("get category", err)
 	}
-	return model.toDomain(), nil
+	return row.ToDomain(), nil
 }
 
 func (r *categoryRepository) List(ctx context.Context, filter domain.CategoryFilter) ([]domain.Category, int, error) {
-	query := dbFrom(ctx, r.db).Model(&categoryModel{}).Where("user_id = ?", filter.UserID)
+	query := dbFrom(ctx, r.db).Model(&model.CategoryModel{}).Where("user_id = ?", filter.UserID)
 
 	if filter.Search != "" {
 		query = query.Where("LOWER(name) LIKE ?", "%"+strings.ToLower(filter.Search)+"%")
@@ -65,17 +66,17 @@ func (r *categoryRepository) List(ctx context.Context, filter domain.CategoryFil
 		orderBy = defaultCategoryOrder
 	}
 
-	var models []categoryModel
-	err := query.Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).Find(&models).Error
+	var rows []model.CategoryModel
+	err := query.Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).Find(&rows).Error
 	if err != nil {
 		return nil, 0, wrapErr("list categories", err)
 	}
-	return categoriesToDomain(models), int(total), nil
+	return model.CategoriesToDomain(rows), int(total), nil
 }
 
 func (r *categoryRepository) Update(ctx context.Context, category *domain.Category) error {
 	result := dbFrom(ctx, r.db).
-		Model(&categoryModel{}).
+		Model(&model.CategoryModel{}).
 		Where("id = ? AND user_id = ?", category.ID, category.UserID).
 		Updates(map[string]any{
 			"name": category.Name,
@@ -88,7 +89,7 @@ func (r *categoryRepository) Update(ctx context.Context, category *domain.Catego
 		return wrapErr("update category", gorm.ErrRecordNotFound)
 	}
 
-	var updated categoryModel
+	var updated model.CategoryModel
 	err := dbFrom(ctx, r.db).Select("updated_at").
 		First(&updated, "id = ?", category.ID).Error
 	if err == nil {
@@ -100,7 +101,7 @@ func (r *categoryRepository) Update(ctx context.Context, category *domain.Catego
 func (r *categoryRepository) Delete(ctx context.Context, id, userID uuid.UUID) error {
 	result := dbFrom(ctx, r.db).
 		Where("id = ? AND user_id = ?", id, userID).
-		Delete(&categoryModel{})
+		Delete(&model.CategoryModel{})
 	if result.Error != nil {
 		return wrapErr("delete category", result.Error)
 	}
@@ -112,7 +113,7 @@ func (r *categoryRepository) Delete(ctx context.Context, id, userID uuid.UUID) e
 
 func (r *categoryRepository) ExistsByName(ctx context.Context, userID uuid.UUID, name string) (bool, error) {
 	var count int64
-	err := dbFrom(ctx, r.db).Model(&categoryModel{}).
+	err := dbFrom(ctx, r.db).Model(&model.CategoryModel{}).
 		Where("user_id = ? AND LOWER(name) = LOWER(?)", userID, name).
 		Limit(1).Count(&count).Error
 	if err != nil {

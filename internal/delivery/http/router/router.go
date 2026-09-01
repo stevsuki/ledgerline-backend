@@ -94,11 +94,7 @@ func registerUserRoutes(rg *gin.RouterGroup, deps Dependencies) {
 		users.PATCH("/:id", deps.User.Update)
 		users.DELETE("/:id", deps.User.Delete)
 
-		// The endpoints below are admin-only.
-		// admin := users.Group("", middleware.RequireRoles(domain.RoleIDAdmin))
-		// admin.POST("", deps.User.Create)
-		// admin.PATCH("/:id", deps.User.Update)
-		// admin.DELETE("/:id", deps.User.Delete)
+		// TODO: move create, update and delete behind middleware.RequireRoles(domain.RoleIDAdmin).
 	}
 }
 
@@ -122,11 +118,7 @@ func registerRoleRoutes(rg *gin.RouterGroup, deps Dependencies) {
 		roles.PATCH("/:id", deps.Role.Update)
 		roles.DELETE("/:id", deps.Role.Delete)
 
-		// The endpoints below are admin-only.
-		// admin := roles.Group("", middleware.RequireRoles(domain.RoleIDAdmin))
-		// admin.POST("", deps.Role.Create)
-		// admin.PATCH("/:id", deps.Role.Update)
-		// admin.DELETE("/:id", deps.Role.Delete)
+		// TODO: move create, update and delete behind middleware.RequireRoles(domain.RoleIDAdmin).
 	}
 }
 

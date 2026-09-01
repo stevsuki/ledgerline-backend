@@ -15,8 +15,7 @@ type AuditLogRepository struct {
 
 var _ domain.AuditLogRepository = (*AuditLogRepository)(nil)
 
-// Create is best effort in the services, so an unconfigured mock stays silent
-// instead of failing tests that are not about auditing.
+// Create is best effort in the services, so an unconfigured mock stays silent.
 func (m *AuditLogRepository) Create(ctx context.Context, log *domain.AuditLog) error {
 	if len(m.ExpectedCalls) == 0 {
 		return nil

@@ -49,7 +49,7 @@ func NewSMTP(cfg Config) (*SMTPMailer, error) {
 
 	tpl, err := template.ParseFS(templateFS, "templates/*.html")
 	if err != nil {
-		return nil, fmt.Errorf("parse template email: %w", err)
+		return nil, fmt.Errorf("parse email template: %w", err)
 	}
 
 	opts := []mail.Option{
@@ -112,10 +112,10 @@ func (m *SMTPMailer) render(name string, data any) (string, error) {
 func (m *SMTPMailer) send(ctx context.Context, to, subject, plain, html string) error {
 	msg := mail.NewMsg()
 	if err := msg.FromFormat(m.cfg.FromName, m.cfg.FromAddress); err != nil {
-		return fmt.Errorf("set pengirim: %w", err)
+		return fmt.Errorf("set sender: %w", err)
 	}
 	if err := msg.To(to); err != nil {
-		return fmt.Errorf("set penerima: %w", err)
+		return fmt.Errorf("set recipient: %w", err)
 	}
 
 	msg.Subject(subject)

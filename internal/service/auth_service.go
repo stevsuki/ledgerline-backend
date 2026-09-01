@@ -15,8 +15,7 @@ import (
 // maxOTPAttempts caps wrong guesses per token; 6 digits are brute-forceable otherwise.
 const maxOTPAttempts = 5
 
-// Per-account brute force limit; the per-IP rate limiter does not cover an
-// attacker who rotates addresses.
+// Per-account brute force limit; the per-IP rate limiter misses rotating addresses.
 const (
 	maxLoginAttempts  = 5
 	loginLockDuration = 15 * time.Minute
@@ -150,7 +149,7 @@ func (s *authService) Login(ctx context.Context, input domain.LoginInput, meta d
 		Status:       domain.AuditStatusSuccess,
 		Severity:     domain.AuditSeverityInfo,
 		Module:       domain.AuditModuleAuth,
-		IPAddress:    &meta.IpAdress,
+		IPAddress:    &meta.IPAddress,
 		Details:      domain.NewSessionDetail(domain.SessionMethodPassword, meta.UserAgent),
 	})
 
@@ -207,12 +206,12 @@ func (s *authService) ForgotPassword(ctx context.Context, input domain.ForgotPas
 		return fmt.Errorf("generate OTP: %w", err)
 	}
 
-	hashedOtp, err := s.hasher.Hash(otp)
+	hashedOTP, err := s.hasher.Hash(otp)
 	if err != nil {
 		return fmt.Errorf("hash OTP: %w", err)
 	}
 
-	tokenId, err := uuid.NewV7()
+	tokenID, err := uuid.NewV7()
 	if err != nil {
 		return fmt.Errorf("generate token id: %w", err)
 	}
@@ -222,9 +221,9 @@ func (s *authService) ForgotPassword(ctx context.Context, input domain.ForgotPas
 			return fmt.Errorf("delete active password reset token: %w", err)
 		}
 		return s.passwordResetTokenRepo.Create(ctx, &domain.PasswordResetToken{
-			ID:        tokenId,
+			ID:        tokenID,
 			UserID:    user.ID,
-			OTPHash:   hashedOtp,
+			OTPHash:   hashedOTP,
 			ExpiresAt: time.Now().Add(s.otpTTL),
 		})
 	})
@@ -371,7 +370,7 @@ func (s *authService) auditLoginFailure(
 		Status:       domain.AuditStatusFailed,
 		Severity:     severity,
 		Module:       domain.AuditModuleAuth,
-		IPAddress:    &meta.IpAdress,
+		IPAddress:    &meta.IPAddress,
 		Details:      detail,
 	})
 }

@@ -10,8 +10,8 @@ func TestExtractToken(t *testing.T) {
 		header string
 		want   string
 	}{
-		{"format standar RFC 6750", "Bearer abc.def.ghi", "abc.def.ghi"},
-		{"spasi berlebih dirapikan", "  Bearer   abc.def.ghi  ", "abc.def.ghi"},
+		{"the standard RFC 6750 format", "Bearer abc.def.ghi", "abc.def.ghi"},
+		{"surrounding whitespace is trimmed", "  Bearer   abc.def.ghi  ", "abc.def.ghi"},
 		{"a bare token is rejected", "abc.def.ghi", ""},
 		{"a lowercase prefix is rejected", "bearer abc.def.ghi", ""},
 		{"another scheme is rejected", "Basic YWRtaW46YWRtaW4=", ""},
@@ -24,7 +24,7 @@ func TestExtractToken(t *testing.T) {
 			t.Parallel()
 
 			if got := extractToken(tt.header); got != tt.want {
-				t.Errorf("extractToken(%q) = %q, mau %q", tt.header, got, tt.want)
+				t.Errorf("extractToken(%q) = %q, want %q", tt.header, got, tt.want)
 			}
 		})
 	}

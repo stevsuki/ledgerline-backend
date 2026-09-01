@@ -4,7 +4,6 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 
 	"github.com/stevensuki/ledgerline-backend/internal/delivery/http/dto"
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
@@ -27,13 +26,13 @@ func NewUserHandler(userService domain.UserService) *UserHandler {
 //	@Accept		json
 //	@Produce	json
 //	@Security	BearerAuth
-//	@Param		request	body		dto.CreateUserRequest	true	"User data"
-//	@Success	201		{object}	response.Success{data=dto.UserResponse}
+//	@Param		request	body		dto.CreateUserRequestDTO	true	"User data"
+//	@Success	201		{object}	response.Success{data=dto.UserResponseDTO}
 //	@Failure	403		{object}	response.Error
 //	@Failure	409		{object}	response.Error
 //	@Router		/users [post]
 func (h *UserHandler) Create(c *gin.Context) {
-	var req dto.CreateUserRequest
+	var req dto.CreateUserRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return
@@ -44,7 +43,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusCreated, "user created", dto.NewUserResponse(user))
+	response.OK(c, http.StatusCreated, "user created", dto.NewUserResponseDTO(user))
 }
 
 // List godoc
@@ -57,10 +56,10 @@ func (h *UserHandler) Create(c *gin.Context) {
 //	@Param		sort		query		string	false	"Order: email, full_name, role, created_at, updated_at. Prefix - for desc"	default(-created_at)
 //	@Param		page		query		int		false	"Page"			default(1)
 //	@Param		per_page	query		int		false	"Items per page"	default(10)
-//	@Success	200			{object}	response.Success{data=[]dto.UserResponse}
+//	@Success	200			{object}	response.Success{data=[]dto.UserResponseDTO}
 //	@Router		/users [get]
 func (h *UserHandler) List(c *gin.Context) {
-	var query dto.ListUserQuery
+	var query dto.ListUserQueryDTO
 	if err := c.ShouldBindQuery(&query); err != nil {
 		handleBindError(c, err)
 		return
@@ -84,7 +83,7 @@ func (h *UserHandler) List(c *gin.Context) {
 		return
 	}
 
-	response.Paginated(c, http.StatusOK, "success", dto.NewUserResponses(users), response.Meta{
+	response.Paginated(c, http.StatusOK, "success", dto.NewUserResponseDTOs(users), response.Meta{
 		Page:       params.Page,
 		PerPage:    params.PerPage,
 		TotalItems: total,
@@ -99,7 +98,7 @@ func (h *UserHandler) List(c *gin.Context) {
 //	@Produce	json
 //	@Security	BearerAuth
 //	@Param		id	path		string	true	"User ID (UUID)"
-//	@Success	200	{object}	response.Success{data=dto.UserResponse}
+//	@Success	200	{object}	response.Success{data=dto.UserResponseDTO}
 //	@Failure	404	{object}	response.Error
 //	@Router		/users/{id} [get]
 func (h *UserHandler) GetByID(c *gin.Context) {
@@ -113,7 +112,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "success", dto.NewUserResponse(user))
+	response.OK(c, http.StatusOK, "success", dto.NewUserResponseDTO(user))
 }
 
 // Update godoc
@@ -124,8 +123,8 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 //	@Produce	json
 //	@Security	BearerAuth
 //	@Param		id		path		string					true	"User ID (UUID)"
-//	@Param		request	body		dto.UpdateUserRequest	true	"Fields to update"
-//	@Success	200		{object}	response.Success{data=dto.UserResponse}
+//	@Param		request	body		dto.UpdateUserRequestDTO	true	"Fields to update"
+//	@Success	200		{object}	response.Success{data=dto.UserResponseDTO}
 //	@Failure	404		{object}	response.Error
 //	@Router		/users/{id} [patch]
 func (h *UserHandler) Update(c *gin.Context) {
@@ -134,7 +133,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	var req dto.UpdateUserRequest
+	var req dto.UpdateUserRequestDTO
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindError(c, err)
 		return
@@ -145,7 +144,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "user updated", dto.NewUserResponse(user))
+	response.OK(c, http.StatusOK, "user updated", dto.NewUserResponseDTO(user))
 }
 
 // Delete godoc
@@ -169,14 +168,4 @@ func (h *UserHandler) Delete(c *gin.Context) {
 		return
 	}
 	response.OK(c, http.StatusOK, "user deleted", nil)
-}
-
-// parseUUIDParam writes its own error response when the param is invalid.
-func parseUUIDParam(c *gin.Context, key string) (uuid.UUID, error) {
-	id, err := uuid.Parse(c.Param(key))
-	if err != nil {
-		response.Fail(c, http.StatusBadRequest, "INVALID_PARAM", key+" must be a valid UUID", nil)
-		return uuid.Nil, err
-	}
-	return id, nil
 }

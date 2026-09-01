@@ -6,9 +6,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/stevensuki/ledgerline-backend/internal/config"
+	"github.com/stevensuki/ledgerline-backend/internal/database"
 	"github.com/stevensuki/ledgerline-backend/internal/delivery/http/handler"
 	"github.com/stevensuki/ledgerline-backend/internal/delivery/http/router"
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
@@ -60,13 +60,11 @@ func run() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	gormLog := postgres.NewSlogLogger(log, 200*time.Millisecond, !cfg.App.IsProduction())
-
-	db, err := postgres.NewDB(ctx, cfg.Database, gormLog)
+	db, err := database.New(ctx, cfg.Database, log, !cfg.App.IsProduction())
 	if err != nil {
 		return err
 	}
-	defer func() { _ = postgres.Close(db) }()
+	defer func() { _ = database.Close(db) }()
 	log.Info("database connected")
 
 	// Dependency wiring: repository -> service -> handler.
