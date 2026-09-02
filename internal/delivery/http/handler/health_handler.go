@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
+	"github.com/stevensuki/ledgerline-backend/internal/domain"
 	"github.com/stevensuki/ledgerline-backend/pkg/response"
 )
 
@@ -49,7 +50,7 @@ func (h *HealthHandler) Readiness(c *gin.Context) {
 		err = sqlDB.PingContext(ctx)
 	}
 	if err != nil {
-		response.Fail(c, http.StatusServiceUnavailable, "DB_UNAVAILABLE", "the database is unreachable", nil)
+		response.Fail(c, http.StatusServiceUnavailable, domain.CodeDBUnavailable, "the database is unreachable", nil)
 		return
 	}
 	response.OK(c, http.StatusOK, "ok", gin.H{"database": "up"})

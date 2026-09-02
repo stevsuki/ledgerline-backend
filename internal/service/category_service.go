@@ -21,10 +21,10 @@ func NewCategoryService(repo domain.CategoryRepository) domain.CategoryService {
 func (s *categoryService) Create(ctx context.Context, userID uuid.UUID, input domain.CreateCategoryInput) (*domain.Category, error) {
 	name := strings.TrimSpace(input.Name)
 	if name == "" {
-		return nil, fmt.Errorf("%w: category name is required", domain.ErrInvalidInput)
+		return nil, domain.InvalidInput(domain.CodeCategoryInvalidData, "category name is required").WithField("name")
 	}
 	if !input.Type.Valid() {
-		return nil, fmt.Errorf("%w: category type must be income or expense", domain.ErrInvalidInput)
+		return nil, domain.InvalidInput(domain.CodeCategoryInvalidType, "category type must be income or expense").WithField("type")
 	}
 
 	exists, err := s.repo.ExistsByName(ctx, userID, name)
@@ -32,7 +32,7 @@ func (s *categoryService) Create(ctx context.Context, userID uuid.UUID, input do
 		return nil, err
 	}
 	if exists {
-		return nil, fmt.Errorf("%w: a category with that name already exists", domain.ErrConflict)
+		return nil, domain.Conflict(domain.CodeCategoryNameTaken, "a category with that name already exists").WithField("name")
 	}
 
 	id, err := uuid.NewV7()
@@ -58,7 +58,7 @@ func (s *categoryService) GetByID(ctx context.Context, userID, id uuid.UUID) (*d
 
 func (s *categoryService) List(ctx context.Context, filter domain.CategoryFilter) ([]domain.Category, int, error) {
 	if filter.Type != "" && !filter.Type.Valid() {
-		return nil, 0, fmt.Errorf("%w: unknown category type", domain.ErrInvalidInput)
+		return nil, 0, domain.InvalidInput(domain.CodeCategoryInvalidType, "category type must be income or expense").WithField("type")
 	}
 	if filter.Limit <= 0 {
 		filter.Limit = 10
@@ -75,7 +75,7 @@ func (s *categoryService) Update(ctx context.Context, userID, id uuid.UUID, inpu
 	if input.Name != nil {
 		name := strings.TrimSpace(*input.Name)
 		if name == "" {
-			return nil, fmt.Errorf("%w: category name must not be empty", domain.ErrInvalidInput)
+			return nil, domain.InvalidInput(domain.CodeCategoryInvalidData, "category name must not be empty").WithField("name")
 		}
 		// Check for duplicates only when the name actually changed.
 		if !strings.EqualFold(name, category.Name) {
@@ -84,7 +84,7 @@ func (s *categoryService) Update(ctx context.Context, userID, id uuid.UUID, inpu
 				return nil, err
 			}
 			if exists {
-				return nil, fmt.Errorf("%w: a category with that name already exists", domain.ErrConflict)
+				return nil, domain.Conflict(domain.CodeCategoryNameTaken, "a category with that name already exists").WithField("name")
 			}
 		}
 		category.Name = name
@@ -92,7 +92,7 @@ func (s *categoryService) Update(ctx context.Context, userID, id uuid.UUID, inpu
 
 	if input.Type != nil {
 		if !input.Type.Valid() {
-			return nil, fmt.Errorf("%w: category type must be income or expense", domain.ErrInvalidInput)
+			return nil, domain.InvalidInput(domain.CodeCategoryInvalidType, "category type must be income or expense").WithField("type")
 		}
 		category.Type = *input.Type
 	}

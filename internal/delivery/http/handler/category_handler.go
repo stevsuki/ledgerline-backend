@@ -35,7 +35,7 @@ func NewCategoryHandler(categoryService domain.CategoryService) *CategoryHandler
 func (h *CategoryHandler) Create(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		handleError(c, domain.ErrUnauthorized)
+		handleError(c, domain.ErrAuthRequired)
 		return
 	}
 
@@ -69,7 +69,7 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 func (h *CategoryHandler) List(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		handleError(c, domain.ErrUnauthorized)
+		handleError(c, domain.ErrAuthRequired)
 		return
 	}
 
@@ -120,12 +120,13 @@ func (h *CategoryHandler) List(c *gin.Context) {
 func (h *CategoryHandler) GetByID(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		handleError(c, domain.ErrUnauthorized)
+		handleError(c, domain.ErrAuthRequired)
 		return
 	}
 
 	id, err := parseUUIDParam(c, "id")
 	if err != nil {
+		handleError(c, err)
 		return
 	}
 
@@ -152,12 +153,13 @@ func (h *CategoryHandler) GetByID(c *gin.Context) {
 func (h *CategoryHandler) Update(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		handleError(c, domain.ErrUnauthorized)
+		handleError(c, domain.ErrAuthRequired)
 		return
 	}
 
 	id, err := parseUUIDParam(c, "id")
 	if err != nil {
+		handleError(c, err)
 		return
 	}
 
@@ -188,12 +190,13 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 func (h *CategoryHandler) Delete(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		handleError(c, domain.ErrUnauthorized)
+		handleError(c, domain.ErrAuthRequired)
 		return
 	}
 
 	id, err := parseUUIDParam(c, "id")
 	if err != nil {
+		handleError(c, err)
 		return
 	}
 

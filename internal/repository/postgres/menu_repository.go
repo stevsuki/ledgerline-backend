@@ -32,7 +32,7 @@ func (r *menuRepository) ListByRole(ctx context.Context, roleID uuid.UUID) ([]do
 		Order("menus.sort_order").
 		Find(&rows).Error
 	if err != nil {
-		return nil, wrapErr("list menus by role", err)
+		return nil, menuErrors.wrap("list menus by role", err)
 	}
 	return model.MenusToDomain(rows), nil
 }

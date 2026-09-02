@@ -4,10 +4,13 @@ package middleware
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	"github.com/stevensuki/ledgerline-backend/pkg/response"
 )
 
 const (
-	HeaderRequestID  = "X-Request-ID"
+	// Shared with the error envelope, which repeats the id in the body.
+	HeaderRequestID  = response.HeaderRequestID
 	ContextRequestID = "request_id"
 )
 

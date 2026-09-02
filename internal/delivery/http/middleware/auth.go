@@ -2,14 +2,13 @@ package middleware
 
 import (
 	"errors"
-	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 
+	"github.com/stevensuki/ledgerline-backend/internal/delivery/http/apierr"
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
-	"github.com/stevensuki/ledgerline-backend/pkg/response"
 )
 
 const (
@@ -22,19 +21,16 @@ func Authenticate(tokenManager domain.TokenManager) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := extractToken(c.GetHeader("Authorization"))
 		if token == "" {
-			response.Fail(c, http.StatusUnauthorized, "UNAUTHORIZED",
-				"an Authorization header formatted as 'Bearer <token>' is required", nil)
+			apierr.Write(c, domain.ErrTokenMissing)
 			return
 		}
 
 		claims, err := tokenManager.Verify(token)
 		if err != nil {
-			message := "invalid token"
-			code := "TOKEN_INVALID"
-			if errors.Is(err, domain.ErrTokenExpired) {
-				message, code = "the token has expired", "TOKEN_EXPIRED"
+			if !errors.Is(err, domain.ErrTokenExpired) {
+				err = domain.ErrTokenInvalid.WithCause(err)
 			}
-			response.Fail(c, http.StatusUnauthorized, code, message, nil)
+			apierr.Write(c, err)
 			return
 		}
 
@@ -53,12 +49,11 @@ func RequireRoles(roleIDs ...uuid.UUID) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		claims, ok := GetClaims(c)
 		if !ok {
-			response.Fail(c, http.StatusUnauthorized, "UNAUTHORIZED", "authentication is required", nil)
+			apierr.Write(c, domain.ErrAuthRequired)
 			return
 		}
 		if _, ok := allowed[claims.RoleID]; !ok {
-			response.Fail(c, http.StatusForbidden, "FORBIDDEN",
-				"you do not have access to this resource", nil)
+			apierr.Write(c, domain.ErrAccessDenied)
 			return
 		}
 		c.Next()

@@ -90,7 +90,22 @@ func NewCategoryService(repo domain.CategoryRepository) domain.CategoryService {
 Every business rule lives here: value validation, duplicate checks, input normalisation, ownership checks. This layer knows nothing about HTTP — on failure, return a domain error:
 
 ```go
-return nil, fmt.Errorf("%w: a category with that name already exists", domain.ErrConflict)
+return nil, domain.Conflict(domain.CodeCategoryNameTaken, "a category with that name already exists").WithField("name")
+```
+
+The constructor picks the status: `Conflict` 409, `NotFound` 404, `InvalidInput` 400, `Forbidden` 403, `Unauthorized` 401, `RateLimited` 429. Add the code to [internal/domain/error_codes.go](internal/domain/error_codes.go) and a row to [ERROR_CODES.md](ERROR_CODES.md); the frontend switches on it, so make it specific.
+
+Modifiers all return a copy: `.WithField("name")` highlights an input, `.WithCause(err)` keeps the technical detail for the log only, `.WithRetryAfter(d)` fills the `Retry-After` header.
+
+When forwarding a repository error, never flatten it into something coarser. That is how a database outage turns into a 401:
+
+```go
+if err != nil {
+	if errors.Is(err, domain.ErrNotFound) { // an expected outcome
+		return nil, domain.ErrInvalidCredentials
+	}
+	return nil, err // anything else is a real failure, let it be a 500
+}
 ```
 
 ## 5. DTO — HTTP request/response
@@ -172,7 +187,7 @@ func (h *CategoryHandler) Create(c *gin.Context) {
 }
 ```
 
-Never write `if errors.Is(...)` in a handler — `handleError(c, err)` is enough, the status code mapping is already centralised in `handler/errors.go`.
+Never write `if errors.Is(...)` in a handler, and never compose a message there. `handleError(c, err)` is enough: status, code, field detail and `request_id` are all decided in [internal/delivery/http/apierr](internal/delivery/http/apierr/apierr.go), which the middleware uses too.
 
 ## 7. Route + wiring
 
@@ -232,8 +247,9 @@ make lint
 - [ ] Migration up + down
 - [ ] `internal/domain/xxx.go` — entity + repository interface + service interface
 - [ ] `internal/repository/postgres/model/xxx_model.go` — `XxxModel` + mappers to/from the domain
-- [ ] `internal/repository/postgres/xxx_repository.go` — return the interface, errors through `wrapErr()`
-- [ ] `internal/service/xxx_service.go` — business logic, errors using `%w` + domain sentinels
+- [ ] `internal/repository/postgres/xxx_repository.go` (return the interface; errors through `xxxErrors.wrap()`, registered in `postgres/errors.go`)
+- [ ] `internal/service/xxx_service.go` (business logic; errors via `domain.Conflict/NotFound/InvalidInput(...)` with a code from `error_codes.go`)
+- [ ] New codes added to `ERROR_CODES.md`
 - [ ] `internal/delivery/http/dto/xxx_dto.go` — request/response + mappers + sort whitelist
 - [ ] `internal/delivery/http/handler/xxx_handler.go` — swagger annotations + `handleError`
 - [ ] Route in `router.go` + wiring in `main.go`

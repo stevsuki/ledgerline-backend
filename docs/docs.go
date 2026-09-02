@@ -247,7 +247,7 @@ const docTemplate = `{
         },
         "/auth/forgot-password": {
             "post": {
-                "description": "Sends an OTP code to the email address if it is registered",
+                "description": "Sends an OTP code if the address is registered; the answer is the same either way",
                 "consumes": [
                     "application/json"
                 ],
@@ -2212,7 +2212,7 @@ const docTemplate = `{
             "properties": {
                 "code": {
                     "type": "string",
-                    "example": "NOT_FOUND"
+                    "example": "USER_NOT_FOUND"
                 },
                 "errors": {
                     "type": "array",
@@ -2223,6 +2223,10 @@ const docTemplate = `{
                 "message": {
                     "type": "string",
                     "example": "something went wrong"
+                },
+                "request_id": {
+                    "type": "string",
+                    "example": "9b2c1f2e-6f0a-4a1e-9c7d-2f8b0a1c3d4e"
                 },
                 "success": {
                     "type": "boolean",

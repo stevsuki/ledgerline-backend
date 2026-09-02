@@ -34,7 +34,7 @@ func (s *userService) Create(ctx context.Context, input domain.CreateUserInput) 
 		return nil, err
 	}
 	if exists {
-		return nil, fmt.Errorf("%w: email is already registered", domain.ErrConflict)
+		return nil, domain.Conflict(domain.CodeUserEmailTaken, "email is already registered").WithField("email")
 	}
 
 	hashed, err := s.hasher.Hash(input.Password)
@@ -80,13 +80,13 @@ func (s *userService) Update(ctx context.Context, id uuid.UUID, input domain.Upd
 	if input.FullName != nil {
 		name := strings.TrimSpace(*input.FullName)
 		if name == "" {
-			return nil, fmt.Errorf("%w: full_name must not be empty", domain.ErrInvalidInput)
+			return nil, domain.InvalidInput(domain.CodeUserInvalidData, "full_name must not be empty").WithField("full_name")
 		}
 		user.FullName = name
 	}
 	if input.RoleID != nil {
 		if *input.RoleID == uuid.Nil {
-			return nil, fmt.Errorf("%w: role_id must not be empty", domain.ErrInvalidInput)
+			return nil, domain.InvalidInput(domain.CodeUserInvalidRole, "role_id must not be empty").WithField("role_id")
 		}
 		user.RoleID = *input.RoleID
 	}

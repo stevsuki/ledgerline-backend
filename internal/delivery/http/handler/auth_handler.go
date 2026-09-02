@@ -113,7 +113,7 @@ func (h *AuthHandler) Refresh(c *gin.Context) {
 func (h *AuthHandler) Me(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)
 	if !ok {
-		handleError(c, domain.ErrUnauthorized)
+		handleError(c, domain.ErrAuthRequired)
 		return
 	}
 
@@ -128,7 +128,7 @@ func (h *AuthHandler) Me(c *gin.Context) {
 // ForgotPassword godoc
 //
 //	@Summary		Request a password reset OTP
-//	@Description	Sends an OTP code to the email address if it is registered
+//	@Description	Sends an OTP code if the address is registered; the answer is the same either way
 //	@Tags			auth
 //	@Accept			json
 //	@Produce		json
@@ -149,7 +149,7 @@ func (h *AuthHandler) ForgotPassword(c *gin.Context) {
 		handleError(c, err)
 		return
 	}
-	response.OK(c, http.StatusOK, "password reset email sent", nil)
+	response.OK(c, http.StatusOK, "if the email is registered, a reset code has been sent", nil)
 }
 
 // VerifyOTPResetPassword godoc

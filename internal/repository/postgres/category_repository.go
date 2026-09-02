@@ -25,7 +25,7 @@ func NewCategoryRepository(db *gorm.DB) domain.CategoryRepository {
 func (r *categoryRepository) Create(ctx context.Context, category *domain.Category) error {
 	row := model.CategoryFromDomain(category)
 	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
-		return wrapErr("create category", err)
+		return categoryErrors.wrap("create category", err)
 	}
 
 	category.CreatedAt = row.CreatedAt
@@ -38,7 +38,7 @@ func (r *categoryRepository) GetByID(ctx context.Context, id, userID uuid.UUID) 
 	var row model.CategoryModel
 	err := dbFrom(ctx, r.db).First(&row, "id = ? AND user_id = ?", id, userID).Error
 	if err != nil {
-		return nil, wrapErr("get category", err)
+		return nil, categoryErrors.wrap("get category", err)
 	}
 	return row.ToDomain(), nil
 }
@@ -55,7 +55,7 @@ func (r *categoryRepository) List(ctx context.Context, filter domain.CategoryFil
 
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
-		return nil, 0, wrapErr("count categories", err)
+		return nil, 0, categoryErrors.wrap("count categories", err)
 	}
 	if total == 0 {
 		return []domain.Category{}, 0, nil
@@ -69,7 +69,7 @@ func (r *categoryRepository) List(ctx context.Context, filter domain.CategoryFil
 	var rows []model.CategoryModel
 	err := query.Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).Find(&rows).Error
 	if err != nil {
-		return nil, 0, wrapErr("list categories", err)
+		return nil, 0, categoryErrors.wrap("list categories", err)
 	}
 	return model.CategoriesToDomain(rows), int(total), nil
 }
@@ -83,10 +83,10 @@ func (r *categoryRepository) Update(ctx context.Context, category *domain.Catego
 			"type": string(category.Type),
 		})
 	if result.Error != nil {
-		return wrapErr("update category", result.Error)
+		return categoryErrors.wrap("update category", result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return wrapErr("update category", gorm.ErrRecordNotFound)
+		return categoryErrors.wrap("update category", gorm.ErrRecordNotFound)
 	}
 
 	var updated model.CategoryModel
@@ -103,10 +103,10 @@ func (r *categoryRepository) Delete(ctx context.Context, id, userID uuid.UUID) e
 		Where("id = ? AND user_id = ?", id, userID).
 		Delete(&model.CategoryModel{})
 	if result.Error != nil {
-		return wrapErr("delete category", result.Error)
+		return categoryErrors.wrap("delete category", result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return wrapErr("delete category", gorm.ErrRecordNotFound)
+		return categoryErrors.wrap("delete category", gorm.ErrRecordNotFound)
 	}
 	return nil
 }
@@ -117,7 +117,7 @@ func (r *categoryRepository) ExistsByName(ctx context.Context, userID uuid.UUID,
 		Where("user_id = ? AND LOWER(name) = LOWER(?)", userID, name).
 		Limit(1).Count(&count).Error
 	if err != nil {
-		return false, wrapErr("check category name", err)
+		return false, categoryErrors.wrap("check category name", err)
 	}
 	return count > 0, nil
 }

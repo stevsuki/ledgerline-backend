@@ -62,9 +62,9 @@ func message(fe validator.FieldError) string {
 	case "email":
 		return fmt.Sprintf("%s must be a valid email address", field)
 	case "min":
-		return fmt.Sprintf("%s must be at least %s characters/value", field, fe.Param())
+		return fmt.Sprintf("%s must be at least %s %s", field, fe.Param(), unit(fe))
 	case "max":
-		return fmt.Sprintf("%s must be at most %s characters/value", field, fe.Param())
+		return fmt.Sprintf("%s must be at most %s %s", field, fe.Param(), unit(fe))
 	case "oneof":
 		return fmt.Sprintf("%s must be one of: %s", field, fe.Param())
 	case "uuid", "uuid4":
@@ -77,5 +77,17 @@ func message(fe validator.FieldError) string {
 		return fmt.Sprintf("%s must be at most %s", field, fe.Param())
 	default:
 		return fmt.Sprintf("%s is invalid (rule: %s)", field, fe.Tag())
+	}
+}
+
+// unit names what min/max counts, which depends on the field type.
+func unit(fe validator.FieldError) string {
+	switch fe.Kind() {
+	case reflect.String:
+		return "characters"
+	case reflect.Slice, reflect.Array, reflect.Map:
+		return "items"
+	default:
+		return "in value"
 	}
 }

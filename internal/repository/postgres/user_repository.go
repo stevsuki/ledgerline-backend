@@ -35,7 +35,7 @@ func (r *userRepository) withRole(ctx context.Context) *gorm.DB {
 func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 	row := model.UserFromDomain(user)
 	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
-		return wrapErr("create user", err)
+		return userErrors.wrap("create user", err)
 	}
 
 	// Columns with database defaults come back via RETURNING.
@@ -55,7 +55,7 @@ func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 func (r *userRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
 	var row model.UserModel
 	if err := r.withRole(ctx).Where("users.id = ?", id).Take(&row).Error; err != nil {
-		return nil, wrapErr("get user", err)
+		return nil, userErrors.wrap("get user", err)
 	}
 	return row.ToDomain(), nil
 }
@@ -64,7 +64,7 @@ func (r *userRepository) GetByEmail(ctx context.Context, email string) (*domain.
 	var row model.UserModel
 	err := r.withRole(ctx).Where("users.email = ?", strings.ToLower(email)).Take(&row).Error
 	if err != nil {
-		return nil, wrapErr("get user", err)
+		return nil, userErrors.wrap("get user", err)
 	}
 	return row.ToDomain(), nil
 }
@@ -79,7 +79,7 @@ func (r *userRepository) List(ctx context.Context, filter domain.UserFilter) ([]
 
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
-		return nil, 0, wrapErr("count users", err)
+		return nil, 0, userErrors.wrap("count users", err)
 	}
 	if total == 0 {
 		return []domain.User{}, 0, nil
@@ -96,7 +96,7 @@ func (r *userRepository) List(ctx context.Context, filter domain.UserFilter) ([]
 		Joins("LEFT JOIN roles ON roles.id = users.role_id").
 		Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).Find(&rows).Error
 	if err != nil {
-		return nil, 0, wrapErr("list users", err)
+		return nil, 0, userErrors.wrap("list users", err)
 	}
 	return model.UsersToDomain(rows), int(total), nil
 }
@@ -109,10 +109,10 @@ func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
 			"role_id":   user.RoleID,
 		})
 	if result.Error != nil {
-		return wrapErr("update user", result.Error)
+		return userErrors.wrap("update user", result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return wrapErr("update user", gorm.ErrRecordNotFound)
+		return userErrors.wrap("update user", gorm.ErrRecordNotFound)
 	}
 
 	// Re-read what the database owns: updated_at, plus the joined role name.
@@ -128,10 +128,10 @@ func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
 func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	result := dbFrom(ctx, r.db).Delete(&model.UserModel{}, "id = ?", id)
 	if result.Error != nil {
-		return wrapErr("delete user", result.Error)
+		return userErrors.wrap("delete user", result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return wrapErr("delete user", gorm.ErrRecordNotFound)
+		return userErrors.wrap("delete user", gorm.ErrRecordNotFound)
 	}
 	return nil
 }
@@ -142,7 +142,7 @@ func (r *userRepository) ExistsByEmail(ctx context.Context, email string) (bool,
 		Where("email = ?", strings.ToLower(email)).
 		Limit(1).Count(&count).Error
 	if err != nil {
-		return false, wrapErr("check email exists", err)
+		return false, userErrors.wrap("check email exists", err)
 	}
 	return count > 0, nil
 }
@@ -157,10 +157,10 @@ func (r *userRepository) UpdatePassword(ctx context.Context, userID uuid.UUID, p
 			"password_changed_at": time.Now(),
 		})
 	if result.Error != nil {
-		return wrapErr("update password", result.Error)
+		return userErrors.wrap("update password", result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return wrapErr("update password", gorm.ErrRecordNotFound)
+		return userErrors.wrap("update password", gorm.ErrRecordNotFound)
 	}
 	return nil
 }
@@ -174,7 +174,7 @@ func (r *userRepository) IncrementFailedLogin(ctx context.Context, userID uuid.U
 
 	var row struct{ FailedLoginAttempts int }
 	if err := dbFrom(ctx, r.db).Raw(q, userID).Scan(&row).Error; err != nil {
-		return 0, wrapErr("increment failed login", err)
+		return 0, userErrors.wrap("increment failed login", err)
 	}
 	return row.FailedLoginAttempts, nil
 }
@@ -186,7 +186,7 @@ func (r *userRepository) LockUntil(ctx context.Context, userID uuid.UUID, until 
 		Where("id = ?", userID).
 		Update("locked_until", until).Error
 	if err != nil {
-		return wrapErr("lock user", err)
+		return userErrors.wrap("lock user", err)
 	}
 	return nil
 }
@@ -198,7 +198,7 @@ func (r *userRepository) ClearFailedLogins(ctx context.Context, userID uuid.UUID
 		Where("id = ?", userID).
 		Updates(map[string]any{"failed_login_attempts": 0, "locked_until": nil}).Error
 	if err != nil {
-		return wrapErr("clear failed logins", err)
+		return userErrors.wrap("clear failed logins", err)
 	}
 	return nil
 }

@@ -18,11 +18,15 @@ type Meta struct {
 	TotalPages int `json:"total_pages" example:"5"`
 }
 
+// HeaderRequestID: the tracing header; the error body repeats it so one screenshot finds the log.
+const HeaderRequestID = "X-Request-ID"
+
 type Error struct {
-	Success bool         `json:"success" example:"false"`
-	Message string       `json:"message" example:"something went wrong"`
-	Code    string       `json:"code,omitempty" example:"NOT_FOUND"`
-	Errors  []FieldError `json:"errors,omitempty"`
+	Success   bool         `json:"success" example:"false"`
+	Message   string       `json:"message" example:"something went wrong"`
+	Code      string       `json:"code,omitempty" example:"USER_NOT_FOUND"`
+	Errors    []FieldError `json:"errors,omitempty"`
+	RequestID string       `json:"request_id,omitempty" example:"9b2c1f2e-6f0a-4a1e-9c7d-2f8b0a1c3d4e"`
 }
 
 // FieldError: per-field error detail.
@@ -42,9 +46,10 @@ func Paginated(c *gin.Context, status int, message string, data any, meta Meta) 
 
 func Fail(c *gin.Context, status int, code, message string, fieldErrors []FieldError) {
 	c.AbortWithStatusJSON(status, Error{
-		Success: false,
-		Message: message,
-		Code:    code,
-		Errors:  fieldErrors,
+		Success:   false,
+		Message:   message,
+		Code:      code,
+		Errors:    fieldErrors,
+		RequestID: c.Writer.Header().Get(HeaderRequestID),
 	})
 }

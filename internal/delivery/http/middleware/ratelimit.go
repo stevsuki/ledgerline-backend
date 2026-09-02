@@ -1,14 +1,14 @@
 package middleware
 
 import (
-	"net/http"
 	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/time/rate"
 
-	"github.com/stevensuki/ledgerline-backend/pkg/response"
+	"github.com/stevensuki/ledgerline-backend/internal/delivery/http/apierr"
+	"github.com/stevensuki/ledgerline-backend/internal/domain"
 )
 
 type visitor struct {
@@ -18,17 +18,19 @@ type visitor struct {
 
 // RateLimiter: per-IP token bucket (in-memory; swap for Redis when multi-instance).
 type RateLimiter struct {
-	mu       sync.Mutex
-	visitors map[string]*visitor
-	rps      rate.Limit
-	burst    int
+	mu         sync.Mutex
+	visitors   map[string]*visitor
+	rps        rate.Limit
+	burst      int
+	retryAfter time.Duration // how long one token takes to refill
 }
 
 func NewRateLimiter(rps, burst int) *RateLimiter {
 	rl := &RateLimiter{
-		visitors: make(map[string]*visitor),
-		rps:      rate.Limit(rps),
-		burst:    burst,
+		visitors:   make(map[string]*visitor),
+		rps:        rate.Limit(rps),
+		burst:      burst,
+		retryAfter: refillInterval(rps),
 	}
 	go rl.cleanup()
 	return rl
@@ -38,8 +40,8 @@ func NewRateLimiter(rps, burst int) *RateLimiter {
 func (rl *RateLimiter) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if !rl.limiterFor(c.ClientIP()).Allow() {
-			response.Fail(c, http.StatusTooManyRequests, "TOO_MANY_REQUESTS",
-				"too many requests, please try again later", nil)
+			apierr.Write(c, domain.RateLimited(domain.CodeTooManyRequests,
+				"too many requests, please try again later").WithRetryAfter(rl.retryAfter))
 			return
 		}
 		c.Next()
@@ -73,4 +75,15 @@ func (rl *RateLimiter) cleanup() {
 		}
 		rl.mu.Unlock()
 	}
+}
+
+// refillInterval: the wait before the bucket holds a token again, floored at one second.
+func refillInterval(rps int) time.Duration {
+	if rps <= 0 {
+		return time.Second
+	}
+	if d := time.Second / time.Duration(rps); d > time.Second {
+		return d
+	}
+	return time.Second
 }

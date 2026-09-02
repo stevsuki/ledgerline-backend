@@ -13,13 +13,14 @@ A Go backend template built on **Clean Architecture** (repository + service patt
 ├── internal/
 │   ├── config/                  # load & validate environment variables
 │   ├── database/                # PostgreSQL connection & pool setup (GORM)
-│   ├── domain/                  # entities + interfaces (ports) + sentinel errors  <- the core, no framework dependencies
+│   ├── domain/                  # entities + interfaces (ports) + typed errors + error codes  <- the core, no framework dependencies
 │   ├── repository/postgres/     # repository implementation (GORM) + tx manager + error mapping
 │   │   └── model/               # GORM persistence models: xxx_model.go -> XxxModel + mappers
 │   ├── service/                 # business logic
 │   ├── delivery/http/
+│   │   ├── apierr/              # the single error -> HTTP response writer (status + envelope)
 │   │   ├── dto/                 # request/response DTOs (XxxDTO) + mappers to the domain
-│   │   ├── handler/             # HTTP adapters + swagger annotations + error mapper
+│   │   ├── handler/             # HTTP adapters + swagger annotations
 │   │   ├── middleware/          # request id, logger, recovery, cors, auth, rate limit, timeout
 │   │   └── router/              # route registration
 │   ├── server/                  # http.Server + graceful shutdown
@@ -108,16 +109,25 @@ Failure:
 
 ```json
 { "success": false, "message": "the submitted data is invalid", "code": "VALIDATION_ERROR",
-  "errors": [{ "field": "email", "message": "email must be a valid email address" }] }
+  "errors": [{ "field": "email", "message": "email must be a valid email address" }],
+  "request_id": "9b2c1f2e-6f0a-4a1e-9c7d-2f8b0a1c3d4e" }
 ```
 
-Error mapping is centralised in [internal/delivery/http/handler/errors.go](internal/delivery/http/handler/errors.go): a service only needs `return fmt.Errorf("%w: ...", domain.ErrConflict)` and the handler answers 409 automatically.
+`code` is the contract the frontend switches on; `message` is for humans and must never be parsed. The full catalogue is in [ERROR_CODES.md](ERROR_CODES.md).
+
+A service returns a domain error and says nothing about HTTP:
+
+```go
+return nil, domain.Conflict(domain.CodeUserEmailTaken, "email is already registered").WithField("email")
+```
+
+[internal/delivery/http/apierr](internal/delivery/http/apierr/apierr.go) is the single place an error becomes a response — handlers and middleware both go through it, so every failure leaves the same envelope. `Kind` picks the status, `Code` and `Message` go to the client, and the wrapped cause goes to the log only.
 
 ## Logging
 
 Uses `log/slog` (stdlib), JSON format in production, switchable via `LOG_FORMAT=text` during development.
 
-- The `RequestID` middleware creates an `X-Request-ID` per request.
+- The `RequestID` middleware creates an `X-Request-ID` per request; every error body repeats it as `request_id`.
 - The `Logger` middleware records method, path, status, latency, IP, and injects a `request_id`-tagged logger into the `context`.
 - From any layer: `logger.FromContext(ctx).Info("message", slog.String("key", "value"))` — the log automatically carries the same `request_id`.
 

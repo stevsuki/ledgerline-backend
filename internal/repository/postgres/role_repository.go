@@ -33,7 +33,7 @@ func (r *roleRepository) List(ctx context.Context, filter domain.RoleFilter) ([]
 	// Counted before the join: one row per role, not one per user.
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
-		return nil, 0, wrapErr("count roles", err)
+		return nil, 0, roleErrors.wrap("count roles", err)
 	}
 	if total == 0 {
 		return []domain.Role{}, 0, nil
@@ -52,7 +52,7 @@ func (r *roleRepository) List(ctx context.Context, filter domain.RoleFilter) ([]
 		Group("roles.id").
 		Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).Find(&rows).Error
 	if err != nil {
-		return nil, 0, wrapErr("list roles", err)
+		return nil, 0, roleErrors.wrap("list roles", err)
 	}
 	return model.RolesToDomain(rows), int(total), nil
 }
@@ -60,7 +60,7 @@ func (r *roleRepository) List(ctx context.Context, filter domain.RoleFilter) ([]
 func (r *roleRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Role, error) {
 	var row model.RoleModel
 	if err := dbFrom(ctx, r.db).First(&row, "id = ?", id).Error; err != nil {
-		return nil, wrapErr("get role", err)
+		return nil, roleErrors.wrap("get role", err)
 	}
 	return row.ToDomain(), nil
 }
@@ -70,7 +70,7 @@ func (r *roleRepository) Create(ctx context.Context, role *domain.Role) error {
 	return dbFrom(ctx, r.db).Transaction(func(tx *gorm.DB) error {
 		row := model.RoleFromDomain(role)
 		if err := tx.Create(&row).Error; err != nil {
-			return wrapErr("create role", err)
+			return roleErrors.wrap("create role", err)
 		}
 
 		role.CreatedAt = row.CreatedAt
@@ -87,7 +87,7 @@ func (r *roleRepository) Create(ctx context.Context, role *domain.Role) error {
 		}
 
 		if err := tx.Create(&permissions).Error; err != nil {
-			return wrapErr("create role permissions", err)
+			return roleErrors.wrap("create role permissions", err)
 		}
 		for i := range permissions {
 			role.Permissions[i].CreatedAt = permissions[i].CreatedAt
@@ -101,7 +101,7 @@ func (r *roleRepository) Update(ctx context.Context, role *domain.Role, permissi
 	return dbFrom(ctx, r.db).Transaction(func(tx *gorm.DB) error {
 		row := model.RoleFromDomain(role)
 		if err := tx.Save(&row).Error; err != nil {
-			return wrapErr("update role", err)
+			return roleErrors.wrap("update role", err)
 		}
 
 		// Columns with database defaults come back via RETURNING.
@@ -113,7 +113,7 @@ func (r *roleRepository) Update(ctx context.Context, role *domain.Role, permissi
 
 		// The request carries the full matrix, so stale rows have to go first.
 		if err := tx.Where("role_id = ?", role.ID).Delete(&model.RoleMenuPermissionModel{}).Error; err != nil {
-			return wrapErr("clear role permissions", err)
+			return roleErrors.wrap("clear role permissions", err)
 		}
 		if len(permissions) == 0 {
 			role.Permissions = []domain.RoleMenuPermission{}
@@ -126,7 +126,7 @@ func (r *roleRepository) Update(ctx context.Context, role *domain.Role, permissi
 			rows = append(rows, model.RoleMenuPermissionFromDomain(&permissions[i]))
 		}
 		if err := tx.Create(&rows).Error; err != nil {
-			return wrapErr("create role permissions", err)
+			return roleErrors.wrap("create role permissions", err)
 		}
 		for i := range rows {
 			permissions[i].CreatedAt = rows[i].CreatedAt
@@ -139,7 +139,7 @@ func (r *roleRepository) Update(ctx context.Context, role *domain.Role, permissi
 
 func (r *roleRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	if err := dbFrom(ctx, r.db).Delete(&model.RoleModel{}, "id = ?", id).Error; err != nil {
-		return wrapErr("delete role", err)
+		return roleErrors.wrap("delete role", err)
 	}
 	return nil
 }
@@ -151,7 +151,7 @@ func (r *roleRepository) GetRolePermissions(ctx context.Context, roleID uuid.UUI
 		Order("menu_id").
 		Find(&rows).Error
 	if err != nil {
-		return nil, wrapErr("get role permissions", err)
+		return nil, roleErrors.wrap("get role permissions", err)
 	}
 	return model.RoleMenuPermissionsToDomain(rows), nil
 }

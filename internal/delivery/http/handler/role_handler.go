@@ -77,6 +77,7 @@ func (h *RoleHandler) List(c *gin.Context) {
 func (h *RoleHandler) GetByID(c *gin.Context) {
 	id, err := parseUUIDParam(c, "id")
 	if err != nil {
+		handleError(c, err)
 		return
 	}
 
@@ -135,6 +136,7 @@ func (h *RoleHandler) Create(c *gin.Context) {
 func (h *RoleHandler) Update(c *gin.Context) {
 	id, err := parseUUIDParam(c, "id")
 	if err != nil {
+		handleError(c, err)
 		return
 	}
 
@@ -166,6 +168,7 @@ func (h *RoleHandler) Update(c *gin.Context) {
 func (h *RoleHandler) Delete(c *gin.Context) {
 	id, err := parseUUIDParam(c, "id")
 	if err != nil {
+		handleError(c, err)
 		return
 	}
 

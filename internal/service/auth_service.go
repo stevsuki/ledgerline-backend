@@ -21,6 +21,9 @@ const (
 	loginLockDuration = 15 * time.Minute
 )
 
+// resetCooldown throttles password reset requests per account.
+const resetCooldown = 60 * time.Second
+
 type authService struct {
 	userRepo               domain.UserRepository
 	hasher                 domain.PasswordHasher
@@ -57,7 +60,7 @@ func (s *authService) Register(ctx context.Context, input domain.RegisterInput) 
 		return nil, err
 	}
 	if exists {
-		return nil, fmt.Errorf("%w: email is already registered", domain.ErrConflict)
+		return nil, domain.Conflict(domain.CodeUserEmailTaken, "email is already registered").WithField("email")
 	}
 
 	hashed, err := s.hasher.Hash(input.Password)
@@ -86,13 +89,17 @@ func (s *authService) Register(ctx context.Context, input domain.RegisterInput) 
 func (s *authService) Login(ctx context.Context, input domain.LoginInput, meta domain.RequestMeta) (*domain.TokenPair, error) {
 	user, err := s.userRepo.GetByEmail(ctx, strings.ToLower(strings.TrimSpace(input.Email)))
 	if err != nil {
-		return nil, domain.ErrInvalidCredentials
+		// Only an unknown address is a credential problem; anything else is a real failure.
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.ErrInvalidCredentials
+		}
+		return nil, err
 	}
 
 	if user.LockedUntil != nil && user.LockedUntil.After(time.Now()) {
 		s.auditLoginFailure(ctx, user, meta, domain.AuditSeverityCritical,
 			domain.NewAccountLockedDetail(user.FailedLoginAttempts, user.Email))
-		return nil, domain.ErrAccountLocked
+		return nil, domain.ErrAccountLocked.WithRetryAfter(time.Until(*user.LockedUntil))
 	}
 
 	if err := s.hasher.Compare(user.PasswordHash, input.Password); err != nil {
@@ -124,7 +131,7 @@ func (s *authService) Login(ctx context.Context, input domain.LoginInput, meta d
 		s.auditLoginFailure(ctx, user, meta, severity, detail)
 
 		if locked {
-			return nil, domain.ErrAccountLocked
+			return nil, domain.ErrAccountLocked.WithRetryAfter(loginLockDuration)
 		}
 		return nil, domain.ErrInvalidCredentials
 	}
@@ -165,7 +172,10 @@ func (s *authService) Refresh(ctx context.Context, refreshToken string) (*domain
 	// Re-read the user so role changes take effect immediately.
 	user, err := s.userRepo.GetByID(ctx, claims.UserID)
 	if err != nil {
-		return nil, domain.ErrUnauthorized
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.ErrTokenInvalid
+		}
+		return nil, err
 	}
 	return s.issueTokens(user)
 }
@@ -189,6 +199,10 @@ func (s *authService) ForgotPassword(ctx context.Context, input domain.ForgotPas
 
 	user, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
+		// Answer the same way for an unknown address, otherwise this endpoint lists who has an account.
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil
+		}
 		return err
 	}
 
@@ -197,8 +211,11 @@ func (s *authService) ForgotPassword(ctx context.Context, input domain.ForgotPas
 		return fmt.Errorf("check existing password reset token: %w", err)
 	}
 
-	if existingForgotAttempt != nil && time.Since(existingForgotAttempt.CreatedAt) < 60*time.Second {
-		return fmt.Errorf("%w: password reset requested again too soon", domain.ErrTooManyRequests)
+	if existingForgotAttempt != nil {
+		if wait := resetCooldown - time.Since(existingForgotAttempt.CreatedAt); wait > 0 {
+			return domain.RateLimited(domain.CodeResetTooSoon,
+				"a reset code was just sent, please wait before requesting another").WithRetryAfter(wait)
+		}
 	}
 
 	otp, err := s.otp.Generate()
@@ -241,17 +258,24 @@ func (s *authService) ForgotPassword(ctx context.Context, input domain.ForgotPas
 func (s *authService) VerifyOTPResetPassword(ctx context.Context, input domain.VerifyOTPResetPasswordInput) (*domain.ResetToken, error) {
 	user, err := s.userRepo.GetByEmail(ctx, strings.ToLower(strings.TrimSpace(input.Email)))
 	if err != nil {
+		// A missing account must look exactly like a wrong code.
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.ErrInvalidOTP
+		}
 		return nil, err
 	}
 
 	token, err := s.passwordResetTokenRepo.GetByUserID(ctx, user.ID)
 	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return nil, domain.ErrInvalidOTP
+		}
 		return nil, err
 	}
 
-	// Check if the token has already been used
+	// Spent code: same answer as a wrong one, and not the session-token code the client acts on.
 	if token.UsedAt != nil {
-		return nil, domain.ErrTokenInvalid
+		return nil, domain.ErrInvalidOTP
 	}
 
 	// Check if attempts exceed the limit
@@ -261,7 +285,7 @@ func (s *authService) VerifyOTPResetPassword(ctx context.Context, input domain.V
 
 	// Check if the token expired or not
 	if time.Now().After(token.ExpiresAt) {
-		return nil, domain.ErrTokenExpired
+		return nil, domain.ErrInvalidOTP
 	}
 
 	// Check if the token valid or not
@@ -315,6 +339,9 @@ func (s *authService) ResetPassword(ctx context.Context, input domain.ResetPassw
 
 	user, err := s.userRepo.GetByID(ctx, claims.UserID)
 	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return domain.ErrTokenInvalid
+		}
 		return err
 	}
 

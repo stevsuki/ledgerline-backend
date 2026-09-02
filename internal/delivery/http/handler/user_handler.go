@@ -104,6 +104,7 @@ func (h *UserHandler) List(c *gin.Context) {
 func (h *UserHandler) GetByID(c *gin.Context) {
 	id, err := parseUUIDParam(c, "id")
 	if err != nil {
+		handleError(c, err)
 		return
 	}
 
@@ -130,6 +131,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 func (h *UserHandler) Update(c *gin.Context) {
 	id, err := parseUUIDParam(c, "id")
 	if err != nil {
+		handleError(c, err)
 		return
 	}
 
@@ -160,6 +162,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 func (h *UserHandler) Delete(c *gin.Context) {
 	id, err := parseUUIDParam(c, "id")
 	if err != nil {
+		handleError(c, err)
 		return
 	}
 

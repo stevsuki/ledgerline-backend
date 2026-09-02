@@ -21,7 +21,7 @@ func NewPasswordResetTokenRepository(db *gorm.DB) domain.PasswordResetTokenRepos
 func (r *passwordResetTokenRepository) Create(ctx context.Context, token *domain.PasswordResetToken) error {
 	row := model.PasswordResetTokenFromDomain(token)
 	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
-		return wrapErr("create password reset token", err)
+		return passwordResetTokenErrors.wrap("create password reset token", err)
 	}
 
 	// Columns with database defaults come back via RETURNING.
@@ -36,10 +36,10 @@ func (r *passwordResetTokenRepository) Update(ctx context.Context, payload *doma
 		"used_at":  payload.UsedAt,
 	})
 	if result.Error != nil {
-		return wrapErr("update password reset token", result.Error)
+		return passwordResetTokenErrors.wrap("update password reset token", result.Error)
 	}
 	if result.RowsAffected == 0 {
-		return wrapErr("update password reset token", gorm.ErrRecordNotFound)
+		return passwordResetTokenErrors.wrap("update password reset token", gorm.ErrRecordNotFound)
 	}
 	return nil
 }
@@ -51,7 +51,7 @@ func (r *passwordResetTokenRepository) DeleteActiveByUserID(ctx context.Context,
 		Where("user_id = ?", userID).
 		Delete(&model.PasswordResetTokenModel{}).Error
 	if err != nil {
-		return wrapErr("delete password reset token", err)
+		return passwordResetTokenErrors.wrap("delete password reset token", err)
 	}
 
 	return nil
@@ -61,7 +61,7 @@ func (r *passwordResetTokenRepository) GetByUserID(ctx context.Context, userID u
 	var row model.PasswordResetTokenModel
 	err := dbFrom(ctx, r.db).Where("user_id = ?", userID).First(&row).Error
 	if err != nil {
-		return nil, wrapErr("get password reset token by user ID", err)
+		return nil, passwordResetTokenErrors.wrap("get password reset token by user ID", err)
 	}
 
 	return row.ToDomain(), nil

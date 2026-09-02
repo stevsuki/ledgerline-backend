@@ -2,10 +2,12 @@ package middleware
 
 import (
 	"context"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/stevensuki/ledgerline-backend/internal/delivery/http/apierr"
+	"github.com/stevensuki/ledgerline-backend/internal/domain"
 )
 
 // Timeout: cancel the request context once the deadline passes.
@@ -17,8 +19,9 @@ func Timeout(d time.Duration) gin.HandlerFunc {
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 
+		// Last resort: the handler returned without writing anything.
 		if ctx.Err() != nil && !c.Writer.Written() {
-			c.AbortWithStatus(http.StatusGatewayTimeout)
+			apierr.Write(c, domain.ErrTimeout)
 		}
 	}
 }

@@ -69,7 +69,7 @@ func (r *auditLogRepository) ListRows(ctx context.Context, filter domain.AuditLo
 		Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).
 		Find(&logs).Error
 	if err != nil {
-		return nil, wrapErr("list audit logs", err)
+		return nil, auditLogErrors.wrap("list audit logs", err)
 	}
 	return model.AuditLogsToDomain(logs), nil
 }
@@ -79,7 +79,7 @@ func (r *auditLogRepository) List(ctx context.Context, filter domain.AuditLogFil
 
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
-		return nil, 0, wrapErr("count audit logs", err)
+		return nil, 0, auditLogErrors.wrap("count audit logs", err)
 	}
 	if total == 0 {
 		return []domain.AuditLog{}, 0, nil
@@ -93,7 +93,7 @@ func (r *auditLogRepository) List(ctx context.Context, filter domain.AuditLogFil
 	var logs []model.AuditLogModel
 	err := query.Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).Find(&logs).Error
 	if err != nil {
-		return nil, 0, wrapErr("list audit logs", err)
+		return nil, 0, auditLogErrors.wrap("list audit logs", err)
 	}
 	return model.AuditLogsToDomain(logs), int(total), nil
 }
@@ -104,7 +104,7 @@ func (r *auditLogRepository) Create(ctx context.Context, log *domain.AuditLog) e
 		return err
 	}
 	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
-		return wrapErr("create audit log", err)
+		return auditLogErrors.wrap("create audit log", err)
 	}
 
 	log.CreatedAt = row.CreatedAt
@@ -131,7 +131,7 @@ func (r *auditLogRepository) Overview(ctx context.Context, window time.Duration)
 	var overview domain.AuditLogOverview
 	interval := fmt.Sprintf("%d seconds", int(window.Seconds()))
 	if err := dbFrom(ctx, r.db).Raw(q, interval).Scan(&overview).Error; err != nil {
-		return domain.AuditLogOverview{}, wrapErr("audit log overview", err)
+		return domain.AuditLogOverview{}, auditLogErrors.wrap("audit log overview", err)
 	}
 	return overview, nil
 }
@@ -149,7 +149,7 @@ func (r *auditLogRepository) DistinctActors(ctx context.Context) ([]domain.Audit
 
 	var rows []domain.AuditActorOption
 	if err := dbFrom(ctx, r.db).Raw(q).Scan(&rows).Error; err != nil {
-		return nil, wrapErr("list audit log actors", err)
+		return nil, auditLogErrors.wrap("list audit log actors", err)
 	}
 	return rows, nil
 }

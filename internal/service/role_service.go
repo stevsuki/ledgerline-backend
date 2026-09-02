@@ -44,7 +44,7 @@ func (s *roleService) GetByID(ctx context.Context, id uuid.UUID) (*domain.Role, 
 func (s *roleService) Create(ctx context.Context, input domain.CreateRoleInput) (*domain.Role, error) {
 	name := strings.TrimSpace(input.Name)
 	if name == "" {
-		return nil, fmt.Errorf("%w: role name is required", domain.ErrInvalidInput)
+		return nil, domain.InvalidInput(domain.CodeRoleInvalidData, "role name is required").WithField("name")
 	}
 
 	permissions, err := buildPermissions(input.Permissions)
@@ -79,10 +79,10 @@ func buildPermissions(input []domain.CreateRoleMenuPermissionInput) ([]domain.Ro
 	seen := make(map[uuid.UUID]struct{}, len(input))
 	for _, p := range input {
 		if p.MenuID == uuid.Nil {
-			return nil, fmt.Errorf("%w: menu_id must not be empty", domain.ErrInvalidInput)
+			return nil, domain.InvalidInput(domain.CodeRoleInvalidMenu, "menu_id must not be empty").WithField("permissions")
 		}
 		if _, duplicate := seen[p.MenuID]; duplicate {
-			return nil, fmt.Errorf("%w: menu %s is listed twice", domain.ErrInvalidInput, p.MenuID)
+			return nil, domain.InvalidInput(domain.CodeRoleInvalidMenu, fmt.Sprintf("menu %s is listed twice", p.MenuID)).WithField("permissions")
 		}
 		seen[p.MenuID] = struct{}{}
 
@@ -106,11 +106,11 @@ func (s *roleService) Update(ctx context.Context, id uuid.UUID, input domain.Upd
 
 	if input.Name != nil && strings.TrimSpace(*input.Name) != role.Name {
 		if role.IsSystem {
-			return nil, fmt.Errorf("%w: a built-in role cannot be renamed", domain.ErrForbidden)
+			return nil, domain.Forbidden(domain.CodeRoleSystemImmutable, "a built-in role cannot be renamed").WithField("name")
 		}
 		name := strings.TrimSpace(*input.Name)
 		if name == "" {
-			return nil, fmt.Errorf("%w: role name must not be empty", domain.ErrInvalidInput)
+			return nil, domain.InvalidInput(domain.CodeRoleInvalidData, "role name must not be empty").WithField("name")
 		}
 		role.Name = name
 	}
@@ -145,7 +145,7 @@ func (s *roleService) Delete(ctx context.Context, id uuid.UUID) error {
 
 	// Roles are soft-deleted, so ON DELETE RESTRICT never fires and the guard lives here.
 	if role.IsSystem {
-		return fmt.Errorf("%w: a built-in role cannot be deleted", domain.ErrForbidden)
+		return domain.Forbidden(domain.CodeRoleSystemImmutable, "a built-in role cannot be deleted")
 	}
 	return s.roleRepo.Delete(ctx, id)
 }
