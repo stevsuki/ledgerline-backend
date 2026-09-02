@@ -24,8 +24,11 @@ type UserModel struct {
 	FailedLoginAttempts int       `gorm:"not null;default:0"`
 	LockedUntil         *time.Time
 	CreatedAt           time.Time
+	CreatedBy           *uuid.UUID `gorm:"type:uuid"`
 	UpdatedAt           time.Time
+	UpdatedBy           *uuid.UUID     `gorm:"type:uuid"`
 	DeletedAt           gorm.DeletedAt `gorm:"index"`
+	DeletedBy           *uuid.UUID     `gorm:"type:uuid"`
 }
 
 func (UserModel) TableName() string { return "users" }
@@ -44,6 +47,9 @@ func (m UserModel) ToDomain() *domain.User {
 		LockedUntil:         m.LockedUntil,
 		CreatedAt:           m.CreatedAt,
 		UpdatedAt:           m.UpdatedAt,
+		CreatedBy:           m.CreatedBy,
+		UpdatedBy:           m.UpdatedBy,
+		DeletedBy:           m.DeletedBy,
 	}
 }
 
@@ -58,6 +64,8 @@ func UserFromDomain(u *domain.User) UserModel {
 		PasswordChangedAt: u.PasswordChangedAt,
 		CreatedAt:         u.CreatedAt,
 		UpdatedAt:         u.UpdatedAt,
+		CreatedBy:         u.CreatedBy,
+		UpdatedBy:         u.UpdatedBy,
 	}
 }
 

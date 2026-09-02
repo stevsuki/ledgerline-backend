@@ -46,6 +46,11 @@ type User struct {
 	LockedUntil         *time.Time
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
+	// Actor ids, nil when nobody was signed in (self-registration).
+	CreatedBy *uuid.UUID
+	UpdatedBy *uuid.UUID
+	// Only ever set on a soft-deleted row, which no read returns yet.
+	DeletedBy *uuid.UUID
 }
 
 // UserFilter for list + pagination.

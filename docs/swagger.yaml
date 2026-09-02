@@ -109,6 +109,10 @@ definitions:
       created_at:
         example: "2026-01-02T15:04:05Z"
         type: string
+      created_by:
+        description: 'deleted_by is left out: a deleted category is never in a response.'
+        example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
+        type: string
       id:
         example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
         type: string
@@ -120,6 +124,9 @@ definitions:
         type: string
       updated_at:
         example: "2026-01-02T15:04:05Z"
+        type: string
+      updated_by:
+        example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
         type: string
     type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateCategoryRequestDTO:
@@ -366,6 +373,12 @@ definitions:
       created_at:
         example: "2026-01-02T15:04:05Z"
         type: string
+      created_by:
+        description: |-
+          null on the built-in roles, which the migration seeds. deleted_by is left
+          out: a deleted role is never in a response.
+        example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
+        type: string
       description:
         example: Built-in role with access to every menu
         type: string
@@ -386,6 +399,9 @@ definitions:
         type: array
       updated_at:
         example: "2026-01-02T15:04:05Z"
+        type: string
+      updated_by:
+        example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
         type: string
       user_count:
         description: How many users are assigned to this role; filled by the list
@@ -456,6 +472,12 @@ definitions:
       created_at:
         example: "2026-01-02T15:04:05Z"
         type: string
+      created_by:
+        description: |-
+          null when nobody was signed in, as with a self-registered account.
+          deleted_by is left out: a deleted user is never in a response.
+        example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
+        type: string
       email:
         example: budi@example.com
         type: string
@@ -476,6 +498,9 @@ definitions:
         type: string
       updated_at:
         example: "2026-01-02T15:04:05Z"
+        type: string
+      updated_by:
+        example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
         type: string
     type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.VerifyOTPResetPasswordRequestDTO:

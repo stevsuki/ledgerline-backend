@@ -109,6 +109,10 @@ type RoleResponseDTO struct {
 	IsSystem  bool      `json:"is_system" example:"true"`
 	CreatedAt time.Time `json:"created_at" example:"2026-01-02T15:04:05Z"`
 	UpdatedAt time.Time `json:"updated_at" example:"2026-01-02T15:04:05Z"`
+	// null on the built-in roles, which the migration seeds. deleted_by is left
+	// out: a deleted role is never in a response.
+	CreatedBy *uuid.UUID `json:"created_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
+	UpdatedBy *uuid.UUID `json:"updated_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
 	// How many users are assigned to this role; filled by the list only.
 	UserCount   int                             `json:"user_count" example:"12"`
 	Permissions []RoleMenuPermissionResponseDTO `json:"permissions"`
@@ -150,6 +154,8 @@ func NewRoleResponseDTO(r *domain.Role) RoleResponseDTO {
 		IsSystem:    r.IsSystem,
 		CreatedAt:   r.CreatedAt,
 		UpdatedAt:   r.UpdatedAt,
+		CreatedBy:   r.CreatedBy,
+		UpdatedBy:   r.UpdatedBy,
 		UserCount:   r.UserCount,
 		Permissions: NewRoleMenuPermissionResponseDTOs(r.Permissions),
 	}

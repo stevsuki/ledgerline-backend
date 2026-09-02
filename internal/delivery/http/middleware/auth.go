@@ -35,6 +35,9 @@ func Authenticate(tokenManager domain.TokenManager) gin.HandlerFunc {
 		}
 
 		c.Set(ContextClaims, claims)
+		// Carried on the request context too, so repositories can stamp created_by
+		// and friends without every service signature growing an actor argument.
+		c.Request = c.Request.WithContext(domain.WithActor(c.Request.Context(), claims.UserID))
 		c.Next()
 	}
 }

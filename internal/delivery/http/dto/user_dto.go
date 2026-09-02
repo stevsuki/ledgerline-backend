@@ -73,6 +73,10 @@ type UserResponseDTO struct {
 	Status    string    `json:"status" example:"enabled"`
 	CreatedAt time.Time `json:"created_at" example:"2026-01-02T15:04:05Z"`
 	UpdatedAt time.Time `json:"updated_at" example:"2026-01-02T15:04:05Z"`
+	// null when nobody was signed in, as with a self-registered account.
+	// deleted_by is left out: a deleted user is never in a response.
+	CreatedBy *uuid.UUID `json:"created_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
+	UpdatedBy *uuid.UUID `json:"updated_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
 }
 
 func NewUserResponseDTO(u *domain.User) UserResponseDTO {
@@ -85,6 +89,8 @@ func NewUserResponseDTO(u *domain.User) UserResponseDTO {
 		Status:    string(u.Status),
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
+		CreatedBy: u.CreatedBy,
+		UpdatedBy: u.UpdatedBy,
 	}
 }
 

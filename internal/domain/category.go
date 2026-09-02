@@ -26,6 +26,11 @@ type Category struct {
 	Type      CategoryType
 	CreatedAt time.Time
 	UpdatedAt time.Time
+	// Actor ids; the owner writes their own categories, so these track UserID.
+	CreatedBy *uuid.UUID
+	UpdatedBy *uuid.UUID
+	// Only ever set on a soft-deleted row, which no read returns yet.
+	DeletedBy *uuid.UUID
 }
 
 // CategoryFilter: UserID is required so data from different users never mixes.

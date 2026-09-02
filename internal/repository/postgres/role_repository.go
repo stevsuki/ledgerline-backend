@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -67,6 +68,9 @@ func (r *roleRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Rol
 
 // Create writes the role and its permissions in one transaction.
 func (r *roleRepository) Create(ctx context.Context, role *domain.Role) error {
+	actor := domain.ActorFrom(ctx)
+	role.CreatedBy, role.UpdatedBy = actor, actor
+
 	return dbFrom(ctx, r.db).Transaction(func(tx *gorm.DB) error {
 		row := model.RoleFromDomain(role)
 		if err := tx.Create(&row).Error; err != nil {
@@ -98,6 +102,9 @@ func (r *roleRepository) Create(ctx context.Context, role *domain.Role) error {
 }
 
 func (r *roleRepository) Update(ctx context.Context, role *domain.Role, permissions []domain.RoleMenuPermission) error {
+	// Save writes the whole row, so created_by survives only because GetByID read it back.
+	role.UpdatedBy = domain.ActorFrom(ctx)
+
 	return dbFrom(ctx, r.db).Transaction(func(tx *gorm.DB) error {
 		row := model.RoleFromDomain(role)
 		if err := tx.Save(&row).Error; err != nil {
@@ -137,8 +144,16 @@ func (r *roleRepository) Update(ctx context.Context, role *domain.Role, permissi
 	})
 }
 
+// Delete: soft delete stamped with who did it, in one statement. See userRepository.Delete.
 func (r *roleRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	if err := dbFrom(ctx, r.db).Delete(&model.RoleModel{}, "id = ?", id).Error; err != nil {
+	err := dbFrom(ctx, r.db).
+		Model(&model.RoleModel{}).
+		Where("id = ?", id).
+		UpdateColumns(map[string]any{
+			"deleted_at": time.Now(),
+			"deleted_by": domain.ActorFrom(ctx),
+		}).Error
+	if err != nil {
 		return roleErrors.wrap("delete role", err)
 	}
 	return nil

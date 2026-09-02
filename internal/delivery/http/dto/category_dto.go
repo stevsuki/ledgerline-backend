@@ -62,6 +62,9 @@ type CategoryResponseDTO struct {
 	Type      string    `json:"type" example:"income"`
 	CreatedAt time.Time `json:"created_at" example:"2026-01-02T15:04:05Z"`
 	UpdatedAt time.Time `json:"updated_at" example:"2026-01-02T15:04:05Z"`
+	// deleted_by is left out: a deleted category is never in a response.
+	CreatedBy *uuid.UUID `json:"created_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
+	UpdatedBy *uuid.UUID `json:"updated_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
 }
 
 func NewCategoryResponseDTO(c *domain.Category) CategoryResponseDTO {
@@ -71,6 +74,8 @@ func NewCategoryResponseDTO(c *domain.Category) CategoryResponseDTO {
 		Type:      string(c.Type),
 		CreatedAt: c.CreatedAt,
 		UpdatedAt: c.UpdatedAt,
+		CreatedBy: c.CreatedBy,
+		UpdatedBy: c.UpdatedBy,
 	}
 }
 

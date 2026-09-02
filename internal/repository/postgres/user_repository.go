@@ -33,6 +33,10 @@ func (r *userRepository) withRole(ctx context.Context) *gorm.DB {
 }
 
 func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
+	// Nil on self-registration: nobody was signed in to be the author.
+	actor := domain.ActorFrom(ctx)
+	user.CreatedBy, user.UpdatedBy = actor, actor
+
 	row := model.UserFromDomain(user)
 	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
 		return userErrors.wrap("create user", err)
@@ -102,11 +106,14 @@ func (r *userRepository) List(ctx context.Context, filter domain.UserFilter) ([]
 }
 
 func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
+	user.UpdatedBy = domain.ActorFrom(ctx)
+
 	result := dbFrom(ctx, r.db).
 		Model(&model.UserModel{ID: user.ID}).
 		Updates(map[string]any{
-			"full_name": user.FullName,
-			"role_id":   user.RoleID,
+			"full_name":  user.FullName,
+			"role_id":    user.RoleID,
+			"updated_by": user.UpdatedBy,
 		})
 	if result.Error != nil {
 		return userErrors.wrap("update user", result.Error)
@@ -124,9 +131,18 @@ func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
 	return nil
 }
 
-// Delete: soft delete via the deleted_at column.
+// Delete: soft delete via the deleted_at column, stamped with who did it.
+// One statement rather than Delete plus an update, so the two can never diverge;
+// UpdateColumns keeps updated_at pointing at the last real edit. GORM still adds
+// "deleted_at IS NULL", so deleting twice reports not found as before.
 func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	result := dbFrom(ctx, r.db).Delete(&model.UserModel{}, "id = ?", id)
+	result := dbFrom(ctx, r.db).
+		Model(&model.UserModel{}).
+		Where("id = ?", id).
+		UpdateColumns(map[string]any{
+			"deleted_at": time.Now(),
+			"deleted_by": domain.ActorFrom(ctx),
+		})
 	if result.Error != nil {
 		return userErrors.wrap("delete user", result.Error)
 	}

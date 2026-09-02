@@ -15,6 +15,11 @@ type Role struct {
 	IsSystem    bool // built-in role, must not be deleted or renamed
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
+	// Actor ids; the built-in roles are seeded by migration, so theirs stay nil.
+	CreatedBy *uuid.UUID
+	UpdatedBy *uuid.UUID
+	// Only ever set on a soft-deleted row, which no read returns yet.
+	DeletedBy *uuid.UUID
 	// Filled by the list query only; a single-role read leaves it zero.
 	UserCount int
 	// Written with the role on create; on read only a single-role query fills it.

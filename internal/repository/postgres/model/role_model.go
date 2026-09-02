@@ -15,10 +15,13 @@ type RoleModel struct {
 	Description string    `gorm:"size:255"`
 	IsSystem    bool      `gorm:"not null;default:false"`
 	CreatedAt   time.Time
+	CreatedBy   *uuid.UUID `gorm:"type:uuid"`
 	UpdatedAt   time.Time
+	UpdatedBy   *uuid.UUID `gorm:"type:uuid"`
 	// Read-only: filled by the users join in List, excluded from every write.
 	UserCount int            `gorm:"->;column:user_count"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
+	DeletedBy *uuid.UUID     `gorm:"type:uuid"`
 }
 
 func (RoleModel) TableName() string { return "roles" }
@@ -31,6 +34,9 @@ func (m RoleModel) ToDomain() *domain.Role {
 		IsSystem:    m.IsSystem,
 		CreatedAt:   m.CreatedAt,
 		UpdatedAt:   m.UpdatedAt,
+		CreatedBy:   m.CreatedBy,
+		UpdatedBy:   m.UpdatedBy,
+		DeletedBy:   m.DeletedBy,
 		UserCount:   m.UserCount,
 	}
 }
@@ -43,6 +49,8 @@ func RoleFromDomain(r *domain.Role) RoleModel {
 		IsSystem:    r.IsSystem,
 		CreatedAt:   r.CreatedAt,
 		UpdatedAt:   r.UpdatedAt,
+		CreatedBy:   r.CreatedBy,
+		UpdatedBy:   r.UpdatedBy,
 	}
 }
 

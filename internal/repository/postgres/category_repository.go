@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -23,6 +24,9 @@ func NewCategoryRepository(db *gorm.DB) domain.CategoryRepository {
 }
 
 func (r *categoryRepository) Create(ctx context.Context, category *domain.Category) error {
+	actor := domain.ActorFrom(ctx)
+	category.CreatedBy, category.UpdatedBy = actor, actor
+
 	row := model.CategoryFromDomain(category)
 	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
 		return categoryErrors.wrap("create category", err)
@@ -75,12 +79,15 @@ func (r *categoryRepository) List(ctx context.Context, filter domain.CategoryFil
 }
 
 func (r *categoryRepository) Update(ctx context.Context, category *domain.Category) error {
+	category.UpdatedBy = domain.ActorFrom(ctx)
+
 	result := dbFrom(ctx, r.db).
 		Model(&model.CategoryModel{}).
 		Where("id = ? AND user_id = ?", category.ID, category.UserID).
 		Updates(map[string]any{
-			"name": category.Name,
-			"type": string(category.Type),
+			"name":       category.Name,
+			"type":       string(category.Type),
+			"updated_by": category.UpdatedBy,
 		})
 	if result.Error != nil {
 		return categoryErrors.wrap("update category", result.Error)
@@ -98,10 +105,15 @@ func (r *categoryRepository) Update(ctx context.Context, category *domain.Catego
 	return nil
 }
 
+// Delete: soft delete stamped with who did it, in one statement. See userRepository.Delete.
 func (r *categoryRepository) Delete(ctx context.Context, id, userID uuid.UUID) error {
 	result := dbFrom(ctx, r.db).
+		Model(&model.CategoryModel{}).
 		Where("id = ? AND user_id = ?", id, userID).
-		Delete(&model.CategoryModel{})
+		UpdateColumns(map[string]any{
+			"deleted_at": time.Now(),
+			"deleted_by": domain.ActorFrom(ctx),
+		})
 	if result.Error != nil {
 		return categoryErrors.wrap("delete category", result.Error)
 	}

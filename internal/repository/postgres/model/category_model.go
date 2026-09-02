@@ -15,8 +15,11 @@ type CategoryModel struct {
 	Name      string    `gorm:"size:100;not null"`
 	Type      string    `gorm:"size:20;not null"`
 	CreatedAt time.Time
+	CreatedBy *uuid.UUID `gorm:"type:uuid"`
 	UpdatedAt time.Time
+	UpdatedBy *uuid.UUID     `gorm:"type:uuid"`
 	DeletedAt gorm.DeletedAt `gorm:"index"`
+	DeletedBy *uuid.UUID     `gorm:"type:uuid"`
 }
 
 func (CategoryModel) TableName() string { return "categories" }
@@ -29,6 +32,9 @@ func (m CategoryModel) ToDomain() *domain.Category {
 		Type:      domain.CategoryType(m.Type),
 		CreatedAt: m.CreatedAt,
 		UpdatedAt: m.UpdatedAt,
+		CreatedBy: m.CreatedBy,
+		UpdatedBy: m.UpdatedBy,
+		DeletedBy: m.DeletedBy,
 	}
 }
 
@@ -40,6 +46,8 @@ func CategoryFromDomain(c *domain.Category) CategoryModel {
 		Type:      string(c.Type),
 		CreatedAt: c.CreatedAt,
 		UpdatedAt: c.UpdatedAt,
+		CreatedBy: c.CreatedBy,
+		UpdatedBy: c.UpdatedBy,
 	}
 }
 

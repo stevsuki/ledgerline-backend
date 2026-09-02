@@ -1686,6 +1686,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-01-02T15:04:05Z"
                 },
+                "created_by": {
+                    "description": "deleted_by is left out: a deleted category is never in a response.",
+                    "type": "string",
+                    "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
+                },
                 "id": {
                     "type": "string",
                     "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
@@ -1701,6 +1706,10 @@ const docTemplate = `{
                 "updated_at": {
                     "type": "string",
                     "example": "2026-01-02T15:04:05Z"
+                },
+                "updated_by": {
+                    "type": "string",
+                    "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
                 }
             }
         },
@@ -2041,6 +2050,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-01-02T15:04:05Z"
                 },
+                "created_by": {
+                    "description": "null on the built-in roles, which the migration seeds. deleted_by is left\nout: a deleted role is never in a response.",
+                    "type": "string",
+                    "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
+                },
                 "description": {
                     "type": "string",
                     "example": "Built-in role with access to every menu"
@@ -2067,6 +2081,10 @@ const docTemplate = `{
                 "updated_at": {
                     "type": "string",
                     "example": "2026-01-02T15:04:05Z"
+                },
+                "updated_by": {
+                    "type": "string",
+                    "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
                 },
                 "user_count": {
                     "description": "How many users are assigned to this role; filled by the list only.",
@@ -2160,6 +2178,11 @@ const docTemplate = `{
                     "type": "string",
                     "example": "2026-01-02T15:04:05Z"
                 },
+                "created_by": {
+                    "description": "null when nobody was signed in, as with a self-registered account.\ndeleted_by is left out: a deleted user is never in a response.",
+                    "type": "string",
+                    "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
+                },
                 "email": {
                     "type": "string",
                     "example": "budi@example.com"
@@ -2187,6 +2210,10 @@ const docTemplate = `{
                 "updated_at": {
                     "type": "string",
                     "example": "2026-01-02T15:04:05Z"
+                },
+                "updated_by": {
+                    "type": "string",
+                    "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
                 }
             }
         },
