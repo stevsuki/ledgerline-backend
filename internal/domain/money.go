@@ -8,11 +8,29 @@ import (
 
 // Money: an amount in the currency's smallest unit, integer because float64 loses cents.
 type Money struct {
-	Amount   int64  `json:"amount"`
-	Currency string `json:"currency"`
+	Amount   int64    `json:"amount"`
+	Currency Currency `json:"currency"`
 }
 
-const CurrencyIDR = "IDR"
+// Currency: the currencies the app accepts, matching the CHECK constraints in the schema.
+type Currency string
+
+const (
+	CurrencyIDR Currency = "IDR"
+	CurrencyUSD Currency = "USD"
+	CurrencySGD Currency = "SGD"
+)
+
+func (c Currency) Valid() bool {
+	switch c {
+	case CurrencyIDR, CurrencyUSD, CurrencySGD:
+		return true
+	}
+	return false
+}
+
+// BaseCurrency: the one currency a headline total may be stated in.
+const BaseCurrency = CurrencyIDR
 
 func IDR(amount int64) Money { return Money{Amount: amount, Currency: CurrencyIDR} }
 

@@ -48,6 +48,14 @@ const (
 	CodeRoleInvalidMenu     = "ROLE_INVALID_MENU"
 	CodeRoleInvalidData     = "ROLE_INVALID_DATA"
 
+	// Wallet.
+	CodeWalletNotFound        = "WALLET_NOT_FOUND"
+	CodeWalletNameTaken       = "WALLET_NAME_TAKEN"
+	CodeWalletInvalidData     = "WALLET_INVALID_DATA"
+	CodeWalletInvalidType     = "WALLET_INVALID_TYPE"
+	CodeWalletInvalidCurrency = "WALLET_INVALID_CURRENCY"
+	CodeWalletInvalidCard     = "WALLET_INVALID_CARD"
+
 	// Menu.
 	CodeMenuNotFound = "MENU_NOT_FOUND"
 

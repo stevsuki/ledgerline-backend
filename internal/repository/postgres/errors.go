@@ -62,6 +62,11 @@ var (
 		invalid:  domain.InvalidInput(domain.CodeRoleInvalidMenu, "one of the menu ids does not exist").WithField("permissions"),
 	}
 
+	walletErrors = resourceErrors{
+		notFound: domain.NotFound(domain.CodeWalletNotFound, "wallet not found"),
+		conflict: domain.Conflict(domain.CodeWalletNameTaken, "a wallet with that name already exists").WithField("name"),
+	}
+
 	menuErrors = resourceErrors{
 		notFound: domain.NotFound(domain.CodeMenuNotFound, "menu not found"),
 	}

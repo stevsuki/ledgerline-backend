@@ -1530,6 +1530,321 @@
                     }
                 }
             }
+        },
+        "/wallets": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallets"
+                ],
+                "summary": "List wallets owned by the logged-in user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallets"
+                ],
+                "summary": "Create a wallet",
+                "parameters": [
+                    {
+                        "description": "Wallet data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateWalletRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/wallets/overview": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Only base-currency wallets reach total_held; card debt and other currencies are reported separately, as no exchange rate is available.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallets"
+                ],
+                "summary": "Balance summary across the logged-in user's wallets",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletOverviewResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/wallets/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallets"
+                ],
+                "summary": "Wallet detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallets"
+                ],
+                "summary": "Delete a wallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallets"
+                ],
+                "summary": "Update a wallet",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateWalletRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1819,6 +2134,86 @@
                     "description": "Omitted means the built-in User role; an unknown id is rejected as 400.",
                     "type": "string",
                     "example": "00000000-0000-0000-0000-000000000002"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateWalletRequestDTO": {
+            "type": "object",
+            "required": [
+                "currency",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "balance": {
+                    "description": "No \"required\" on these two: it would reject a 0 balance and include_in_total=false.",
+                    "type": "integer",
+                    "example": 41200000
+                },
+                "credit_limit": {
+                    "description": "Card wallets only; sending either on another type is rejected.",
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 25000000
+                },
+                "currency": {
+                    "type": "string",
+                    "enum": [
+                        "IDR",
+                        "USD",
+                        "SGD"
+                    ],
+                    "example": "IDR"
+                },
+                "due_day": {
+                    "type": "integer",
+                    "maximum": 31,
+                    "minimum": 1,
+                    "example": 18
+                },
+                "icon": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "bank"
+                },
+                "include_in_total": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "example": "BCA Payroll"
+                },
+                "reference": {
+                    "description": "reference and icon are nullable in the table, so they stay optional here.",
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "1234567890"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "bank",
+                        "ewallet",
+                        "card",
+                        "cash"
+                    ],
+                    "example": "bank"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CurrencyAmountResponseDTO": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "example": 1480
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "USD"
                 }
             }
         },
@@ -2169,6 +2564,65 @@
                 }
             }
         },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateWalletRequestDTO": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer",
+                    "example": 41200000
+                },
+                "credit_limit": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 25000000
+                },
+                "currency": {
+                    "type": "string",
+                    "enum": [
+                        "IDR",
+                        "USD",
+                        "SGD"
+                    ],
+                    "example": "IDR"
+                },
+                "due_day": {
+                    "type": "integer",
+                    "maximum": 31,
+                    "minimum": 1,
+                    "example": 18
+                },
+                "icon": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "bank"
+                },
+                "include_in_total": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "example": "BCA Utama"
+                },
+                "reference": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "1234567890"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "bank",
+                        "ewallet",
+                        "card",
+                        "cash"
+                    ],
+                    "example": "bank"
+                }
+            }
+        },
         "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO": {
             "type": "object",
             "properties": {
@@ -2229,6 +2683,102 @@
                 "otp": {
                     "type": "string",
                     "example": "123456"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletOverviewResponseDTO": {
+            "type": "object",
+            "properties": {
+                "base_currency": {
+                    "type": "string",
+                    "example": "IDR"
+                },
+                "counted_wallets": {
+                    "description": "How many wallets total_held is made of.",
+                    "type": "integer",
+                    "example": 3
+                },
+                "held_by_currency": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CurrencyAmountResponseDTO"
+                    }
+                },
+                "owed_on_cards": {
+                    "description": "Negative, or 0 when nothing is owed.",
+                    "type": "integer",
+                    "example": -3240000
+                },
+                "total_held": {
+                    "type": "integer",
+                    "example": 43680000
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO": {
+            "type": "object",
+            "properties": {
+                "balance": {
+                    "type": "integer",
+                    "example": 41200000
+                },
+                "balance_updated_at": {
+                    "description": "When the balance itself last changed, which is not when the row last changed.",
+                    "type": "string",
+                    "example": "2026-08-26T15:04:05Z"
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2026-01-02T15:04:05Z"
+                },
+                "created_by": {
+                    "type": "string",
+                    "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
+                },
+                "credit_limit": {
+                    "description": "null on every type but card.",
+                    "type": "integer",
+                    "example": 25000000
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "IDR"
+                },
+                "due_day": {
+                    "type": "integer",
+                    "example": 18
+                },
+                "icon": {
+                    "type": "string",
+                    "example": "bank"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
+                },
+                "include_in_total": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "name": {
+                    "type": "string",
+                    "example": "BCA Payroll"
+                },
+                "reference": {
+                    "type": "string",
+                    "example": "1234567890"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "bank"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2026-01-02T15:04:05Z"
+                },
+                "updated_by": {
+                    "type": "string",
+                    "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
                 }
             }
         },

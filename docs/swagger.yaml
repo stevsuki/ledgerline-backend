@@ -212,6 +212,70 @@ definitions:
     - full_name
     - password
     type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateWalletRequestDTO:
+    properties:
+      balance:
+        description: 'No "required" on these two: it would reject a 0 balance and
+          include_in_total=false.'
+        example: 41200000
+        type: integer
+      credit_limit:
+        description: Card wallets only; sending either on another type is rejected.
+        example: 25000000
+        minimum: 0
+        type: integer
+      currency:
+        enum:
+        - IDR
+        - USD
+        - SGD
+        example: IDR
+        type: string
+      due_day:
+        example: 18
+        maximum: 31
+        minimum: 1
+        type: integer
+      icon:
+        example: bank
+        maxLength: 50
+        type: string
+      include_in_total:
+        example: true
+        type: boolean
+      name:
+        example: BCA Payroll
+        maxLength: 100
+        minLength: 2
+        type: string
+      reference:
+        description: reference and icon are nullable in the table, so they stay optional
+          here.
+        example: "1234567890"
+        maxLength: 50
+        type: string
+      type:
+        enum:
+        - bank
+        - ewallet
+        - card
+        - cash
+        example: bank
+        type: string
+    required:
+    - currency
+    - name
+    - type
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CurrencyAmountResponseDTO:
+    properties:
+      amount:
+        example: 1480
+        type: integer
+      currency:
+        example: USD
+        type: string
+    type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.FilterOptionDTO:
     properties:
       label:
@@ -467,6 +531,52 @@ definitions:
         example: 00000000-0000-0000-0000-000000000001
         type: string
     type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateWalletRequestDTO:
+    properties:
+      balance:
+        example: 41200000
+        type: integer
+      credit_limit:
+        example: 25000000
+        minimum: 0
+        type: integer
+      currency:
+        enum:
+        - IDR
+        - USD
+        - SGD
+        example: IDR
+        type: string
+      due_day:
+        example: 18
+        maximum: 31
+        minimum: 1
+        type: integer
+      icon:
+        example: bank
+        maxLength: 50
+        type: string
+      include_in_total:
+        example: true
+        type: boolean
+      name:
+        example: BCA Utama
+        maxLength: 100
+        minLength: 2
+        type: string
+      reference:
+        example: "1234567890"
+        maxLength: 50
+        type: string
+      type:
+        enum:
+        - bank
+        - ewallet
+        - card
+        - cash
+        example: bank
+        type: string
+    type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO:
     properties:
       created_at:
@@ -514,6 +624,78 @@ definitions:
     required:
     - email
     - otp
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletOverviewResponseDTO:
+    properties:
+      base_currency:
+        example: IDR
+        type: string
+      counted_wallets:
+        description: How many wallets total_held is made of.
+        example: 3
+        type: integer
+      held_by_currency:
+        items:
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CurrencyAmountResponseDTO'
+        type: array
+      owed_on_cards:
+        description: Negative, or 0 when nothing is owed.
+        example: -3240000
+        type: integer
+      total_held:
+        example: 43680000
+        type: integer
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO:
+    properties:
+      balance:
+        example: 41200000
+        type: integer
+      balance_updated_at:
+        description: When the balance itself last changed, which is not when the row
+          last changed.
+        example: "2026-08-26T15:04:05Z"
+        type: string
+      created_at:
+        example: "2026-01-02T15:04:05Z"
+        type: string
+      created_by:
+        example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
+        type: string
+      credit_limit:
+        description: null on every type but card.
+        example: 25000000
+        type: integer
+      currency:
+        example: IDR
+        type: string
+      due_day:
+        example: 18
+        type: integer
+      icon:
+        example: bank
+        type: string
+      id:
+        example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
+        type: string
+      include_in_total:
+        example: true
+        type: boolean
+      name:
+        example: BCA Payroll
+        type: string
+      reference:
+        example: "1234567890"
+        type: string
+      type:
+        example: bank
+        type: string
+      updated_at:
+        example: "2026-01-02T15:04:05Z"
+        type: string
+      updated_by:
+        example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
+        type: string
     type: object
   github_com_stevensuki_ledgerline-backend_pkg_response.Error:
     properties:
@@ -1501,6 +1683,191 @@ paths:
       summary: Update user data
       tags:
       - users
+  /wallets:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: List wallets owned by the logged-in user
+      tags:
+      - wallets
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Wallet data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateWalletRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Create a wallet
+      tags:
+      - wallets
+  /wallets/{id}:
+    delete:
+      parameters:
+      - description: Wallet ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Delete a wallet
+      tags:
+      - wallets
+    get:
+      parameters:
+      - description: Wallet ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Wallet detail
+      tags:
+      - wallets
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Wallet ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateWalletRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Update a wallet
+      tags:
+      - wallets
+  /wallets/overview:
+    get:
+      description: Only base-currency wallets reach total_held; card debt and other
+        currencies are reported separately, as no exchange rate is available.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletOverviewResponseDTO'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Balance summary across the logged-in user's wallets
+      tags:
+      - wallets
 schemes:
 - http
 - https
