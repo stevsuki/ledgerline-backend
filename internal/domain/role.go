@@ -12,9 +12,11 @@ type Role struct {
 	ID          uuid.UUID
 	Name        string
 	Description string
-	IsSystem    bool // built-in role, must not be deleted or renamed
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	// Icon key the front end picked; nullable in the table, so "" means none.
+	Icon      string
+	IsSystem  bool // built-in role, must not be deleted or renamed
+	CreatedAt time.Time
+	UpdatedAt time.Time
 	// Actor ids; the built-in roles are seeded by migration, so theirs stay nil.
 	CreatedBy *uuid.UUID
 	UpdatedBy *uuid.UUID
@@ -60,6 +62,7 @@ type RoleRepository interface {
 type CreateRoleInput struct {
 	Name        string
 	Description string
+	Icon        string
 	Permissions []CreateRoleMenuPermissionInput
 }
 
@@ -75,6 +78,7 @@ type CreateRoleMenuPermissionInput struct {
 type UpdateRoleInput struct {
 	Name        *string
 	Description *string
+	Icon        *string
 	// nil leaves the permissions untouched; an empty slice clears them.
 	Permissions *[]CreateRoleMenuPermissionInput
 }

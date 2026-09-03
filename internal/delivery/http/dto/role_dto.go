@@ -11,8 +11,10 @@ import (
 
 // CreateRoleRequestDTO: create role payload (admin only), lengths from migration 000006.
 type CreateRoleRequestDTO struct {
-	Name        string                               `json:"name" binding:"required,min=2,max=50" example:"Finance Staff"`
-	Description string                               `json:"description" binding:"omitempty,max=255" example:"Handles day to day transactions"`
+	Name        string `json:"name" binding:"required,min=2,max=50" example:"Finance Staff"`
+	Description string `json:"description" binding:"omitempty,max=255" example:"Handles day to day transactions"`
+	// icon is nullable in the table, so it stays optional here.
+	Icon        string                               `json:"icon" binding:"omitempty,max=50" example:"shield-check"`
 	Permissions []CreateRoleMenuPermissionRequestDTO `json:"permissions"`
 }
 
@@ -42,6 +44,7 @@ func (r CreateRoleRequestDTO) ToInput() domain.CreateRoleInput {
 	return domain.CreateRoleInput{
 		Name:        r.Name,
 		Description: r.Description,
+		Icon:        r.Icon,
 		Permissions: permissions,
 	}
 }
@@ -50,12 +53,13 @@ func (r CreateRoleRequestDTO) ToInput() domain.CreateRoleInput {
 type UpdateRoleRequestDTO struct {
 	Name        *string `json:"name" binding:"omitempty,min=2,max=50" example:"Finance Lead"`
 	Description *string `json:"description" binding:"omitempty,max=255" example:"Approves transactions above the limit"`
+	Icon        *string `json:"icon" binding:"omitempty,max=50" example:"shield-check"`
 	// Omitted leaves the permissions untouched; an empty array clears them.
 	Permissions *[]CreateRoleMenuPermissionRequestDTO `json:"permissions"`
 }
 
 func (r UpdateRoleRequestDTO) ToInput() domain.UpdateRoleInput {
-	input := domain.UpdateRoleInput{Name: r.Name, Description: r.Description}
+	input := domain.UpdateRoleInput{Name: r.Name, Description: r.Description, Icon: r.Icon}
 	if r.Permissions == nil {
 		return input
 	}
@@ -105,6 +109,7 @@ type RoleResponseDTO struct {
 	ID          uuid.UUID `json:"id" example:"00000000-0000-0000-0000-000000000001"`
 	Name        string    `json:"name" example:"Admin"`
 	Description string    `json:"description" example:"Built-in role with access to every menu"`
+	Icon        string    `json:"icon" example:"shield-check"`
 	// Built-in roles must not be renamed or deleted; the UI hides those actions.
 	IsSystem  bool      `json:"is_system" example:"true"`
 	CreatedAt time.Time `json:"created_at" example:"2026-01-02T15:04:05Z"`
@@ -151,6 +156,7 @@ func NewRoleResponseDTO(r *domain.Role) RoleResponseDTO {
 		ID:          r.ID,
 		Name:        r.Name,
 		Description: r.Description,
+		Icon:        r.Icon,
 		IsSystem:    r.IsSystem,
 		CreatedAt:   r.CreatedAt,
 		UpdatedAt:   r.UpdatedAt,

@@ -2094,6 +2094,12 @@ const docTemplate = `{
                     "maxLength": 255,
                     "example": "Handles day to day transactions"
                 },
+                "icon": {
+                    "description": "icon is nullable in the table, so it stays optional here.",
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "shield-check"
+                },
                 "name": {
                     "type": "string",
                     "maxLength": 50,
@@ -2454,6 +2460,10 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Built-in role with access to every menu"
                 },
+                "icon": {
+                    "type": "string",
+                    "example": "shield-check"
+                },
                 "id": {
                     "type": "string",
                     "example": "00000000-0000-0000-0000-000000000001"
@@ -2535,6 +2545,11 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "example": "Approves transactions above the limit"
+                },
+                "icon": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "shield-check"
                 },
                 "name": {
                     "type": "string",

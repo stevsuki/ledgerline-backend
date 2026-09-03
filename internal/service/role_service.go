@@ -61,6 +61,7 @@ func (s *roleService) Create(ctx context.Context, input domain.CreateRoleInput) 
 		ID:          id,
 		Name:        name,
 		Description: strings.TrimSpace(input.Description),
+		Icon:        strings.TrimSpace(input.Icon),
 		Permissions: permissions,
 	}
 	// A duplicate name is rejected by the unique index; the repository writes both in one transaction.
@@ -117,6 +118,9 @@ func (s *roleService) Update(ctx context.Context, id uuid.UUID, input domain.Upd
 	// Description stays editable on built-in roles; only the name is fixed.
 	if input.Description != nil {
 		role.Description = strings.TrimSpace(*input.Description)
+	}
+	if input.Icon != nil {
+		role.Icon = strings.TrimSpace(*input.Icon)
 	}
 
 	// nil means the request left permissions alone; an empty slice clears them.

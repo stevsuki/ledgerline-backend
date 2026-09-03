@@ -175,6 +175,11 @@ definitions:
         example: Handles day to day transactions
         maxLength: 255
         type: string
+      icon:
+        description: icon is nullable in the table, so it stays optional here.
+        example: shield-check
+        maxLength: 50
+        type: string
       name:
         example: Finance Staff
         maxLength: 50
@@ -446,6 +451,9 @@ definitions:
       description:
         example: Built-in role with access to every menu
         type: string
+      icon:
+        example: shield-check
+        type: string
       id:
         example: 00000000-0000-0000-0000-000000000001
         type: string
@@ -507,6 +515,10 @@ definitions:
       description:
         example: Approves transactions above the limit
         maxLength: 255
+        type: string
+      icon:
+        example: shield-check
+        maxLength: 50
         type: string
       name:
         example: Finance Lead

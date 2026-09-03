@@ -13,6 +13,7 @@ type RoleModel struct {
 	ID          uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Name        string    `gorm:"size:50;not null"`
 	Description string    `gorm:"size:255"`
+	Icon        string    `gorm:"size:50"`
 	IsSystem    bool      `gorm:"not null;default:false"`
 	CreatedAt   time.Time
 	CreatedBy   *uuid.UUID `gorm:"type:uuid"`
@@ -31,6 +32,7 @@ func (m RoleModel) ToDomain() *domain.Role {
 		ID:          m.ID,
 		Name:        m.Name,
 		Description: m.Description,
+		Icon:        m.Icon,
 		IsSystem:    m.IsSystem,
 		CreatedAt:   m.CreatedAt,
 		UpdatedAt:   m.UpdatedAt,
@@ -46,6 +48,7 @@ func RoleFromDomain(r *domain.Role) RoleModel {
 		ID:          r.ID,
 		Name:        r.Name,
 		Description: r.Description,
+		Icon:        r.Icon,
 		IsSystem:    r.IsSystem,
 		CreatedAt:   r.CreatedAt,
 		UpdatedAt:   r.UpdatedAt,
