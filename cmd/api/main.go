@@ -69,7 +69,6 @@ func run() error {
 
 	// Dependency wiring: repository -> service -> handler.
 	userRepo := postgres.NewUserRepository(db)
-	categoryRepo := postgres.NewCategoryRepository(db)
 	passwordResetTokenRepo := postgres.NewPasswordResetTokenRepository(db)
 	roleRepo := postgres.NewRoleRepository(db)
 	menuRepo := postgres.NewMenuRepository(db)
@@ -103,7 +102,6 @@ func run() error {
 
 	userService := service.NewUserService(userRepo, hasher, auditLogRepo)
 	authService := service.NewAuthService(userRepo, hasher, tokenManager, mail, otpGenerator, passwordResetTokenRepo, menuRepo, txManager, cfg.OTP.TTL, auditLogRepo)
-	categoryService := service.NewCategoryService(categoryRepo)
 	roleService := service.NewRoleService(roleRepo, auditLogRepo)
 	auditLogService := service.NewAuditLogService(auditLogRepo)
 	walletService := service.NewWalletService(walletRepo, auditLogRepo)
@@ -114,7 +112,6 @@ func run() error {
 		TokenManager: tokenManager,
 		Auth:         handler.NewAuthHandler(authService),
 		User:         handler.NewUserHandler(userService),
-		Category:     handler.NewCategoryHandler(categoryService),
 		Health:       handler.NewHealthHandler(db, cfg.App.Version),
 		Role:         handler.NewRoleHandler(roleService),
 		AuditLog:     handler.NewAuditLogHandler(auditLogService),

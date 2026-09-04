@@ -87,7 +87,7 @@ func TestWriteKeepsInternalDetailOutOfTheBody(t *testing.T) {
 func TestWriteFieldAndRetryAfter(t *testing.T) {
 	t.Parallel()
 
-	err := domain.InvalidInput(domain.CodeCategoryInvalidType, "category type must be income or expense").
+	err := domain.InvalidInput(domain.CodeWalletInvalidType, "wallet type must be bank, ewallet, card or cash").
 		WithField("type")
 	_, body := writeErr(t, err)
 

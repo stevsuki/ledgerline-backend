@@ -109,7 +109,7 @@ func (r *walletRepository) Update(ctx context.Context, wallet *domain.Wallet) er
 	return nil
 }
 
-// Delete: soft delete stamped with who did it, in one statement. See categoryRepository.Delete.
+// Delete: soft delete stamped with who did it, in one statement.
 func (r *walletRepository) Delete(ctx context.Context, id, userID uuid.UUID) error {
 	result := dbFrom(ctx, r.db).
 		Model(&model.WalletModel{}).

@@ -35,12 +35,6 @@ const (
 	CodeUserInvalidRole = "USER_INVALID_ROLE"
 	CodeUserInvalidData = "USER_INVALID_DATA"
 
-	// Category.
-	CodeCategoryNotFound    = "CATEGORY_NOT_FOUND"
-	CodeCategoryNameTaken   = "CATEGORY_NAME_TAKEN"
-	CodeCategoryInvalidType = "CATEGORY_INVALID_TYPE"
-	CodeCategoryInvalidData = "CATEGORY_INVALID_DATA"
-
 	// Role.
 	CodeRoleNotFound        = "ROLE_NOT_FOUND"
 	CodeRoleNameTaken       = "ROLE_NAME_TAKEN"

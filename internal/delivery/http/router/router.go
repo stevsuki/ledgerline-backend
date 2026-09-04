@@ -24,7 +24,6 @@ type Dependencies struct {
 	TokenManager domain.TokenManager
 	Auth         *handler.AuthHandler
 	User         *handler.UserHandler
-	Category     *handler.CategoryHandler
 	Health       *handler.HealthHandler
 	Role         *handler.RoleHandler
 	AuditLog     *handler.AuditLogHandler
@@ -66,7 +65,6 @@ func New(deps Dependencies) *gin.Engine {
 	v1 := engine.Group("/api/v1")
 	registerAuthRoutes(v1, deps)
 	registerUserRoutes(v1, deps)
-	registerCategoryRoutes(v1, deps)
 	registerRoleRoutes(v1, deps)
 	registerAuditLogRoutes(v1, deps)
 	registerWalletRoutes(v1, deps)
@@ -97,17 +95,6 @@ func registerUserRoutes(rg *gin.RouterGroup, deps Dependencies) {
 		users.DELETE("/:id", deps.User.Delete)
 
 		// TODO: move create, update and delete behind middleware.RequireRoles(domain.RoleIDAdmin).
-	}
-}
-
-func registerCategoryRoutes(rg *gin.RouterGroup, deps Dependencies) {
-	categories := rg.Group("/categories", middleware.Authenticate(deps.TokenManager))
-	{
-		categories.POST("", deps.Category.Create)
-		categories.GET("", deps.Category.List)
-		categories.GET("/:id", deps.Category.GetByID)
-		categories.PATCH("/:id", deps.Category.Update)
-		categories.DELETE("/:id", deps.Category.Delete)
 	}
 }
 
