@@ -67,6 +67,11 @@ var (
 		conflict: domain.Conflict(domain.CodeWalletNameTaken, "a wallet with that name already exists").WithField("name"),
 	}
 
+	masterCategoryErrors = resourceErrors{
+		notFound: domain.NotFound(domain.CodeMasterCategoryNotFound, "master category not found"),
+		conflict: domain.Conflict(domain.CodeMasterCategoryNameTaken, "a master category with that name already exists").WithField("name"),
+	}
+
 	menuErrors = resourceErrors{
 		notFound: domain.NotFound(domain.CodeMenuNotFound, "menu not found"),
 	}

@@ -56,6 +56,10 @@ const (
 	CodeWalletInvalidCurrency = "WALLET_INVALID_CURRENCY"
 	CodeWalletInvalidCard     = "WALLET_INVALID_CARD"
 
+	// Master category.
+	CodeMasterCategoryNotFound  = "MASTER_CATEGORY_NOT_FOUND"
+	CodeMasterCategoryNameTaken = "MASTER_CATEGORY_NAME_TAKEN"
+
 	// Menu.
 	CodeMenuNotFound = "MENU_NOT_FOUND"
 
