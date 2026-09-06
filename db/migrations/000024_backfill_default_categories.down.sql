@@ -1,0 +1,7 @@
+-- Deliberately empty.
+--
+-- The up is a backfill, and nothing records which rows it created: a category
+-- named "Housing" may have come from this migration or from the user's own
+-- hand, and deleting the wrong one takes their transactions' category with it.
+-- Rolling back to before 000024 leaves the rows in place, which is the safe
+-- half of the choice.

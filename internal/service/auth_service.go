@@ -35,6 +35,7 @@ type authService struct {
 	tx                     domain.TxManager
 	otpTTL                 time.Duration
 	auditLogRepo           domain.AuditLogRepository
+	categoryRepo           domain.CategoryRepository
 }
 
 func NewAuthService(
@@ -48,8 +49,9 @@ func NewAuthService(
 	tx domain.TxManager,
 	otpTTL time.Duration,
 	auditLogRepo domain.AuditLogRepository,
+	categoryRepo domain.CategoryRepository,
 ) domain.AuthService {
-	return &authService{userRepo: userRepo, hasher: hasher, token: token, mailer: mailer, otp: otp, passwordResetTokenRepo: passwordResetTokenRepo, menuRepo: menuRepo, tx: tx, otpTTL: otpTTL, auditLogRepo: auditLogRepo}
+	return &authService{userRepo: userRepo, hasher: hasher, token: token, mailer: mailer, otp: otp, passwordResetTokenRepo: passwordResetTokenRepo, menuRepo: menuRepo, tx: tx, otpTTL: otpTTL, auditLogRepo: auditLogRepo, categoryRepo: categoryRepo}
 }
 
 func (s *authService) Register(ctx context.Context, input domain.RegisterInput) (*domain.User, error) {
@@ -80,7 +82,14 @@ func (s *authService) Register(ctx context.Context, input domain.RegisterInput) 
 		PasswordHash: hashed,
 		RoleID:       domain.RoleIDUser,
 	}
-	if err := s.userRepo.Create(ctx, user); err != nil {
+
+	err = s.tx.Do(ctx, func(ctx context.Context) error {
+		if err := s.userRepo.Create(ctx, user); err != nil {
+			return err
+		}
+		return s.categoryRepo.SeedDefaults(ctx, user.ID)
+	})
+	if err != nil {
 		return nil, err
 	}
 	return user, nil

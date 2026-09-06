@@ -71,6 +71,8 @@ The source of truth is [internal/domain/error_codes.go](internal/domain/error_co
 | `CATEGORY_NOT_FOUND` | 404 | No category with that id for this user |
 | `CATEGORY_NAME_TAKEN` | 409 | The user already has a category with that name (`field: name`) |
 | `CATEGORY_INVALID_TYPE` | 400 | `type` is neither `income` nor `expense` (`field: type`) |
+| `CATEGORY_INVALID_MASTER` | 400 | `master_category_id` names no master row (`field: master_category_id`) |
+| `CATEGORY_INVALID_SLUG` | 400 | `slug` on `/categories/options` is neither `filter` nor `budget` (`field: slug`) |
 | `CATEGORY_INVALID_DATA` | 400 | Another category field was rejected |
 
 ## Role

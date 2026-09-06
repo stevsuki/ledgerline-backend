@@ -51,6 +51,12 @@ var (
 		invalid:  domain.InvalidInput(domain.CodeUserInvalidRole, "role_id does not refer to an existing role").WithField("role_id"),
 	}
 
+	categoryErrors = resourceErrors{
+		notFound: domain.NotFound(domain.CodeCategoryNotFound, "category not found"),
+		conflict: domain.Conflict(domain.CodeCategoryNameTaken, "a category with that name already exists").WithField("name"),
+		invalid:  domain.InvalidInput(domain.CodeCategoryInvalidMaster, "category_id does not refer to an existing master category").WithField("category_id"),
+	}
+
 	roleErrors = resourceErrors{
 		notFound: domain.NotFound(domain.CodeRoleNotFound, "role not found"),
 		conflict: domain.Conflict(domain.CodeRoleNameTaken, "a role with that name already exists").WithField("name"),
