@@ -30,7 +30,6 @@ func usage(name string, limit, spent int64, threshold int, isFixed bool) domain.
 func TestBudgetOverviewOf(t *testing.T) {
 	t.Parallel()
 
-	// 27 August: 4 days left of 31, 87% of the cycle gone.
 	now := time.Date(2025, time.August, 27, 10, 0, 0, 0, time.UTC)
 
 	usages := []domain.BudgetUsage{
@@ -218,7 +217,6 @@ func TestBudgetService_CreateChecksCategory(t *testing.T) {
 			require.ErrorAs(t, err, &domainErr)
 			assert.Equal(t, tt.wantCode, domainErr.Code)
 			assert.Equal(t, "category_id", domainErr.Field)
-			// The budget is never written when the category is refused.
 			budgets.AssertNotCalled(t, "Create", mock.Anything, mock.Anything)
 		})
 	}
@@ -238,7 +236,6 @@ func TestBudgetOverviewOf_LeavesOtherCurrenciesOut(t *testing.T) {
 	assert.Equal(t, int64(6_000_000), overview.TotalAllocated)
 	assert.Equal(t, 1, overview.CategoryCount)
 	assert.Equal(t, 1, overview.UncountedBudgets)
-	// The bar still closes on 100 over what it did count.
 	require.Len(t, overview.Shares, 1)
 	assert.Equal(t, 100, overview.Shares[0].Percent)
 }

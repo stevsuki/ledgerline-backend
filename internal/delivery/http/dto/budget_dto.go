@@ -50,22 +50,20 @@ func (c UpdateBudgetRequestDTO) ToInput() domain.UpdateBudgetInput {
 }
 
 type BudgetResponseDTO struct {
-	ID           uuid.UUID `json:"id" example:"b0000000-0000-0000-0000-000000000002"`
-	CategoryID   uuid.UUID `json:"category_id" example:"b0000000-0000-0000-0000-000000000002"`
-	CategoryName string    `json:"category_name" example:"Food & Drink"`
-	Icon         string    `json:"icon" example:"food"`
-	Color        string    `json:"color" example:"c2"`
-	Currency     string    `json:"currency" example:"IDR" enum:"IDR,USD,SGD"`
-	MonthlyLimit int64     `json:"monthly_limit" example:"10000000"`
-	Spent        int64     `json:"spent" example:"8400000"`
-	// Negative once the limit is passed.
-	Remaining   int64 `json:"remaining" example:"1600000"`
-	UsedPercent int   `json:"used_percent" example:"84"`
-	IsOver      bool  `json:"is_over" example:"false"`
-
-	AlertThresholdPercent int  `json:"alert_threshold_percent" example:"80"`
-	IsFixed               bool `json:"is_fixed" example:"false"`
-	Rollover              bool `json:"rollover" example:"false"`
+	ID                    uuid.UUID `json:"id" example:"b0000000-0000-0000-0000-000000000002"`
+	CategoryID            uuid.UUID `json:"category_id" example:"b0000000-0000-0000-0000-000000000002"`
+	CategoryName          string    `json:"category_name" example:"Food & Drink"`
+	Icon                  string    `json:"icon" example:"food"`
+	Color                 string    `json:"color" example:"c2"`
+	Currency              string    `json:"currency" example:"IDR" enum:"IDR,USD,SGD"`
+	MonthlyLimit          int64     `json:"monthly_limit" example:"10000000"`
+	Spent                 int64     `json:"spent" example:"8400000"`
+	Remaining             int64     `json:"remaining" example:"1600000"`
+	UsedPercent           int       `json:"used_percent" example:"84"`
+	IsOver                bool      `json:"is_over" example:"false"`
+	AlertThresholdPercent int       `json:"alert_threshold_percent" example:"80"`
+	IsFixed               bool      `json:"is_fixed" example:"false"`
+	Rollover              bool      `json:"rollover" example:"false"`
 }
 
 func NewBudgetResponseDTO(budget *domain.Budget) BudgetResponseDTO {
@@ -96,25 +94,21 @@ func NewBudgetResponseDTOs(budgets []domain.Budget) []BudgetResponseDTO {
 }
 
 type BudgetOverviewResponseDTO struct {
-	// The one currency the headline is stated in; budgets in another are not summed.
-	Currency             string `json:"currency" example:"IDR"`
-	TotalBudgetAllocated int64  `json:"total_budget_allocated" example:"10000000"`
-	TotalBudgetSpent     int64  `json:"total_budget_spent" example:"9000000"`
-	// Negative once the allocation is passed.
-	TotalBudgetLeft int64 `json:"total_budget_left" example:"1000000"`
-	AcrossCategory  int   `json:"across_category" example:"6"`
-	// Budgets in another currency, left out of every figure above.
-	UncountedBudgets int  `json:"uncounted_budgets" example:"0"`
-	UsedPercent      int  `json:"used_percent" example:"90"`
-	IsOver           bool `json:"is_over" example:"false"`
-	DaysLeft         int  `json:"days_left" example:"4"`
-	// What used_percent is early or late against.
-	CycleElapsedPercent int                `json:"cycle_elapsed_percent" example:"87"`
-	Shares              []BudgetShareDTO   `json:"shares"`
-	Alert               []NeedAttentionDTO `json:"alert"`
+	Currency             string             `json:"currency" example:"IDR"`
+	TotalBudgetAllocated int64              `json:"total_budget_allocated" example:"10000000"`
+	TotalBudgetSpent     int64              `json:"total_budget_spent" example:"9000000"`
+	TotalBudgetLeft      int64              `json:"total_budget_left" example:"1000000"`
+	AcrossCategory       int                `json:"across_category" example:"6"`
+	UncountedBudgets     int                `json:"uncounted_budgets" example:"0"`
+	UsedPercent          int                `json:"used_percent" example:"90"`
+	IsOver               bool               `json:"is_over" example:"false"`
+	DaysLeft             int                `json:"days_left" example:"4"`
+	CycleElapsedPercent  int                `json:"cycle_elapsed_percent" example:"87"`
+	Shares               []BudgetShareDTO   `json:"shares"`
+	Alert                []NeedAttentionDTO `json:"alert"`
 }
 
-// BudgetShareDTO: one slice of the allocation bar; the slices add up to 100.
+// BudgetShareDTO: one slice of the allocation bar.
 type BudgetShareDTO struct {
 	CategoryID   uuid.UUID `json:"category_id" example:"b0000000-0000-0000-0000-000000000002"`
 	CategoryName string    `json:"category_name" example:"Food & Drink"`
@@ -122,21 +116,20 @@ type BudgetShareDTO struct {
 	Percent      int       `json:"percent" example:"24"`
 }
 
-// NeedAttentionDTO: figures only, so the client owns the wording.
+// NeedAttentionDTO: figures only; the client writes the wording.
 type NeedAttentionDTO struct {
-	BudgetID     uuid.UUID `json:"budget_id" example:"b0000000-0000-0000-0000-000000000002"`
-	CategoryID   uuid.UUID `json:"category_id" example:"b0000000-0000-0000-0000-000000000002"`
-	CategoryName string    `json:"category_name" example:"Food & Drink"`
-	Icon         string    `json:"icon" example:"food"`
-	Color        string    `json:"color" example:"c2"`
-	MonthlyLimit int64     `json:"monthly_limit" example:"4000000"`
-	Spent        int64     `json:"spent" example:"4320000"`
-	// Negative once the limit is passed.
-	Remaining             int64 `json:"remaining" example:"-320000"`
-	UsedPercent           int   `json:"used_percent" example:"108"`
-	AlertThresholdPercent int   `json:"alert_threshold_percent" example:"80"`
-	IsFixed               bool  `json:"is_fixed" example:"false"`
-	IsOver                bool  `json:"is_over" example:"true"`
+	BudgetID              uuid.UUID `json:"budget_id" example:"b0000000-0000-0000-0000-000000000002"`
+	CategoryID            uuid.UUID `json:"category_id" example:"b0000000-0000-0000-0000-000000000002"`
+	CategoryName          string    `json:"category_name" example:"Food & Drink"`
+	Icon                  string    `json:"icon" example:"food"`
+	Color                 string    `json:"color" example:"c2"`
+	MonthlyLimit          int64     `json:"monthly_limit" example:"4000000"`
+	Spent                 int64     `json:"spent" example:"4320000"`
+	Remaining             int64     `json:"remaining" example:"-320000"`
+	UsedPercent           int       `json:"used_percent" example:"108"`
+	AlertThresholdPercent int       `json:"alert_threshold_percent" example:"80"`
+	IsFixed               bool      `json:"is_fixed" example:"false"`
+	IsOver                bool      `json:"is_over" example:"true"`
 }
 
 func NewBudgetOverviewResponseDTO(o domain.BudgetOverview) BudgetOverviewResponseDTO {

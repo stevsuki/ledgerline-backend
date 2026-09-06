@@ -12,11 +12,10 @@ import (
 
 // CreateUserRequestDTO: create user payload (admin only).
 type CreateUserRequestDTO struct {
-	Email    string `json:"email" binding:"required,email" example:"budi@example.com"`
-	FullName string `json:"full_name" binding:"required,min=3,max=100" example:"Budi Santoso"`
-	Password string `json:"password" binding:"required,min=8,max=72" example:"Rahasia123!"`
-	// Omitted means the built-in User role; an unknown id is rejected as 400.
-	RoleID uuid.UUID `json:"role_id" binding:"omitempty" example:"00000000-0000-0000-0000-000000000002"`
+	Email    string    `json:"email" binding:"required,email" example:"budi@example.com"`
+	FullName string    `json:"full_name" binding:"required,min=3,max=100" example:"Budi Santoso"`
+	Password string    `json:"password" binding:"required,min=8,max=72" example:"Rahasia123!"`
+	RoleID   uuid.UUID `json:"role_id" binding:"omitempty" example:"00000000-0000-0000-0000-000000000002"`
 }
 
 func (r CreateUserRequestDTO) ToInput() domain.CreateUserInput {
@@ -40,7 +39,6 @@ func (r UpdateUserRequestDTO) ToInput() domain.UpdateUserInput {
 
 // userSort: only columns in this map may enter ORDER BY.
 var userSort = pagination.Sortable{
-	// Qualified: the list query joins roles, which owns columns of the same name.
 	Allowed: pagination.Whitelist{
 		"email":      "users.email",
 		"full_name":  "users.full_name",
@@ -65,16 +63,14 @@ func (q ListUserQueryDTO) OrderBy() (string, error) { return userSort.OrderBy(q.
 
 // UserResponseDTO: the user shape that is safe to send to clients.
 type UserResponseDTO struct {
-	ID        uuid.UUID `json:"id" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
-	Email     string    `json:"email" example:"budi@example.com"`
-	FullName  string    `json:"full_name" example:"Budi Santoso"`
-	RoleID    uuid.UUID `json:"role_id" example:"00000000-0000-0000-0000-000000000002"`
-	Role      string    `json:"role" example:"User"`
-	Status    string    `json:"status" example:"enabled"`
-	CreatedAt time.Time `json:"created_at" example:"2026-01-02T15:04:05Z"`
-	UpdatedAt time.Time `json:"updated_at" example:"2026-01-02T15:04:05Z"`
-	// null when nobody was signed in, as with a self-registered account.
-	// deleted_by is left out: a deleted user is never in a response.
+	ID        uuid.UUID  `json:"id" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
+	Email     string     `json:"email" example:"budi@example.com"`
+	FullName  string     `json:"full_name" example:"Budi Santoso"`
+	RoleID    uuid.UUID  `json:"role_id" example:"00000000-0000-0000-0000-000000000002"`
+	Role      string     `json:"role" example:"User"`
+	Status    string     `json:"status" example:"enabled"`
+	CreatedAt time.Time  `json:"created_at" example:"2026-01-02T15:04:05Z"`
+	UpdatedAt time.Time  `json:"updated_at" example:"2026-01-02T15:04:05Z"`
 	CreatedBy *uuid.UUID `json:"created_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
 	UpdatedBy *uuid.UUID `json:"updated_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
 }

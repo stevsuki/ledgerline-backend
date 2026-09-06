@@ -27,8 +27,7 @@ func (s *WalletService) Overview(ctx context.Context, userID uuid.UUID) (domain.
 	return s.walletRepo.Overview(ctx, userID)
 }
 
-// checkCardFields validates the card-only fields against the type they will be
-// stored with. Sending them for anything but a card is a mistake worth naming.
+// checkCardFields: the card-only fields must match the type stored with them.
 func checkCardFields(walletType domain.WalletType, limit *int64, dueDay *int) error {
 	if walletType != domain.WalletTypeCard {
 		if limit != nil || dueDay != nil {
@@ -148,8 +147,6 @@ func (s *WalletService) Update(ctx context.Context, userID, id uuid.UUID, input 
 		wallet.DueDay = input.DueDay
 	}
 
-	// Judged against the type the wallet ends up with. Switching away from card
-	// clears the two fields rather than failing: nothing displays them any more.
 	if wallet.Type != domain.WalletTypeCard {
 		if input.CreditLimit != nil || input.DueDay != nil {
 			return nil, domain.InvalidInput(domain.CodeWalletInvalidCard,

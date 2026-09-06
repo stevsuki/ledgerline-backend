@@ -31,7 +31,6 @@ func (r *roleRepository) List(ctx context.Context, filter domain.RoleFilter) ([]
 		query = query.Where("LOWER(roles.name) LIKE ? OR LOWER(roles.description) LIKE ?", keyword, keyword)
 	}
 
-	// Counted before the join: one row per role, not one per user.
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, roleErrors.wrap("count roles", err)
@@ -45,7 +44,6 @@ func (r *roleRepository) List(ctx context.Context, filter domain.RoleFilter) ([]
 		orderBy = defaultRoleOrder
 	}
 
-	// LEFT JOIN keeps unused roles at user_count 0; deleted_at is filtered by hand here.
 	var rows []model.RoleModel
 	err := query.
 		Select("roles.*, COUNT(users.id) AS user_count").
@@ -102,7 +100,6 @@ func (r *roleRepository) Create(ctx context.Context, role *domain.Role) error {
 }
 
 func (r *roleRepository) Update(ctx context.Context, role *domain.Role, permissions []domain.RoleMenuPermission) error {
-	// Save writes the whole row, so created_by survives only because GetByID read it back.
 	role.UpdatedBy = domain.ActorFrom(ctx)
 
 	return dbFrom(ctx, r.db).Transaction(func(tx *gorm.DB) error {
@@ -111,14 +108,12 @@ func (r *roleRepository) Update(ctx context.Context, role *domain.Role, permissi
 			return roleErrors.wrap("update role", err)
 		}
 
-		// Columns with database defaults come back via RETURNING.
 		role.UpdatedAt = row.UpdatedAt
 
 		if permissions == nil {
 			return nil
 		}
 
-		// The request carries the full matrix, so stale rows have to go first.
 		if err := tx.Where("role_id = ?", role.ID).Delete(&model.RoleMenuPermissionModel{}).Error; err != nil {
 			return roleErrors.wrap("clear role permissions", err)
 		}

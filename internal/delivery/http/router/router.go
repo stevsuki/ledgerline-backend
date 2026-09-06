@@ -8,7 +8,6 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 
-	// Blank import: registers the swag-generated documentation.
 	_ "github.com/stevensuki/ledgerline-backend/docs"
 	"github.com/stevensuki/ledgerline-backend/internal/config"
 	"github.com/stevensuki/ledgerline-backend/internal/delivery/http/handler"
@@ -98,7 +97,6 @@ func registerUserRoutes(rg *gin.RouterGroup, deps Dependencies) {
 		users.PATCH("/:id", deps.User.Update)
 		users.DELETE("/:id", deps.User.Delete)
 
-		// TODO: move create, update and delete behind middleware.RequireRoles(domain.RoleIDAdmin).
 	}
 }
 
@@ -123,7 +121,6 @@ func registerRoleRoutes(rg *gin.RouterGroup, deps Dependencies) {
 		roles.PATCH("/:id", deps.Role.Update)
 		roles.DELETE("/:id", deps.Role.Delete)
 
-		// TODO: move create, update and delete behind middleware.RequireRoles(domain.RoleIDAdmin).
 	}
 }
 

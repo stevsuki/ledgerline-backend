@@ -9,17 +9,16 @@ import (
 )
 
 type MenuModel struct {
-	ID        uuid.UUID  `gorm:"type:uuid;primaryKey"`
-	ParentID  *uuid.UUID `gorm:"type:uuid"`
-	Code      string     `gorm:"size:100;not null"`
-	Name      string     `gorm:"size:100;not null"`
-	Path      *string    `gorm:"size:255"`
-	Icon      *string    `gorm:"size:50"`
-	SortOrder int        `gorm:"not null;default:0"`
-	IsActive  bool       `gorm:"not null;default:true"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	// Read-only: filled by the permissions join, excluded from every write.
+	ID         uuid.UUID  `gorm:"type:uuid;primaryKey"`
+	ParentID   *uuid.UUID `gorm:"type:uuid"`
+	Code       string     `gorm:"size:100;not null"`
+	Name       string     `gorm:"size:100;not null"`
+	Path       *string    `gorm:"size:255"`
+	Icon       *string    `gorm:"size:50"`
+	SortOrder  int        `gorm:"not null;default:0"`
+	IsActive   bool       `gorm:"not null;default:true"`
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
 	CanCreate  bool `gorm:"->;column:can_create"`
 	CanRead    bool `gorm:"->;column:can_read"`
 	CanUpdate  bool `gorm:"->;column:can_update"`

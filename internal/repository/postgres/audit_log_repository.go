@@ -28,7 +28,6 @@ func (r *auditLogRepository) filtered(ctx context.Context, filter domain.AuditLo
 	query := dbFrom(ctx, r.db).Model(&model.AuditLogModel{})
 
 	if filter.Search != "" {
-		// Searches detail_text, not the raw jsonb whose key names would match blindly.
 		keyword := "%" + strings.ToLower(filter.Search) + "%"
 		query = query.Where(
 			`(LOWER(user_full_name) LIKE ? OR LOWER(action) LIKE ?
@@ -138,7 +137,6 @@ func (r *auditLogRepository) Overview(ctx context.Context, window time.Duration)
 
 // DistinctActors: one row per person with their latest name, ordered by name.
 func (r *auditLogRepository) DistinctActors(ctx context.Context) ([]domain.AuditActorOption, error) {
-	// Aliased to full_name: the scan matches on field name, not column name.
 	const q = `
 		SELECT user_id, user_full_name AS full_name, role_name FROM (
 			SELECT DISTINCT ON (user_id) user_id, user_full_name, role_name, created_at

@@ -24,7 +24,6 @@ func (r *passwordResetTokenRepository) Create(ctx context.Context, token *domain
 		return passwordResetTokenErrors.wrap("create password reset token", err)
 	}
 
-	// Columns with database defaults come back via RETURNING.
 	token.Attempts = row.Attempts
 	token.CreatedAt = row.CreatedAt
 	return nil
@@ -46,7 +45,6 @@ func (r *passwordResetTokenRepository) Update(ctx context.Context, payload *doma
 
 // DeleteActiveByUserID removes tokens when forgot password
 func (r *passwordResetTokenRepository) DeleteActiveByUserID(ctx context.Context, userID uuid.UUID) error {
-	// The model has no DeletedAt field, so this is a hard delete.
 	err := dbFrom(ctx, r.db).
 		Where("user_id = ?", userID).
 		Delete(&model.PasswordResetTokenModel{}).Error

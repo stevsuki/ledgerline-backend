@@ -33,7 +33,6 @@ func (r *userRepository) withRole(ctx context.Context) *gorm.DB {
 }
 
 func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
-	// Nil on self-registration: nobody was signed in to be the author.
 	actor := domain.ActorFrom(ctx)
 	user.CreatedBy, user.UpdatedBy = actor, actor
 
@@ -42,13 +41,11 @@ func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
 		return userErrors.wrap("create user", err)
 	}
 
-	// Columns with database defaults come back via RETURNING.
 	user.Status = domain.Status(row.Status)
 	user.PasswordChangedAt = row.PasswordChangedAt
 	user.CreatedAt = row.CreatedAt
 	user.UpdatedAt = row.UpdatedAt
 
-	// RETURNING cannot reach the joined role name, so the row is read back once.
 	var created model.UserModel
 	if err := r.withRole(ctx).Where("users.id = ?", user.ID).Take(&created).Error; err == nil {
 		user.RoleName = created.RoleName
@@ -122,7 +119,6 @@ func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
 		return userErrors.wrap("update user", gorm.ErrRecordNotFound)
 	}
 
-	// Re-read what the database owns: updated_at, plus the joined role name.
 	var refreshed model.UserModel
 	if err := r.withRole(ctx).Where("users.id = ?", user.ID).Take(&refreshed).Error; err == nil {
 		user.UpdatedAt = refreshed.UpdatedAt
@@ -131,10 +127,7 @@ func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
 	return nil
 }
 
-// Delete: soft delete via the deleted_at column, stamped with who did it.
-// One statement rather than Delete plus an update, so the two can never diverge;
-// UpdateColumns keeps updated_at pointing at the last real edit. GORM still adds
-// "deleted_at IS NULL", so deleting twice reports not found as before.
+// Delete: soft delete stamped with who did it, in one statement.
 func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
 	result := dbFrom(ctx, r.db).
 		Model(&model.UserModel{}).

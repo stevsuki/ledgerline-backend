@@ -18,11 +18,10 @@ type RoleModel struct {
 	CreatedAt   time.Time
 	CreatedBy   *uuid.UUID `gorm:"type:uuid"`
 	UpdatedAt   time.Time
-	UpdatedBy   *uuid.UUID `gorm:"type:uuid"`
-	// Read-only: filled by the users join in List, excluded from every write.
-	UserCount int            `gorm:"->;column:user_count"`
-	DeletedAt gorm.DeletedAt `gorm:"index"`
-	DeletedBy *uuid.UUID     `gorm:"type:uuid"`
+	UpdatedBy   *uuid.UUID     `gorm:"type:uuid"`
+	UserCount   int            `gorm:"->;column:user_count"`
+	DeletedAt   gorm.DeletedAt `gorm:"index"`
+	DeletedBy   *uuid.UUID     `gorm:"type:uuid"`
 }
 
 func (RoleModel) TableName() string { return "roles" }

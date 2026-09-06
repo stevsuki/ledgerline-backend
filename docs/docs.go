@@ -2309,17 +2309,14 @@ const docTemplate = `{
                     "example": 9
                 },
                 "retention_days": {
-                    "description": "RetentionDays is policy; no job deletes old rows yet.",
                     "type": "integer",
                     "example": 365
                 },
                 "sensitive": {
-                    "description": "Sensitive counts everything above info severity.",
                     "type": "integer",
                     "example": 8
                 },
                 "window_days": {
-                    "description": "WindowDays is the period every count below covers.",
                     "type": "integer",
                     "example": 7
                 }
@@ -2340,15 +2337,12 @@ const docTemplate = `{
                     "type": "string",
                     "example": "Email + password · Chrome on macOS"
                 },
-                "details": {
-                    "description": "Details is one of the kind-tagged shapes in domain; see AuditKind."
-                },
+                "details": {},
                 "id": {
                     "type": "string",
                     "example": "01a05b87-ac4c-7332-a78c-c60bcec135de"
                 },
                 "ip_address": {
-                    "description": "IPAddress is empty for entries written outside an HTTP request.",
                     "type": "string",
                     "example": "103.28.14.7"
                 },
@@ -2401,12 +2395,10 @@ const docTemplate = `{
                     }
                 },
                 "currency": {
-                    "description": "The one currency the headline is stated in; budgets in another are not summed.",
                     "type": "string",
                     "example": "IDR"
                 },
                 "cycle_elapsed_percent": {
-                    "description": "What used_percent is early or late against.",
                     "type": "integer",
                     "example": 87
                 },
@@ -2429,7 +2421,6 @@ const docTemplate = `{
                     "example": 10000000
                 },
                 "total_budget_left": {
-                    "description": "Negative once the allocation is passed.",
                     "type": "integer",
                     "example": 1000000
                 },
@@ -2438,7 +2429,6 @@ const docTemplate = `{
                     "example": 9000000
                 },
                 "uncounted_budgets": {
-                    "description": "Budgets in another currency, left out of every figure above.",
                     "type": "integer",
                     "example": 0
                 },
@@ -2492,7 +2482,6 @@ const docTemplate = `{
                     "example": 10000000
                 },
                 "remaining": {
-                    "description": "Negative once the limit is passed.",
                     "type": "integer",
                     "example": 1600000
                 },
@@ -2618,7 +2607,6 @@ const docTemplate = `{
                     "example": "c2"
                 },
                 "icon": {
-                    "description": "An icon key from the client's sprite and a step of its chart ramp; both\nare optional, and \"\" means the client resolves one instead. Only the\nlength is checked, as it is on wallets.icon.",
                     "type": "string",
                     "maxLength": 50,
                     "example": "cup"
@@ -2678,7 +2666,6 @@ const docTemplate = `{
                     "example": "Handles day to day transactions"
                 },
                 "icon": {
-                    "description": "icon is nullable in the table, so it stays optional here.",
                     "type": "string",
                     "maxLength": 50,
                     "example": "shield-check"
@@ -2722,7 +2709,6 @@ const docTemplate = `{
                     "example": "Rahasia123!"
                 },
                 "role_id": {
-                    "description": "Omitted means the built-in User role; an unknown id is rejected as 400.",
                     "type": "string",
                     "example": "00000000-0000-0000-0000-000000000002"
                 }
@@ -2737,12 +2723,10 @@ const docTemplate = `{
             ],
             "properties": {
                 "balance": {
-                    "description": "No \"required\" on these two: it would reject a 0 balance and include_in_total=false.",
                     "type": "integer",
                     "example": 41200000
                 },
                 "credit_limit": {
-                    "description": "Card wallets only; sending either on another type is rejected.",
                     "type": "integer",
                     "minimum": 0,
                     "example": 25000000
@@ -2778,7 +2762,6 @@ const docTemplate = `{
                     "example": "BCA Payroll"
                 },
                 "reference": {
-                    "description": "reference and icon are nullable in the table, so they stay optional here.",
                     "type": "string",
                     "maxLength": 50,
                     "example": "1234567890"
@@ -2949,7 +2932,6 @@ const docTemplate = `{
                     "example": 4000000
                 },
                 "remaining": {
-                    "description": "Negative once the limit is passed.",
                     "type": "integer",
                     "example": -320000
                 },
@@ -3100,7 +3082,6 @@ const docTemplate = `{
                     "example": "2026-01-02T15:04:05Z"
                 },
                 "created_by": {
-                    "description": "null on the built-in roles, which the migration seeds. deleted_by is left\nout: a deleted role is never in a response.",
                     "type": "string",
                     "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
                 },
@@ -3117,7 +3098,6 @@ const docTemplate = `{
                     "example": "00000000-0000-0000-0000-000000000001"
                 },
                 "is_system": {
-                    "description": "Built-in roles must not be renamed or deleted; the UI hides those actions.",
                     "type": "boolean",
                     "example": true
                 },
@@ -3140,7 +3120,6 @@ const docTemplate = `{
                     "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
                 },
                 "user_count": {
-                    "description": "How many users are assigned to this role; filled by the list only.",
                     "type": "integer",
                     "example": 12
                 }
@@ -3240,7 +3219,6 @@ const docTemplate = `{
                     "example": "Finance Lead"
                 },
                 "permissions": {
-                    "description": "Omitted leaves the permissions untouched; an empty array clears them.",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequestDTO"
@@ -3330,7 +3308,6 @@ const docTemplate = `{
                     "example": "2026-01-02T15:04:05Z"
                 },
                 "created_by": {
-                    "description": "null when nobody was signed in, as with a self-registered account.\ndeleted_by is left out: a deleted user is never in a response.",
                     "type": "string",
                     "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
                 },
@@ -3393,7 +3370,6 @@ const docTemplate = `{
                     "example": "IDR"
                 },
                 "counted_wallets": {
-                    "description": "How many wallets total_held is made of.",
                     "type": "integer",
                     "example": 3
                 },
@@ -3404,7 +3380,6 @@ const docTemplate = `{
                     }
                 },
                 "owed_on_cards": {
-                    "description": "Negative, or 0 when nothing is owed.",
                     "type": "integer",
                     "example": -3240000
                 },
@@ -3422,7 +3397,6 @@ const docTemplate = `{
                     "example": 41200000
                 },
                 "balance_updated_at": {
-                    "description": "When the balance itself last changed, which is not when the row last changed.",
                     "type": "string",
                     "example": "2026-08-26T15:04:05Z"
                 },
@@ -3435,7 +3409,6 @@ const docTemplate = `{
                     "example": "6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"
                 },
                 "credit_limit": {
-                    "description": "null on every type but card.",
                     "type": "integer",
                     "example": 25000000
                 },

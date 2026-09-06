@@ -24,7 +24,6 @@ func NewUserService(userRepo domain.UserRepository, hasher domain.PasswordHasher
 func (s *userService) Create(ctx context.Context, input domain.CreateUserInput) (*domain.User, error) {
 	email := strings.ToLower(strings.TrimSpace(input.Email))
 
-	// An unknown role id is rejected by the foreign key, not here.
 	if input.RoleID == uuid.Nil {
 		input.RoleID = domain.RoleIDUser
 	}

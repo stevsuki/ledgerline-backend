@@ -1,6 +1,4 @@
 // Package apierr: the single place an error becomes an HTTP response.
-// Handlers and middleware both go through Write, so every failure leaves the
-// same envelope: {success, message, code, errors, request_id}.
 package apierr
 
 import (
@@ -57,7 +55,6 @@ func Write(c *gin.Context, err error) {
 		return
 	}
 
-	// Nobody is left to answer; abort quietly instead of logging a fake 500.
 	if errors.Is(err, context.Canceled) {
 		logger.FromContext(c.Request.Context()).Debug("request cancelled by client")
 		c.AbortWithStatus(StatusClientClosedRequest)
@@ -82,7 +79,6 @@ func Write(c *gin.Context, err error) {
 		return
 	}
 
-	// Unexpected: the client learns nothing, the log learns everything.
 	logger.FromContext(c.Request.Context()).Error("unhandled error", slog.Any("error", err))
 	_ = c.Error(err)
 	response.Fail(c, http.StatusInternalServerError, domain.CodeInternal,
@@ -103,7 +99,6 @@ func WriteBind(c *gin.Context, err error) {
 func writeDomain(c *gin.Context, e *domain.Error) {
 	status := Status(e.Kind)
 
-	// A domain error that still maps to 500 is a bug, not an expected outcome.
 	if status == http.StatusInternalServerError {
 		logger.FromContext(c.Request.Context()).Error("internal domain error", slog.Any("error", e))
 		_ = c.Error(e)

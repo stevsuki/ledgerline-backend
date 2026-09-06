@@ -37,20 +37,18 @@ type ListAuditLogQueryDTO struct {
 func (q ListAuditLogQueryDTO) OrderBy() (string, error) { return auditLogSort.OrderBy(q.Sort) }
 
 type AuditLogResponseDTO struct {
-	ID           string `json:"id" example:"01a05b87-ac4c-7332-a78c-c60bcec135de"`
-	Action       string `json:"action" example:"auth.login"`
-	UserFullName string `json:"user_full_name" example:"Rangga Aditama"`
-	RoleName     string `json:"role_name" example:"Owner"`
-	DetailText   string `json:"detail_text" example:"Email + password · Chrome on macOS"`
-	Status       string `json:"status" enums:"success,failed" example:"success"`
-	Severity     string `json:"severity" enums:"info,warning,critical" example:"info"`
-	Module       string `json:"module" example:"auth"`
-	// Details is one of the kind-tagged shapes in domain; see AuditKind.
-	Details domain.AuditDetail `json:"details"`
-	UserID  string             `json:"user_id" example:"01a05b87-ac4c-7332-a78c-c60bcec135de"`
-	// IPAddress is empty for entries written outside an HTTP request.
-	IPAddress string `json:"ip_address" example:"103.28.14.7"`
-	CreatedAt string `json:"created_at" example:"2026-08-27 19:41:00"`
+	ID           string             `json:"id" example:"01a05b87-ac4c-7332-a78c-c60bcec135de"`
+	Action       string             `json:"action" example:"auth.login"`
+	UserFullName string             `json:"user_full_name" example:"Rangga Aditama"`
+	RoleName     string             `json:"role_name" example:"Owner"`
+	DetailText   string             `json:"detail_text" example:"Email + password · Chrome on macOS"`
+	Status       string             `json:"status" enums:"success,failed" example:"success"`
+	Severity     string             `json:"severity" enums:"info,warning,critical" example:"info"`
+	Module       string             `json:"module" example:"auth"`
+	Details      domain.AuditDetail `json:"details"`
+	UserID       string             `json:"user_id" example:"01a05b87-ac4c-7332-a78c-c60bcec135de"`
+	IPAddress    string             `json:"ip_address" example:"103.28.14.7"`
+	CreatedAt    string             `json:"created_at" example:"2026-08-27 19:41:00"`
 }
 
 func NewAuditLogResponseDTO(a domain.AuditLog) AuditLogResponseDTO {
@@ -83,16 +81,13 @@ func NewAuditLogResponseDTOs(logs []domain.AuditLog) []AuditLogResponseDTO {
 
 // AuditLogOverviewResponseDTO feeds the audit cards; labels and wording stay in the UI.
 type AuditLogOverviewResponseDTO struct {
-	// WindowDays is the period every count below covers.
-	WindowDays int `json:"window_days" example:"7"`
-	Events     int `json:"events" example:"28"`
-	Modules    int `json:"modules" example:"9"`
-	// Sensitive counts everything above info severity.
+	WindowDays            int `json:"window_days" example:"7"`
+	Events                int `json:"events" example:"28"`
+	Modules               int `json:"modules" example:"9"`
 	Sensitive             int `json:"sensitive" example:"8"`
 	FailedSignIns         int `json:"failed_sign_ins" example:"1"`
 	FailedSignInAddresses int `json:"failed_sign_in_addresses" example:"1"`
-	// RetentionDays is policy; no job deletes old rows yet.
-	RetentionDays int `json:"retention_days" example:"365"`
+	RetentionDays         int `json:"retention_days" example:"365"`
 }
 
 func NewAuditLogOverviewResponseDTO(o domain.AuditLogOverview) AuditLogOverviewResponseDTO {
@@ -238,7 +233,6 @@ func (q AuditLogRangeDTO) ToFilter() (domain.AuditLogFilter, error) {
 		if err != nil {
 			return filter, fmt.Errorf("%w: to must be YYYY-MM-DD", domain.ErrInvalidInput)
 		}
-		// The picker means the whole day, so the bound is the next midnight.
 		to = to.AddDate(0, 0, 1)
 		filter.To = &to
 	}

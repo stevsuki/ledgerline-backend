@@ -9,7 +9,6 @@ import (
 )
 
 const (
-	// Shared with the error envelope, which repeats the id in the body.
 	HeaderRequestID  = response.HeaderRequestID
 	ContextRequestID = "request_id"
 )

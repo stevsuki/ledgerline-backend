@@ -19,7 +19,6 @@ func Timeout(d time.Duration) gin.HandlerFunc {
 		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 
-		// Last resort: the handler returned without writing anything.
 		if ctx.Err() != nil && !c.Writer.Written() {
 			apierr.Write(c, domain.ErrTimeout)
 		}

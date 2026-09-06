@@ -135,7 +135,6 @@ func (h *AuditLogHandler) Export(c *gin.Context) {
 		return
 	}
 
-	// Headers go out first: once writing starts, an error can no longer be JSON.
 	c.Header("Content-Type", "text/csv; charset=utf-8")
 	c.Header("Content-Disposition", `attachment; filename="`+query.ExportFilename()+`"`)
 	c.Status(http.StatusOK)
@@ -156,7 +155,6 @@ func (h *AuditLogHandler) Export(c *gin.Context) {
 		return writer.Error()
 	})
 	if err != nil {
-		// Already streaming: the client gets a truncated file, the log is the only report.
 		logger.FromContext(c.Request.Context()).Error("export audit logs", slog.Any("error", err))
 		return
 	}

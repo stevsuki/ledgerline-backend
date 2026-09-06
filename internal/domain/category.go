@@ -23,8 +23,7 @@ const (
 	CategoryOptionSlugBudget = "budget"
 )
 
-// CategoryTypesForSlug: which types a slug may show. A nil slice means every
-// type, and ok is false for a slug nothing serves.
+// CategoryTypesForSlug: types a slug may show; nil means every type.
 func CategoryTypesForSlug(slug string) (types []string, ok bool) {
 	switch slug {
 	case CategoryOptionSlugFilter:
@@ -36,25 +35,20 @@ func CategoryTypesForSlug(slug string) (types []string, ok bool) {
 	}
 }
 
-// Category: a spending or income category owned by one user. MasterCategoryID
-// names the master row it derives from, and is uuid.Nil when it derives from none.
+// Category: a spending or income category owned by one user.
 type Category struct {
 	ID               uuid.UUID
 	UserID           uuid.UUID
 	MasterCategoryID uuid.UUID
 	Name             string
 	Type             string
-	// Icon is a key from the client's own sprite, Color a step of its chart
-	// ramp. "" means the category has none of its own and the reader resolves
-	// one. Neither is checked beyond its length, exactly as wallets.icon is
-	// not: the vocabulary belongs to whatever draws them.
-	Icon      string
-	Color     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	CreatedBy *uuid.UUID
-	UpdatedBy *uuid.UUID
-	DeletedBy *uuid.UUID
+	Icon             string
+	Color            string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	CreatedBy        *uuid.UUID
+	UpdatedBy        *uuid.UUID
+	DeletedBy        *uuid.UUID
 }
 
 type CategoryRepository interface {
@@ -63,9 +57,7 @@ type CategoryRepository interface {
 	Create(ctx context.Context, category *Category) error
 	Update(ctx context.Context, category *Category) error
 	Delete(ctx context.Context, id, userID uuid.UUID) error
-	// SeedDefaults gives a brand new user one category per master row.
 	SeedDefaults(ctx context.Context, userID uuid.UUID) error
-	// OptionsCategoryType takes the types to show; an empty slice means all.
 	OptionsCategoryType(ctx context.Context, userID uuid.UUID, types []string) ([]OptionCategoryType, error)
 }
 
@@ -77,8 +69,7 @@ type CreateCategoryInput struct {
 	Color            string
 }
 
-// UpdateCategoryInput: pointers so partial updates are detectable; nil leaves
-// the field as it was.
+// UpdateCategoryInput: pointers so a partial update is detectable.
 type UpdateCategoryInput struct {
 	Name             *string
 	MasterCategoryID *uuid.UUID

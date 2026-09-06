@@ -11,28 +11,25 @@ import (
 
 // WalletModel: sizes and nullability follow migration 000018.
 type WalletModel struct {
-	ID     uuid.UUID `gorm:"type:uuid;primaryKey"`
-	UserID uuid.UUID `gorm:"type:uuid;not null;index"`
-	Name   string    `gorm:"size:100;not null"`
-	Type   string    `gorm:"size:20;not null"`
-	// currency is VARCHAR(3), not 20.
-	Currency string `gorm:"size:3;not null"`
-	// reference and icon are nullable in the table.
-	Reference        string `gorm:"size:50"`
-	Icon             string `gorm:"size:50"`
-	Balance          int64  `gorm:"not null;default:0"`
+	ID               uuid.UUID `gorm:"type:uuid;primaryKey"`
+	UserID           uuid.UUID `gorm:"type:uuid;not null;index"`
+	Name             string    `gorm:"size:100;not null"`
+	Type             string    `gorm:"size:20;not null"`
+	Currency         string    `gorm:"size:3;not null"`
+	Reference        string    `gorm:"size:50"`
+	Icon             string    `gorm:"size:50"`
+	Balance          int64     `gorm:"not null;default:0"`
 	BalanceUpdatedAt time.Time
 	BalanceUpdatedBy *uuid.UUID `gorm:"type:uuid"`
 	IncludeInTotal   bool       `gorm:"not null;default:true"`
-	// Cards only.
-	CreditLimit *int64
-	DueDay      *int `gorm:"type:smallint"`
-	CreatedAt   time.Time
-	CreatedBy   *uuid.UUID `gorm:"type:uuid"`
-	UpdatedAt   time.Time
-	UpdatedBy   *uuid.UUID     `gorm:"type:uuid"`
-	DeletedAt   gorm.DeletedAt `gorm:"index"`
-	DeletedBy   *uuid.UUID     `gorm:"type:uuid"`
+	CreditLimit      *int64
+	DueDay           *int `gorm:"type:smallint"`
+	CreatedAt        time.Time
+	CreatedBy        *uuid.UUID `gorm:"type:uuid"`
+	UpdatedAt        time.Time
+	UpdatedBy        *uuid.UUID     `gorm:"type:uuid"`
+	DeletedAt        gorm.DeletedAt `gorm:"index"`
+	DeletedBy        *uuid.UUID     `gorm:"type:uuid"`
 }
 
 func (WalletModel) TableName() string { return "wallets" }

@@ -58,7 +58,6 @@ func NewSMTP(cfg Config) (*SMTPMailer, error) {
 		mail.WithTLSPolicy(tlsPolicy(cfg.TLS)),
 	}
 
-	// Dev servers like Mailpit use no authentication.
 	if cfg.Username == "" {
 		opts = append(opts, mail.WithSMTPAuth(mail.SMTPAuthNoAuth))
 	} else {
@@ -119,7 +118,6 @@ func (m *SMTPMailer) send(ctx context.Context, to, subject, plain, html string) 
 	}
 
 	msg.Subject(subject)
-	// The last part is the one email clients prefer.
 	msg.SetBodyString(mail.TypeTextPlain, plain)
 	msg.AddAlternativeString(mail.TypeTextHTML, html)
 

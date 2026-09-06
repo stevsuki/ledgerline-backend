@@ -28,7 +28,6 @@ func visibleMenuTree(menus []domain.Menu) []domain.Menu {
 	out := make([]domain.Menu, 0, len(roots))
 	for _, root := range roots {
 		if !hasChildren[root.ID] {
-			// A root with no children at all is a page, not a group.
 			if root.Access.CanRead {
 				out = append(out, root)
 			}

@@ -28,8 +28,7 @@ type BudgetModel struct {
 
 func (BudgetModel) TableName() string { return "budgets" }
 
-// BudgetRow: a budget read back with the category columns the list needs, which
-// only the join can supply. Writes go through BudgetModel.
+// BudgetRow: a budget read back with its category columns.
 type BudgetRow struct {
 	ID                    uuid.UUID
 	UserID                uuid.UUID

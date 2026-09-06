@@ -19,8 +19,7 @@ const slowQueryThreshold = 200 * time.Millisecond
 // New opens the connection, configures the pool, then pings.
 func New(ctx context.Context, cfg config.Database, log *slog.Logger, debug bool) (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.Open(cfg.DSN()), &gorm.Config{
-		Logger: newSlogLogger(log, slowQueryThreshold, debug),
-		// TranslateError maps driver errors to GORM errors, so no repository reads SQLSTATE.
+		Logger:         newSlogLogger(log, slowQueryThreshold, debug),
 		TranslateError: true,
 		NowFunc:        func() time.Time { return time.Now().UTC() },
 	})

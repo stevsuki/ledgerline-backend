@@ -12,19 +12,14 @@ type Role struct {
 	ID          uuid.UUID
 	Name        string
 	Description string
-	// Icon key the front end picked; nullable in the table, so "" means none.
-	Icon      string
-	IsSystem  bool // built-in role, must not be deleted or renamed
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	// Actor ids; the built-in roles are seeded by migration, so theirs stay nil.
-	CreatedBy *uuid.UUID
-	UpdatedBy *uuid.UUID
-	// Only ever set on a soft-deleted row, which no read returns yet.
-	DeletedBy *uuid.UUID
-	// Filled by the list query only; a single-role read leaves it zero.
-	UserCount int
-	// Written with the role on create; on read only a single-role query fills it.
+	Icon        string
+	IsSystem    bool // built-in role, must not be deleted or renamed
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	CreatedBy   *uuid.UUID
+	UpdatedBy   *uuid.UUID
+	DeletedBy   *uuid.UUID
+	UserCount   int
 	Permissions []RoleMenuPermission
 }
 
@@ -53,7 +48,6 @@ type RoleRepository interface {
 	List(ctx context.Context, filter RoleFilter) ([]Role, int, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*Role, error)
 	Create(ctx context.Context, role *Role) error
-	// Update replaces the permission set when permissions is non-nil.
 	Update(ctx context.Context, role *Role, permissions []RoleMenuPermission) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	GetRolePermissions(ctx context.Context, roleID uuid.UUID) ([]RoleMenuPermission, error)
@@ -79,7 +73,6 @@ type UpdateRoleInput struct {
 	Name        *string
 	Description *string
 	Icon        *string
-	// nil leaves the permissions untouched; an empty slice clears them.
 	Permissions *[]CreateRoleMenuPermissionInput
 }
 

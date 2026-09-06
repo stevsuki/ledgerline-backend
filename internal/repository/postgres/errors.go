@@ -10,8 +10,7 @@ import (
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
 )
 
-// resourceErrors: what one repository reports for the three failures the database can raise
-// on its own. Templates only; wrap copies them before attaching a cause.
+// resourceErrors: templates for the failures the database raises on its own.
 type resourceErrors struct {
 	notFound *domain.Error
 	conflict *domain.Error
@@ -87,7 +86,6 @@ var (
 		notFound: domain.NotFound(domain.CodeAuditLogNotFound, "audit log not found"),
 	}
 
-	// Never addressed directly by a client; the service decides what a missing token means.
 	passwordResetTokenErrors = resourceErrors{
 		notFound: domain.NotFound(domain.CodeNotFound, "password reset token not found"),
 	}

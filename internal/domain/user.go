@@ -33,24 +33,21 @@ func (s Status) Valid() bool {
 
 // User: a pure entity, with no json/db tags.
 type User struct {
-	ID                uuid.UUID
-	Email             string
-	FullName          string
-	PasswordHash      string
-	RoleID            uuid.UUID
-	RoleName          string // from the roles join, never written back
-	Status            Status
-	PasswordChangedAt time.Time
-	// Attempts reset on a successful login; LockedUntil is nil when no lock is active.
+	ID                  uuid.UUID
+	Email               string
+	FullName            string
+	PasswordHash        string
+	RoleID              uuid.UUID
+	RoleName            string // from the roles join, never written back
+	Status              Status
+	PasswordChangedAt   time.Time
 	FailedLoginAttempts int
 	LockedUntil         *time.Time
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
-	// Actor ids, nil when nobody was signed in (self-registration).
-	CreatedBy *uuid.UUID
-	UpdatedBy *uuid.UUID
-	// Only ever set on a soft-deleted row, which no read returns yet.
-	DeletedBy *uuid.UUID
+	CreatedBy           *uuid.UUID
+	UpdatedBy           *uuid.UUID
+	DeletedBy           *uuid.UUID
 }
 
 // UserFilter for list + pagination.

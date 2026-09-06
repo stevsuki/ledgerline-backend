@@ -61,8 +61,6 @@ func checkBudgetLimits(monthlyLimit int64, threshold int, isFixed bool) error {
 			WithField("alert_threshold_percent")
 	}
 
-	// A fixed commitment lands on its whole limit in one payment, so a warning
-	// before that would fire every month and mean nothing.
 	if isFixed && threshold != domain.MaxAlertThresholdPercent {
 		return domain.InvalidInput(domain.CodeBudgetInvalidFixed,
 			fmt.Sprintf("a fixed budget alerts at %d percent only", domain.MaxAlertThresholdPercent)).
@@ -104,7 +102,6 @@ func (s *BudgetService) Create(ctx context.Context, userID uuid.UUID, input doma
 		return nil, err
 	}
 
-	// Read back: the category name and icon come from the join, not from the write.
 	return s.budgetRepo.GetByID(ctx, budget.ID, userID)
 }
 
@@ -167,8 +164,6 @@ func (s *BudgetService) Delete(ctx context.Context, userID, id uuid.UUID) error 
 }
 
 func budgetOverviewOf(all []domain.BudgetUsage, now time.Time) domain.BudgetOverview {
-	// Only the base currency reaches the headline; the rest are reported as a
-	// count so the panel never quietly adds rupiah to dollars.
 	usages := make([]domain.BudgetUsage, 0, len(all))
 	uncounted := 0
 	for _, usage := range all {
@@ -261,7 +256,7 @@ func budgetAttention(usages []domain.BudgetUsage) []domain.BudgetAttention {
 	return items
 }
 
-// lastDayOfMonth: day 0 of next month is the last day of this one.
+// lastDayOfMonth: day 0 of next month.
 func lastDayOfMonth(now time.Time) int {
 	return time.Date(now.Year(), now.Month()+1, 0, 0, 0, 0, 0, now.Location()).Day()
 }

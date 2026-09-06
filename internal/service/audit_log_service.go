@@ -27,7 +27,6 @@ func recordAudit(ctx context.Context, repo domain.AuditLogRepository, entry *dom
 	id, err := uuid.NewV7()
 	if err == nil {
 		entry.ID = id
-		// Rendered here so no call site can forget it.
 		if entry.Details != nil {
 			entry.DetailText = entry.Details.Text()
 		}
@@ -40,10 +39,8 @@ func recordAudit(ctx context.Context, repo domain.AuditLogRepository, entry *dom
 }
 
 const (
-	// The cards above the audit table all describe the same window.
 	auditOverviewWindow = 7 * 24 * time.Hour
-	// Policy only: nothing deletes old rows yet.
-	auditRetentionDays = 365
+	auditRetentionDays  = 365
 )
 
 func (s *auditLogService) Overview(ctx context.Context) (domain.AuditLogOverview, error) {
@@ -91,7 +88,6 @@ func (s *auditLogService) Export(
 		if err := yield(rows); err != nil {
 			return err
 		}
-		// A short batch means the end; asking again would only cost a query.
 		if len(rows) < auditExportBatch {
 			return nil
 		}

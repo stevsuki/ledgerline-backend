@@ -11,8 +11,7 @@ import (
 	"github.com/stevensuki/ledgerline-backend/internal/repository/postgres/model"
 )
 
-// defaultCategoryOrder: oldest first, id as the tie breaker. This is the order
-// categories_user_id_idx is already built in, and the order the pickers read.
+// defaultCategoryOrder: oldest first, id as the tie breaker.
 const defaultCategoryOrder = "created_at ASC, id ASC"
 
 type categoryRepository struct {

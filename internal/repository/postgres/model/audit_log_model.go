@@ -43,7 +43,6 @@ func (m AuditLogModel) ToDomain() *domain.AuditLog {
 		Module:       domain.AuditModule(m.Module),
 		CreatedAt:    m.CreatedAt,
 	}
-	// Handed back as the JSON it was stored as; no reader here needs the kind.
 	if len(m.Details) > 0 {
 		log.Details = domain.RawAuditDetail(m.Details)
 	}
@@ -51,7 +50,6 @@ func (m AuditLogModel) ToDomain() *domain.AuditLog {
 }
 
 func AuditLogFromDomain(a *domain.AuditLog) (AuditLogModel, error) {
-	// Marshalling here is what keeps invalid JSON out of the jsonb column.
 	details := []byte("{}")
 	if a.Details != nil {
 		var err error

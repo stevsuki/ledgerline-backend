@@ -56,7 +56,6 @@ func run() error {
 	)
 	slog.SetDefault(log)
 
-	// Context cancelled when SIGINT/SIGTERM arrives.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -67,7 +66,6 @@ func run() error {
 	defer func() { _ = database.Close(db) }()
 	log.Info("database connected")
 
-	// Dependency wiring: repository -> service -> handler.
 	userRepo := postgres.NewUserRepository(db)
 	categoryRepo := postgres.NewCategoryRepository(db)
 	passwordResetTokenRepo := postgres.NewPasswordResetTokenRepository(db)
@@ -82,7 +80,6 @@ func run() error {
 	tokenManager := jwt.NewManager(cfg.JWT.Secret, cfg.JWT.Issuer, cfg.JWT.AccessTokenTTL, cfg.JWT.RefreshTokenTTL, cfg.JWT.ResetTokenTTL)
 	otpGenerator := otp.NewGenerator(cfg.OTP.Length)
 
-	// SMTP disabled -> emails go to the log so local dev needs no mail server.
 	var mail domain.Mailer = mailer.NewLog(log)
 	if cfg.SMTP.Enabled {
 		smtpMailer, err := mailer.NewSMTP(mailer.Config{

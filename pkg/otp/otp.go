@@ -39,7 +39,6 @@ func NewGenerator(length int) *Generator {
 
 // Generate returns a zero-padded numeric code, e.g. "048213".
 func (g *Generator) Generate() (string, error) {
-	// crypto/rand, never math/rand: a predictable OTP defeats the whole flow.
 	n, err := rand.Int(rand.Reader, g.bound)
 	if err != nil {
 		return "", fmt.Errorf("generate otp: %w", err)

@@ -98,7 +98,6 @@ func (s *authService) Register(ctx context.Context, input domain.RegisterInput) 
 func (s *authService) Login(ctx context.Context, input domain.LoginInput, meta domain.RequestMeta) (*domain.TokenPair, error) {
 	user, err := s.userRepo.GetByEmail(ctx, strings.ToLower(strings.TrimSpace(input.Email)))
 	if err != nil {
-		// Only an unknown address is a credential problem; anything else is a real failure.
 		if errors.Is(err, domain.ErrNotFound) {
 			return nil, domain.ErrInvalidCredentials
 		}
@@ -130,7 +129,6 @@ func (s *authService) Login(ctx context.Context, input domain.LoginInput, meta d
 			}
 		}
 
-		// Locking someone out is worth more than a warning in the audit feed.
 		severity := domain.AuditSeverityWarning
 		detail := domain.NewWrongPasswordDetail(attempts, maxLoginAttempts, user.Email)
 		if locked {
@@ -150,7 +148,6 @@ func (s *authService) Login(ctx context.Context, input domain.LoginInput, meta d
 		return nil, err
 	}
 
-	// Only write when there is something to clear.
 	if user.FailedLoginAttempts > 0 || user.LockedUntil != nil {
 		if err := s.userRepo.ClearFailedLogins(ctx, user.ID); err != nil {
 			return nil, err
@@ -178,7 +175,6 @@ func (s *authService) Refresh(ctx context.Context, refreshToken string) (*domain
 		return nil, err
 	}
 
-	// Re-read the user so role changes take effect immediately.
 	user, err := s.userRepo.GetByID(ctx, claims.UserID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
@@ -208,7 +204,6 @@ func (s *authService) ForgotPassword(ctx context.Context, input domain.ForgotPas
 
 	user, err := s.userRepo.GetByEmail(ctx, email)
 	if err != nil {
-		// Answer the same way for an unknown address, otherwise this endpoint lists who has an account.
 		if errors.Is(err, domain.ErrNotFound) {
 			return nil
 		}
@@ -267,7 +262,6 @@ func (s *authService) ForgotPassword(ctx context.Context, input domain.ForgotPas
 func (s *authService) VerifyOTPResetPassword(ctx context.Context, input domain.VerifyOTPResetPasswordInput) (*domain.ResetToken, error) {
 	user, err := s.userRepo.GetByEmail(ctx, strings.ToLower(strings.TrimSpace(input.Email)))
 	if err != nil {
-		// A missing account must look exactly like a wrong code.
 		if errors.Is(err, domain.ErrNotFound) {
 			return nil, domain.ErrInvalidOTP
 		}
@@ -282,26 +276,21 @@ func (s *authService) VerifyOTPResetPassword(ctx context.Context, input domain.V
 		return nil, err
 	}
 
-	// Spent code: same answer as a wrong one, and not the session-token code the client acts on.
 	if token.UsedAt != nil {
 		return nil, domain.ErrInvalidOTP
 	}
 
-	// Check if attempts exceed the limit
 	if token.Attempts >= maxOTPAttempts {
 		return nil, domain.ErrMaxAttemptsExceeded
 	}
 
-	// Check if the token expired or not
 	if time.Now().After(token.ExpiresAt) {
 		return nil, domain.ErrInvalidOTP
 	}
 
-	// Check if the token valid or not
 	if err = s.hasher.Compare(token.OTPHash, input.OTP); err != nil {
 		attempts := token.Attempts + 1
 
-		// Burn the token on the last allowed try so the user must request a new code.
 		var burnedAt *time.Time
 		if attempts >= maxOTPAttempts {
 			now := time.Now()
@@ -327,7 +316,6 @@ func (s *authService) VerifyOTPResetPassword(ctx context.Context, input domain.V
 		return nil, fmt.Errorf("mark OTP as used: %w", err)
 	}
 
-	// The OTP is spent; this token is what authorises the actual password change.
 	resetToken, expiresIn, err := s.token.GenerateResetToken(domain.TokenClaims{
 		UserID: user.ID,
 		Email:  user.Email,

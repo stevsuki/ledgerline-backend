@@ -25,7 +25,6 @@ const (
 
 // AuditDetail is what AuditLog.Details can hold; build one with its New constructor.
 type AuditDetail interface {
-	// Text renders the entry for people to read; required of every kind.
 	Text() string
 	AuditKind() AuditKind
 }
@@ -368,7 +367,6 @@ func (d PermissionChangeDetail) Text() string {
 }
 
 func (d DataJobDetail) Text() string {
-	// A sync reads as a sentence about its source, an export as a list of attributes.
 	if d.Job == DataJobSync {
 		imported := ""
 		if d.Rows > 0 {

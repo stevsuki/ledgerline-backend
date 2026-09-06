@@ -21,8 +21,7 @@ func NewBudgetRepository(db *gorm.DB) domain.BudgetRepository {
 	return &budgetRepository{db: db}
 }
 
-// readQuery: a budget is never useful without the category it limits, so every
-// read joins it rather than leaving the client to resolve the id.
+// readQuery: every read joins the category a budget limits.
 func (r *budgetRepository) readQuery(ctx context.Context) *gorm.DB {
 	return dbFrom(ctx, r.db).
 		Model(&model.BudgetModel{}).
@@ -60,8 +59,7 @@ func (r *budgetRepository) List(ctx context.Context, userID uuid.UUID) ([]domain
 	return model.BudgetRowsToDomain(rows), nil
 }
 
-// GetByID scans rather than firsts, so a missing row is our own not-found
-// rather than an empty budget answered with 200.
+// GetByID: Scan never raises not-found, so the row count does.
 func (r *budgetRepository) GetByID(ctx context.Context, id, userID uuid.UUID) (*domain.Budget, error) {
 	var row model.BudgetRow
 	result := r.readQuery(ctx).

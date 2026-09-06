@@ -11,11 +11,8 @@ type CreateCategoryRequestDTO struct {
 	Name             string    `json:"name"`
 	MasterCategoryID uuid.UUID `json:"master_category_id"`
 	Type             string    `json:"type"`
-	// An icon key from the client's sprite and a step of its chart ramp; both
-	// are optional, and "" means the client resolves one instead. Only the
-	// length is checked, as it is on wallets.icon.
-	Icon  string `json:"icon" binding:"omitempty,max=50" example:"cup"`
-	Color string `json:"color" binding:"omitempty,max=10" example:"c2"`
+	Icon             string    `json:"icon" binding:"omitempty,max=50" example:"cup"`
+	Color            string    `json:"color" binding:"omitempty,max=10" example:"c2"`
 }
 
 func (c CreateCategoryRequestDTO) ToInput() domain.CreateCategoryInput {

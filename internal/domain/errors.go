@@ -53,8 +53,7 @@ func (k Kind) sentinel() error {
 	}
 }
 
-// Error carries everything the HTTP layer needs: Kind picks the status, Code is the
-// contract the frontend switches on, Message is safe to display, cause is log-only.
+// Error: Kind picks the status, Code is the contract, cause is log-only.
 type Error struct {
 	Kind       Kind
 	Code       string

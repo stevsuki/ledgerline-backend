@@ -11,14 +11,12 @@ import (
 )
 
 type UserModel struct {
-	ID           uuid.UUID `gorm:"type:uuid;primaryKey"`
-	Email        string    `gorm:"size:255;not null"`
-	FullName     string    `gorm:"size:100;not null"`
-	PasswordHash string    `gorm:"size:255;not null"`
-	RoleID       uuid.UUID `gorm:"type:uuid;not null"`
-	// Read-only: filled by the roles join, excluded from every insert & update.
-	RoleName string `gorm:"->;column:role_name"`
-	// default tags let GORM omit these on insert so the database fills them.
+	ID                  uuid.UUID `gorm:"type:uuid;primaryKey"`
+	Email               string    `gorm:"size:255;not null"`
+	FullName            string    `gorm:"size:100;not null"`
+	PasswordHash        string    `gorm:"size:255;not null"`
+	RoleID              uuid.UUID `gorm:"type:uuid;not null"`
+	RoleName            string    `gorm:"->;column:role_name"`
 	Status              string    `gorm:"size:20;not null;default:enabled"`
 	PasswordChangedAt   time.Time `gorm:"default:now()"`
 	FailedLoginAttempts int       `gorm:"not null;default:0"`

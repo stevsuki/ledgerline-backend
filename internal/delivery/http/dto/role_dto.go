@@ -11,9 +11,8 @@ import (
 
 // CreateRoleRequestDTO: create role payload (admin only), lengths from migration 000006.
 type CreateRoleRequestDTO struct {
-	Name        string `json:"name" binding:"required,min=2,max=50" example:"Finance Staff"`
-	Description string `json:"description" binding:"omitempty,max=255" example:"Handles day to day transactions"`
-	// icon is nullable in the table, so it stays optional here.
+	Name        string                               `json:"name" binding:"required,min=2,max=50" example:"Finance Staff"`
+	Description string                               `json:"description" binding:"omitempty,max=255" example:"Handles day to day transactions"`
 	Icon        string                               `json:"icon" binding:"omitempty,max=50" example:"shield-check"`
 	Permissions []CreateRoleMenuPermissionRequestDTO `json:"permissions"`
 }
@@ -51,10 +50,9 @@ func (r CreateRoleRequestDTO) ToInput() domain.CreateRoleInput {
 
 // UpdateRoleRequestDTO: pointers so partial updates are detectable.
 type UpdateRoleRequestDTO struct {
-	Name        *string `json:"name" binding:"omitempty,min=2,max=50" example:"Finance Lead"`
-	Description *string `json:"description" binding:"omitempty,max=255" example:"Approves transactions above the limit"`
-	Icon        *string `json:"icon" binding:"omitempty,max=50" example:"shield-check"`
-	// Omitted leaves the permissions untouched; an empty array clears them.
+	Name        *string                               `json:"name" binding:"omitempty,min=2,max=50" example:"Finance Lead"`
+	Description *string                               `json:"description" binding:"omitempty,max=255" example:"Approves transactions above the limit"`
+	Icon        *string                               `json:"icon" binding:"omitempty,max=50" example:"shield-check"`
 	Permissions *[]CreateRoleMenuPermissionRequestDTO `json:"permissions"`
 }
 
@@ -88,7 +86,6 @@ var roleSort = pagination.Sortable{
 		"updated_at": "roles.updated_at",
 		"user_count": "user_count",
 	},
-	// Built-in roles first keeps Admin and User at the top of the first page.
 	Default:    "-is_system,name",
 	TieBreaker: "roles.id",
 }
@@ -106,19 +103,15 @@ func (q ListRoleQueryDTO) OrderBy() (string, error) { return roleSort.OrderBy(q.
 
 // RoleResponseDTO: the role shape that is safe to send to clients.
 type RoleResponseDTO struct {
-	ID          uuid.UUID `json:"id" example:"00000000-0000-0000-0000-000000000001"`
-	Name        string    `json:"name" example:"Admin"`
-	Description string    `json:"description" example:"Built-in role with access to every menu"`
-	Icon        string    `json:"icon" example:"shield-check"`
-	// Built-in roles must not be renamed or deleted; the UI hides those actions.
-	IsSystem  bool      `json:"is_system" example:"true"`
-	CreatedAt time.Time `json:"created_at" example:"2026-01-02T15:04:05Z"`
-	UpdatedAt time.Time `json:"updated_at" example:"2026-01-02T15:04:05Z"`
-	// null on the built-in roles, which the migration seeds. deleted_by is left
-	// out: a deleted role is never in a response.
-	CreatedBy *uuid.UUID `json:"created_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
-	UpdatedBy *uuid.UUID `json:"updated_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
-	// How many users are assigned to this role; filled by the list only.
+	ID          uuid.UUID                       `json:"id" example:"00000000-0000-0000-0000-000000000001"`
+	Name        string                          `json:"name" example:"Admin"`
+	Description string                          `json:"description" example:"Built-in role with access to every menu"`
+	Icon        string                          `json:"icon" example:"shield-check"`
+	IsSystem    bool                            `json:"is_system" example:"true"`
+	CreatedAt   time.Time                       `json:"created_at" example:"2026-01-02T15:04:05Z"`
+	UpdatedAt   time.Time                       `json:"updated_at" example:"2026-01-02T15:04:05Z"`
+	CreatedBy   *uuid.UUID                      `json:"created_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
+	UpdatedBy   *uuid.UUID                      `json:"updated_by" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
 	UserCount   int                             `json:"user_count" example:"12"`
 	Permissions []RoleMenuPermissionResponseDTO `json:"permissions"`
 }

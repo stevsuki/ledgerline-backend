@@ -46,15 +46,12 @@ definitions:
         example: 9
         type: integer
       retention_days:
-        description: RetentionDays is policy; no job deletes old rows yet.
         example: 365
         type: integer
       sensitive:
-        description: Sensitive counts everything above info severity.
         example: 8
         type: integer
       window_days:
-        description: WindowDays is the period every count below covers.
         example: 7
         type: integer
     type: object
@@ -69,13 +66,11 @@ definitions:
       detail_text:
         example: Email + password · Chrome on macOS
         type: string
-      details:
-        description: Details is one of the kind-tagged shapes in domain; see AuditKind.
+      details: {}
       id:
         example: 01a05b87-ac4c-7332-a78c-c60bcec135de
         type: string
       ip_address:
-        description: IPAddress is empty for entries written outside an HTTP request.
         example: 103.28.14.7
         type: string
       module:
@@ -114,12 +109,9 @@ definitions:
           $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.NeedAttentionDTO'
         type: array
       currency:
-        description: The one currency the headline is stated in; budgets in another
-          are not summed.
         example: IDR
         type: string
       cycle_elapsed_percent:
-        description: What used_percent is early or late against.
         example: 87
         type: integer
       days_left:
@@ -136,14 +128,12 @@ definitions:
         example: 10000000
         type: integer
       total_budget_left:
-        description: Negative once the allocation is passed.
         example: 1000000
         type: integer
       total_budget_spent:
         example: 9000000
         type: integer
       uncounted_budgets:
-        description: Budgets in another currency, left out of every figure above.
         example: 0
         type: integer
       used_percent:
@@ -183,7 +173,6 @@ definitions:
         example: 10000000
         type: integer
       remaining:
-        description: Negative once the limit is passed.
         example: 1600000
         type: integer
       rollover:
@@ -273,10 +262,6 @@ definitions:
         maxLength: 10
         type: string
       icon:
-        description: |-
-          An icon key from the client's sprite and a step of its chart ramp; both
-          are optional, and "" means the client resolves one instead. Only the
-          length is checked, as it is on wallets.icon.
         example: cup
         maxLength: 50
         type: string
@@ -317,7 +302,6 @@ definitions:
         maxLength: 255
         type: string
       icon:
-        description: icon is nullable in the table, so it stays optional here.
         example: shield-check
         maxLength: 50
         type: string
@@ -349,8 +333,6 @@ definitions:
         minLength: 8
         type: string
       role_id:
-        description: Omitted means the built-in User role; an unknown id is rejected
-          as 400.
         example: 00000000-0000-0000-0000-000000000002
         type: string
     required:
@@ -361,12 +343,9 @@ definitions:
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateWalletRequestDTO:
     properties:
       balance:
-        description: 'No "required" on these two: it would reject a 0 balance and
-          include_in_total=false.'
         example: 41200000
         type: integer
       credit_limit:
-        description: Card wallets only; sending either on another type is rejected.
         example: 25000000
         minimum: 0
         type: integer
@@ -395,8 +374,6 @@ definitions:
         minLength: 2
         type: string
       reference:
-        description: reference and icon are nullable in the table, so they stay optional
-          here.
         example: "1234567890"
         maxLength: 50
         type: string
@@ -523,7 +500,6 @@ definitions:
         example: 4000000
         type: integer
       remaining:
-        description: Negative once the limit is passed.
         example: -320000
         type: integer
       spent:
@@ -631,9 +607,6 @@ definitions:
         example: "2026-01-02T15:04:05Z"
         type: string
       created_by:
-        description: |-
-          null on the built-in roles, which the migration seeds. deleted_by is left
-          out: a deleted role is never in a response.
         example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
         type: string
       description:
@@ -646,8 +619,6 @@ definitions:
         example: 00000000-0000-0000-0000-000000000001
         type: string
       is_system:
-        description: Built-in roles must not be renamed or deleted; the UI hides those
-          actions.
         example: true
         type: boolean
       name:
@@ -664,8 +635,6 @@ definitions:
         example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
         type: string
       user_count:
-        description: How many users are assigned to this role; filled by the list
-          only.
         example: 12
         type: integer
     type: object
@@ -738,8 +707,6 @@ definitions:
         minLength: 2
         type: string
       permissions:
-        description: Omitted leaves the permissions untouched; an empty array clears
-          them.
         items:
           $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequestDTO'
         type: array
@@ -807,9 +774,6 @@ definitions:
         example: "2026-01-02T15:04:05Z"
         type: string
       created_by:
-        description: |-
-          null when nobody was signed in, as with a self-registered account.
-          deleted_by is left out: a deleted user is never in a response.
         example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
         type: string
       email:
@@ -855,7 +819,6 @@ definitions:
         example: IDR
         type: string
       counted_wallets:
-        description: How many wallets total_held is made of.
         example: 3
         type: integer
       held_by_currency:
@@ -863,7 +826,6 @@ definitions:
           $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CurrencyAmountResponseDTO'
         type: array
       owed_on_cards:
-        description: Negative, or 0 when nothing is owed.
         example: -3240000
         type: integer
       total_held:
@@ -876,8 +838,6 @@ definitions:
         example: 41200000
         type: integer
       balance_updated_at:
-        description: When the balance itself last changed, which is not when the row
-          last changed.
         example: "2026-08-26T15:04:05Z"
         type: string
       created_at:
@@ -887,7 +847,6 @@ definitions:
         example: 6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b
         type: string
       credit_limit:
-        description: null on every type but card.
         example: 25000000
         type: integer
       currency:

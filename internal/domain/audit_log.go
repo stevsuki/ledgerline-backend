@@ -84,23 +84,19 @@ func AuditSeverities() []AuditSeverity {
 }
 
 type AuditLog struct {
-	ID     uuid.UUID
-	UserID uuid.UUID
-	// The actor as they were when the entry was written, not following later renames.
+	ID           uuid.UUID
+	UserID       uuid.UUID
 	UserFullName string
 	RoleName     string
 	Action       string
 	Details      AuditDetail
-	// DetailText is Details rendered for people; Details stays the source of truth.
-	DetailText string
-	Status     AuditStatus
-	Severity   AuditSeverity
-	Module     AuditModule
-	// IPAddress is nullable: only the HTTP layer knows it.
-	IPAddress *string
-	// MenuID is nullable: the database clears it when the menu is deleted.
-	MenuID    *uuid.UUID
-	CreatedAt time.Time
+	DetailText   string
+	Status       AuditStatus
+	Severity     AuditSeverity
+	Module       AuditModule
+	IPAddress    *string
+	MenuID       *uuid.UUID
+	CreatedAt    time.Time
 }
 
 type AuditLogFilter struct {
@@ -111,10 +107,9 @@ type AuditLogFilter struct {
 	UserID   uuid.UUID
 	Status   AuditStatus
 	Severity AuditSeverity
-	// From and To bound created_at; To is already the exclusive upper bound.
-	From   *time.Time
-	To     *time.Time
-	Module AuditModule
+	From     *time.Time
+	To       *time.Time
+	Module   AuditModule
 }
 
 type AuditLogRepository interface {
@@ -122,7 +117,6 @@ type AuditLogRepository interface {
 	Create(ctx context.Context, log *AuditLog) error
 	Overview(ctx context.Context, window time.Duration) (AuditLogOverview, error)
 	DistinctActors(ctx context.Context) ([]AuditActorOption, error)
-	// ListRows is List without the count, for walking a large result in batches.
 	ListRows(ctx context.Context, filter AuditLogFilter) ([]AuditLog, error)
 }
 
@@ -130,23 +124,18 @@ type AuditLogService interface {
 	List(ctx context.Context, filter AuditLogFilter) ([]AuditLog, int, error)
 	Overview(ctx context.Context) (AuditLogOverview, error)
 	Options(ctx context.Context) (AuditLogOptions, error)
-	// Export hands each batch to yield so a large export never sits in memory.
 	Export(ctx context.Context, filter AuditLogFilter, yield func([]AuditLog) error) error
 }
 
 // AuditLogOverview: the cards above the audit table, every count over the same window.
 type AuditLogOverview struct {
-	WindowDays int
-	// Events and Modules answer "Events, 7 days · Across N modules".
-	Events  int
-	Modules int
-	// Sensitive is everything above info severity.
-	Sensitive int
-	// These two answer "Failed sign-ins · From N addresses".
+	WindowDays            int
+	Events                int
+	Modules               int
+	Sensitive             int
 	FailedSignIns         int
 	FailedSignInAddresses int
-	// RetentionDays is policy, not a measurement.
-	RetentionDays int
+	RetentionDays         int
 }
 
 // AuditActorOption: one actor dropdown entry, named as the log recorded them.

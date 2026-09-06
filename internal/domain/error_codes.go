@@ -1,9 +1,7 @@
 package domain
 
-// Error codes are the public contract: the frontend switches on Code, never on Message.
-// A code never changes meaning once released; add a new one instead.
+// Error codes are the public contract: the frontend switches on Code.
 const (
-	// Generic — usable by any resource.
 	CodeInternal         = "INTERNAL_ERROR"
 	CodeValidation       = "VALIDATION_ERROR"
 	CodeBadRequest       = "BAD_REQUEST"
@@ -19,7 +17,6 @@ const (
 	CodeMethodNotAllowed = "METHOD_NOT_ALLOWED"
 	CodeDBUnavailable    = "DB_UNAVAILABLE"
 
-	// Auth.
 	CodeInvalidCredentials = "AUTH_INVALID_CREDENTIALS" //nolint:gosec // an error code, not a secret
 	CodeAccountLocked      = "AUTH_ACCOUNT_LOCKED"
 	CodeTokenMissing       = "AUTH_TOKEN_MISSING" //nolint:gosec // an error code, not a secret
@@ -29,13 +26,11 @@ const (
 	CodeOTPMaxAttempts     = "AUTH_OTP_MAX_ATTEMPTS"
 	CodeResetTooSoon       = "AUTH_RESET_REQUESTED_TOO_SOON"
 
-	// User.
 	CodeUserNotFound    = "USER_NOT_FOUND"
 	CodeUserEmailTaken  = "USER_EMAIL_TAKEN"
 	CodeUserInvalidRole = "USER_INVALID_ROLE"
 	CodeUserInvalidData = "USER_INVALID_DATA"
 
-	// Category.
 	CodeCategoryNotFound      = "CATEGORY_NOT_FOUND"
 	CodeCategoryNameTaken     = "CATEGORY_NAME_TAKEN"
 	CodeCategoryInvalidType   = "CATEGORY_INVALID_TYPE"
@@ -44,14 +39,12 @@ const (
 	CodeCategoryInvalidSlug   = "CATEGORY_INVALID_SLUG"
 	CodeCategoryInUse         = "CATEGORY_IN_USE"
 
-	// Role.
 	CodeRoleNotFound        = "ROLE_NOT_FOUND"
 	CodeRoleNameTaken       = "ROLE_NAME_TAKEN"
 	CodeRoleSystemImmutable = "ROLE_SYSTEM_IMMUTABLE"
 	CodeRoleInvalidMenu     = "ROLE_INVALID_MENU"
 	CodeRoleInvalidData     = "ROLE_INVALID_DATA"
 
-	// Wallet.
 	CodeWalletNotFound        = "WALLET_NOT_FOUND"
 	CodeWalletNameTaken       = "WALLET_NAME_TAKEN"
 	CodeWalletInvalidData     = "WALLET_INVALID_DATA"
@@ -59,11 +52,9 @@ const (
 	CodeWalletInvalidCurrency = "WALLET_INVALID_CURRENCY"
 	CodeWalletInvalidCard     = "WALLET_INVALID_CARD"
 
-	// Master category.
 	CodeMasterCategoryNotFound  = "MASTER_CATEGORY_NOT_FOUND"
 	CodeMasterCategoryNameTaken = "MASTER_CATEGORY_NAME_TAKEN"
 
-	// Budget
 	CodeBudgetNotFound         = "BUDGET_NOT_FOUND"
 	CodeBudgetCategoryTaken    = "BUDGET_CATEGORY_TAKEN"
 	CodeBudgetInvalidCategory  = "BUDGET_INVALID_CATEGORY"
@@ -72,9 +63,7 @@ const (
 	CodeBudgetInvalidThreshold = "BUDGET_INVALID_THRESHOLD"
 	CodeBudgetInvalidFixed     = "BUDGET_INVALID_FIXED"
 
-	// Menu.
 	CodeMenuNotFound = "MENU_NOT_FOUND"
 
-	// Audit log.
 	CodeAuditLogNotFound = "AUDIT_LOG_NOT_FOUND"
 )

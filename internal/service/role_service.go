@@ -64,7 +64,6 @@ func (s *roleService) Create(ctx context.Context, input domain.CreateRoleInput) 
 		Icon:        strings.TrimSpace(input.Icon),
 		Permissions: permissions,
 	}
-	// A duplicate name is rejected by the unique index; the repository writes both in one transaction.
 	if err := s.roleRepo.Create(ctx, role); err != nil {
 		return nil, err
 	}
@@ -115,7 +114,6 @@ func (s *roleService) Update(ctx context.Context, id uuid.UUID, input domain.Upd
 		}
 		role.Name = name
 	}
-	// Description stays editable on built-in roles; only the name is fixed.
 	if input.Description != nil {
 		role.Description = strings.TrimSpace(*input.Description)
 	}
@@ -123,7 +121,6 @@ func (s *roleService) Update(ctx context.Context, id uuid.UUID, input domain.Upd
 		role.Icon = strings.TrimSpace(*input.Icon)
 	}
 
-	// nil means the request left permissions alone; an empty slice clears them.
 	var permissions []domain.RoleMenuPermission
 	if input.Permissions != nil {
 		permissions, err = buildPermissions(*input.Permissions)
@@ -147,7 +144,6 @@ func (s *roleService) Delete(ctx context.Context, id uuid.UUID) error {
 		return err
 	}
 
-	// Roles are soft-deleted, so ON DELETE RESTRICT never fires and the guard lives here.
 	if role.IsSystem {
 		return domain.Forbidden(domain.CodeRoleSystemImmutable, "a built-in role cannot be deleted")
 	}

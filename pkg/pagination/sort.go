@@ -58,7 +58,6 @@ func (s Sortable) OrderBy(raw string) (string, error) {
 		clauses = append(clauses, column+" "+direction)
 	}
 
-	// Without a unique trailing column, tied rows can duplicate or vanish across pages.
 	if s.TieBreaker != "" && !seen[s.TieBreaker] {
 		clauses = append(clauses, s.TieBreaker+" ASC")
 	}

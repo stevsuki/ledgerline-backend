@@ -24,7 +24,6 @@ func TestUserService_Create(t *testing.T) {
 		Password: "Rahasia123!",
 	}
 
-	// Table-driven test: one table of cases, one execution loop.
 	tests := []struct {
 		name      string
 		setupMock func(*mocks.UserRepository, *mocks.PasswordHasher)
@@ -94,7 +93,6 @@ func TestUserService_Update(t *testing.T) {
 	t.Parallel()
 
 	id := uuid.New()
-	// Each subtest gets its own instance so they never mutate shared data.
 	newExisting := func() *domain.User {
 		return &domain.User{ID: id, Email: "budi@example.com", FullName: "Budi", RoleID: domain.RoleIDUser}
 	}
@@ -132,7 +130,6 @@ func TestUserService_Update(t *testing.T) {
 		repo.AssertExpectations(t)
 	})
 
-	// An unknown role id is caught by the foreign key; an empty one must be rejected here.
 	t.Run("fails because role_id is empty", func(t *testing.T) {
 		t.Parallel()
 

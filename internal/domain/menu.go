@@ -30,6 +30,5 @@ type MenuAccess struct {
 
 // MenuRepository: port to storage for the menus table.
 type MenuRepository interface {
-	// ListByRole returns every active menu, flat, with one role's access flags.
 	ListByRole(ctx context.Context, roleID uuid.UUID) ([]Menu, error)
 }

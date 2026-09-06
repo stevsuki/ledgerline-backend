@@ -11,8 +11,7 @@ import (
 	"github.com/stevensuki/ledgerline-backend/internal/repository/postgres/model"
 )
 
-// defaultWalletOrder: newest first, id as the tie breaker. Stable order matters:
-// the UI colours the summary bar by a wallet's position in this list.
+// defaultWalletOrder: oldest first, id as the tie breaker.
 const defaultWalletOrder = "created_at ASC, id ASC"
 
 type walletRepository struct {
@@ -48,7 +47,6 @@ func (r *walletRepository) GetByID(ctx context.Context, id, userID uuid.UUID) (*
 func (r *walletRepository) Create(ctx context.Context, wallet *domain.Wallet) error {
 	actor := domain.ActorFrom(ctx)
 	wallet.CreatedBy, wallet.UpdatedBy = actor, actor
-	// The opening balance is a figure someone typed, so it is stamped like any later edit.
 	wallet.BalanceUpdatedBy = actor
 
 	row := model.WalletFromDomain(wallet)
@@ -65,12 +63,8 @@ func (r *walletRepository) Create(ctx context.Context, wallet *domain.Wallet) er
 func (r *walletRepository) Update(ctx context.Context, wallet *domain.Wallet) error {
 	wallet.UpdatedBy = domain.ActorFrom(ctx)
 
-	// balance_updated_at only moves when the figure actually changes: the UI prints
-	// its age ("Updated 8 days ago"), so an unrelated rename must not reset it.
-	// Inside an UPDATE, a bare column on the right-hand side is still the old row.
 	balanceChanged := "balance IS DISTINCT FROM ?"
 
-	// user_id in the WHERE so a wallet read for one user can never be written by another.
 	result := dbFrom(ctx, r.db).Model(&model.WalletModel{}).
 		Where("id = ? AND user_id = ?", wallet.ID, wallet.UserID).
 		Updates(map[string]any{
@@ -136,8 +130,7 @@ type overviewRow struct {
 	Total     int64
 }
 
-// Overview sums in SQL rather than over a fetched list: the rule for what counts
-// belongs here, and one grouped read cannot disagree with itself.
+// Overview sums in SQL rather than over a fetched list.
 func (r *walletRepository) Overview(ctx context.Context, userID uuid.UUID) (domain.WalletOverview, error) {
 	var rows []overviewRow
 	err := dbFrom(ctx, r.db).

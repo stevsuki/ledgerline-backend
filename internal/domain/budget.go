@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Share of a limit an alert fires at; the table checks the same range.
+// Alert threshold range; the table checks the same.
 const (
 	MinAlertThresholdPercent = 1
 	MaxAlertThresholdPercent = 100
@@ -35,8 +35,7 @@ type Budget struct {
 	DeletedBy             *uuid.UUID
 }
 
-// PercentOf: the one rounding rule for every share this package reports, so a
-// card and the headline above it can never round the same figure differently.
+// PercentOf: the one rounding rule every share here uses.
 func PercentOf(part, whole int64) int {
 	if whole <= 0 {
 		return 0
@@ -44,7 +43,7 @@ func PercentOf(part, whole int64) int {
 	return int(math.Round(float64(part) / float64(whole) * FullPercent))
 }
 
-// Remaining is negative once the limit is passed.
+// Remaining: negative once the limit is passed.
 func (b Budget) Remaining() int64 { return b.MonthlyLimit - b.Spent }
 
 func (b Budget) UsedPercent() int { return PercentOf(b.Spent, b.MonthlyLimit) }
@@ -58,7 +57,6 @@ type BudgetRepository interface {
 	Update(ctx context.Context, budget *Budget) error
 	Delete(ctx context.Context, id, userID uuid.UUID) error
 	Usage(ctx context.Context, userID uuid.UUID) ([]BudgetUsage, error)
-	// ExistsByCategory: whether a live budget still limits this category.
 	ExistsByCategory(ctx context.Context, categoryID, userID uuid.UUID) (bool, error)
 }
 
@@ -89,8 +87,7 @@ type BudgetService interface {
 	Overview(ctx context.Context, userID uuid.UUID) (BudgetOverview, error)
 }
 
-// BudgetUsage: one budget joined to the category it limits, with what that
-// category has spent this cycle.
+// BudgetUsage: a budget with its category and its spend this cycle.
 type BudgetUsage struct {
 	BudgetID              uuid.UUID
 	CategoryID            uuid.UUID
@@ -105,8 +102,7 @@ type BudgetUsage struct {
 	Rollover              bool
 }
 
-// BudgetShare: one slice of the allocation bar. Percent is of the total limit,
-// never of the spend, and the slices always add up to 100.
+// BudgetShare: one slice of the allocation bar.
 type BudgetShare struct {
 	CategoryID   uuid.UUID
 	CategoryName string
@@ -114,8 +110,7 @@ type BudgetShare struct {
 	Percent      int
 }
 
-// BudgetAttention: a budget that is over its limit or has reached its own
-// alert threshold. Figures only; the wording belongs to the client.
+// BudgetAttention: a budget over its limit or past its threshold.
 type BudgetAttention struct {
 	BudgetID              uuid.UUID
 	CategoryID            uuid.UUID
@@ -131,22 +126,17 @@ type BudgetAttention struct {
 	IsOver                bool
 }
 
-// BudgetOverview: the summary panel on the budgets screen. Only base-currency
-// budgets are summed, the way WalletOverview keeps its headline in one currency.
+// BudgetOverview: the summary panel, base currency only.
 type BudgetOverview struct {
-	Currency       Currency
-	TotalAllocated int64
-	TotalSpent     int64
-	// Negative once the allocation is passed.
-	TotalLeft     int64
-	CategoryCount int
-	// Budgets in another currency, summed nowhere: there is no rate to fold them in with.
-	UncountedBudgets int
-	UsedPercent      int
-	IsOver           bool
-	// Days between today and the last day of the month.
-	DaysLeft int
-	// How much of the cycle has run, which is what UsedPercent is early or late against.
+	Currency            Currency
+	TotalAllocated      int64
+	TotalSpent          int64
+	TotalLeft           int64
+	CategoryCount       int
+	UncountedBudgets    int
+	UsedPercent         int
+	IsOver              bool
+	DaysLeft            int
 	CycleElapsedPercent int
 	Shares              []BudgetShare
 	NeedAttention       []BudgetAttention

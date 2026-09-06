@@ -61,7 +61,6 @@ func TestCategoryService_Delete(t *testing.T) {
 			var domainErr *domain.Error
 			require.ErrorAs(t, err, &domainErr)
 			assert.Equal(t, tt.wantCode, domainErr.Code)
-			// The row stays put when a budget still points at it.
 			categories.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything, mock.Anything)
 		})
 	}

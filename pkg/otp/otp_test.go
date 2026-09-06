@@ -41,7 +41,6 @@ func TestGenerate(t *testing.T) {
 func TestGenerateKeepsLeadingZeros(t *testing.T) {
 	t.Parallel()
 
-	// Roughly 1 in 10 codes starts with a zero, so 500 draws make this reliable.
 	g := otp.NewGenerator(6)
 	seen := false
 	for range 500 {
@@ -65,7 +64,6 @@ func TestGenerateIsNotRepeating(t *testing.T) {
 		require.NoError(t, err)
 		seen[code] = true
 	}
-	// A predictable source would collapse into a handful of values.
 	assert.Greater(t, len(seen), 150)
 }
 
