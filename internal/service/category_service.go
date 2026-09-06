@@ -30,6 +30,15 @@ func (s *CategoryService) GetByID(ctx context.Context, userID, id uuid.UUID) (*d
 	return s.categoryRepo.GetByID(ctx, id, userID)
 }
 
+// masterCategoryOrOthers: a category always derives from a master row, so one
+// that names none falls back to Others.
+func masterCategoryOrOthers(id uuid.UUID) uuid.UUID {
+	if id == uuid.Nil {
+		return domain.MasterCategoryIDOthers
+	}
+	return id
+}
+
 func (s *CategoryService) Create(ctx context.Context, userID uuid.UUID, input domain.CreateCategoryInput) (*domain.Category, error) {
 	name := strings.TrimSpace(input.Name)
 	if name == "" {
@@ -48,7 +57,7 @@ func (s *CategoryService) Create(ctx context.Context, userID uuid.UUID, input do
 	category := &domain.Category{
 		ID:               id,
 		UserID:           userID,
-		MasterCategoryID: input.MasterCategoryID,
+		MasterCategoryID: masterCategoryOrOthers(input.MasterCategoryID),
 		Name:             name,
 		Type:             input.Type,
 		Icon:             strings.TrimSpace(input.Icon),
@@ -83,7 +92,7 @@ func (s *CategoryService) Update(ctx context.Context, userID, id uuid.UUID, inpu
 	}
 
 	if input.MasterCategoryID != nil {
-		category.MasterCategoryID = *input.MasterCategoryID
+		category.MasterCategoryID = masterCategoryOrOthers(*input.MasterCategoryID)
 	}
 
 	if input.Icon != nil {

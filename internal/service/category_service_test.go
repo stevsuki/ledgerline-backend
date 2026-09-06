@@ -65,3 +65,38 @@ func TestCategoryService_Delete(t *testing.T) {
 		})
 	}
 }
+
+func TestCategoryService_CreateFallsBackToOthers(t *testing.T) {
+	t.Parallel()
+
+	userID := uuid.New()
+	master := uuid.New()
+
+	tests := []struct {
+		name  string
+		given uuid.UUID
+		want  uuid.UUID
+	}{
+		{name: "no master named", given: uuid.Nil, want: domain.MasterCategoryIDOthers},
+		{name: "a master named", given: master, want: master},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			categories := &mocks.CategoryRepository{}
+			categories.On("Create", mock.Anything, mock.AnythingOfType("*domain.Category")).Return(nil)
+
+			category, err := service.NewCategoryService(categories, &mocks.BudgetRepository{}).
+				Create(context.Background(), userID, domain.CreateCategoryInput{
+					Name:             "Education",
+					Type:             domain.CategoryTypeExpense,
+					MasterCategoryID: tt.given,
+				})
+
+			require.NoError(t, err)
+			assert.Equal(t, tt.want, category.MasterCategoryID)
+		})
+	}
+}

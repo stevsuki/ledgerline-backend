@@ -1,0 +1,1 @@
+-- Deliberately empty: nothing records which rows were NULL before the backfill.
