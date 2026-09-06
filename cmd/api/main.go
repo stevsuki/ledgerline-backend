@@ -76,6 +76,7 @@ func run() error {
 	txManager := postgres.NewTxManager(db)
 	auditLogRepo := postgres.NewAuditLogRepository(db)
 	walletRepo := postgres.NewWalletRepository(db)
+	budgetRepo := postgres.NewBudgetRepository(db)
 
 	hasher := hash.NewBcrypt(0)
 	tokenManager := jwt.NewManager(cfg.JWT.Secret, cfg.JWT.Issuer, cfg.JWT.AccessTokenTTL, cfg.JWT.RefreshTokenTTL, cfg.JWT.ResetTokenTTL)
@@ -102,11 +103,12 @@ func run() error {
 	}
 
 	userService := service.NewUserService(userRepo, hasher, auditLogRepo)
-	categoryService := service.NewCategoryService(categoryRepo)
+	categoryService := service.NewCategoryService(categoryRepo, budgetRepo)
 	authService := service.NewAuthService(userRepo, hasher, tokenManager, mail, otpGenerator, passwordResetTokenRepo, menuRepo, txManager, cfg.OTP.TTL, auditLogRepo, categoryRepo)
 	roleService := service.NewRoleService(roleRepo, auditLogRepo)
 	auditLogService := service.NewAuditLogService(auditLogRepo)
 	walletService := service.NewWalletService(walletRepo, auditLogRepo)
+	budgetService := service.NewBudgetService(budgetRepo, categoryRepo)
 
 	engine := router.New(router.Dependencies{
 		Config:       cfg,
@@ -119,6 +121,7 @@ func run() error {
 		Role:         handler.NewRoleHandler(roleService),
 		AuditLog:     handler.NewAuditLogHandler(auditLogService),
 		Wallet:       handler.NewWalletHandler(walletService),
+		Budget:       handler.NewBudgetHandler(budgetService),
 	})
 
 	return server.New(cfg.HTTP, engine, log).Run(ctx)

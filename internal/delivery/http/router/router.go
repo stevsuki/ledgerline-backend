@@ -29,6 +29,7 @@ type Dependencies struct {
 	Role         *handler.RoleHandler
 	AuditLog     *handler.AuditLogHandler
 	Wallet       *handler.WalletHandler
+	Budget       *handler.BudgetHandler
 }
 
 // New assembles the Gin engine with global middleware and all routes.
@@ -70,6 +71,7 @@ func New(deps Dependencies) *gin.Engine {
 	registerRoleRoutes(v1, deps)
 	registerAuditLogRoutes(v1, deps)
 	registerWalletRoutes(v1, deps)
+	registerBudgetRoutes(v1, deps)
 
 	return engine
 }
@@ -144,5 +146,16 @@ func registerWalletRoutes(rg *gin.RouterGroup, deps Dependencies) {
 		wallets.PATCH("/:id", deps.Wallet.Update)
 		wallets.DELETE("/:id", deps.Wallet.Delete)
 		wallets.GET("/overview", deps.Wallet.Overview)
+	}
+}
+func registerBudgetRoutes(rg *gin.RouterGroup, deps Dependencies) {
+	budgets := rg.Group("/budgets", middleware.Authenticate(deps.TokenManager))
+	{
+		budgets.GET("", deps.Budget.List)
+		budgets.GET("/:id", deps.Budget.GetByID)
+		budgets.POST("", deps.Budget.Create)
+		budgets.PATCH("/:id", deps.Budget.Update)
+		budgets.DELETE("/:id", deps.Budget.Delete)
+		budgets.GET("/overview", deps.Budget.Overview)
 	}
 }

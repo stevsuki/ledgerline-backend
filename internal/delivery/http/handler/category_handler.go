@@ -157,6 +157,7 @@ func (h *CategoryHandler) Update(c *gin.Context) {
 //	@Param		id	path		string	true	"Category ID (UUID)"
 //	@Success	200	{object}	response.Success
 //	@Failure	404	{object}	response.Error
+//	@Failure	409	{object}	response.Error
 //	@Router		/categories/{id} [delete]
 func (h *CategoryHandler) Delete(c *gin.Context) {
 	userID, ok := middleware.GetUserID(c)

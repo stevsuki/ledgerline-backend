@@ -609,6 +609,344 @@
                 }
             }
         },
+        "/budgets": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "budgets"
+                ],
+                "summary": "List budgets owned by the logged-in user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.BudgetResponseDTO"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "budgets"
+                ],
+                "summary": "Create a budget",
+                "parameters": [
+                    {
+                        "description": "Budget data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateBudgetRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.BudgetResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/budgets/overview": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "budgets"
+                ],
+                "summary": "Budget summary for the current cycle",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.BudgetOverviewResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/budgets/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "budgets"
+                ],
+                "summary": "Budget detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Budget ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.BudgetResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "budgets"
+                ],
+                "summary": "Delete a budget",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Budget ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "budgets"
+                ],
+                "summary": "Update a budget",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Budget ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateBudgetRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.BudgetResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/categories": {
             "get": {
                 "security": [
@@ -865,6 +1203,12 @@
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
                         }
@@ -2041,6 +2385,150 @@
                 }
             }
         },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.BudgetOverviewResponseDTO": {
+            "type": "object",
+            "properties": {
+                "across_category": {
+                    "type": "integer",
+                    "example": 6
+                },
+                "alert": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.NeedAttentionDTO"
+                    }
+                },
+                "currency": {
+                    "description": "The one currency the headline is stated in; budgets in another are not summed.",
+                    "type": "string",
+                    "example": "IDR"
+                },
+                "cycle_elapsed_percent": {
+                    "description": "What used_percent is early or late against.",
+                    "type": "integer",
+                    "example": 87
+                },
+                "days_left": {
+                    "type": "integer",
+                    "example": 4
+                },
+                "is_over": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "shares": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.BudgetShareDTO"
+                    }
+                },
+                "total_budget_allocated": {
+                    "type": "integer",
+                    "example": 10000000
+                },
+                "total_budget_left": {
+                    "description": "Negative once the allocation is passed.",
+                    "type": "integer",
+                    "example": 1000000
+                },
+                "total_budget_spent": {
+                    "type": "integer",
+                    "example": 9000000
+                },
+                "uncounted_budgets": {
+                    "description": "Budgets in another currency, left out of every figure above.",
+                    "type": "integer",
+                    "example": 0
+                },
+                "used_percent": {
+                    "type": "integer",
+                    "example": 90
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.BudgetResponseDTO": {
+            "type": "object",
+            "properties": {
+                "alert_threshold_percent": {
+                    "type": "integer",
+                    "example": 80
+                },
+                "category_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "category_name": {
+                    "type": "string",
+                    "example": "Food \u0026 Drink"
+                },
+                "color": {
+                    "type": "string",
+                    "example": "c2"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "IDR"
+                },
+                "icon": {
+                    "type": "string",
+                    "example": "food"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "is_fixed": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "is_over": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "monthly_limit": {
+                    "type": "integer",
+                    "example": 10000000
+                },
+                "remaining": {
+                    "description": "Negative once the limit is passed.",
+                    "type": "integer",
+                    "example": 1600000
+                },
+                "rollover": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "spent": {
+                    "type": "integer",
+                    "example": 8400000
+                },
+                "used_percent": {
+                    "type": "integer",
+                    "example": 84
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.BudgetShareDTO": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "category_name": {
+                    "type": "string",
+                    "example": "Food \u0026 Drink"
+                },
+                "color": {
+                    "type": "string",
+                    "example": "c2"
+                },
+                "percent": {
+                    "type": "integer",
+                    "example": 24
+                }
+            }
+        },
         "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategoryResponseDTO": {
             "type": "object",
             "properties": {
@@ -2081,6 +2569,41 @@
                 },
                 "user_id": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateBudgetRequestDTO": {
+            "type": "object",
+            "required": [
+                "alert_threshold_percent",
+                "category_id",
+                "currency",
+                "monthly_limit"
+            ],
+            "properties": {
+                "alert_threshold_percent": {
+                    "type": "integer",
+                    "example": 80
+                },
+                "category_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "IDR"
+                },
+                "is_fixed": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "monthly_limit": {
+                    "type": "integer",
+                    "example": 10000000
+                },
+                "rollover": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },
@@ -2384,6 +2907,60 @@
                 }
             }
         },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.NeedAttentionDTO": {
+            "type": "object",
+            "properties": {
+                "alert_threshold_percent": {
+                    "type": "integer",
+                    "example": 80
+                },
+                "budget_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "category_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "category_name": {
+                    "type": "string",
+                    "example": "Food \u0026 Drink"
+                },
+                "color": {
+                    "type": "string",
+                    "example": "c2"
+                },
+                "icon": {
+                    "type": "string",
+                    "example": "food"
+                },
+                "is_fixed": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "is_over": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "monthly_limit": {
+                    "type": "integer",
+                    "example": 4000000
+                },
+                "remaining": {
+                    "description": "Negative once the limit is passed.",
+                    "type": "integer",
+                    "example": -320000
+                },
+                "spent": {
+                    "type": "integer",
+                    "example": 4320000
+                },
+                "used_percent": {
+                    "type": "integer",
+                    "example": 108
+                }
+            }
+        },
         "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.OptionCategoryResponseDTO": {
             "type": "object",
             "properties": {
@@ -2585,6 +3162,35 @@
                 "token_type": {
                     "type": "string",
                     "example": "Bearer"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateBudgetRequestDTO": {
+            "type": "object",
+            "properties": {
+                "alert_threshold_percent": {
+                    "type": "integer",
+                    "example": 80
+                },
+                "category_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "IDR"
+                },
+                "is_fixed": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "monthly_limit": {
+                    "type": "integer",
+                    "example": 10000000
+                },
+                "rollover": {
+                    "type": "boolean",
+                    "example": false
                 }
             }
         },

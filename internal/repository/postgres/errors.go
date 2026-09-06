@@ -68,6 +68,12 @@ var (
 		conflict: domain.Conflict(domain.CodeWalletNameTaken, "a wallet with that name already exists").WithField("name"),
 	}
 
+	budgetErrors = resourceErrors{
+		notFound: domain.NotFound(domain.CodeBudgetNotFound, "budget not found"),
+		conflict: domain.Conflict(domain.CodeBudgetCategoryTaken, "a budget for that category already exists").WithField("category_id"),
+		invalid:  domain.InvalidInput(domain.CodeBudgetInvalidCategory, "category_id does not refer to an existing category").WithField("category_id"),
+	}
+
 	masterCategoryErrors = resourceErrors{
 		notFound: domain.NotFound(domain.CodeMasterCategoryNotFound, "master category not found"),
 		conflict: domain.Conflict(domain.CodeMasterCategoryNameTaken, "a master category with that name already exists").WithField("name"),

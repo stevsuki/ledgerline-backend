@@ -42,6 +42,7 @@ const (
 	CodeCategoryInvalidMaster = "CATEGORY_INVALID_MASTER"
 	CodeCategoryInvalidData   = "CATEGORY_INVALID_DATA"
 	CodeCategoryInvalidSlug   = "CATEGORY_INVALID_SLUG"
+	CodeCategoryInUse         = "CATEGORY_IN_USE"
 
 	// Role.
 	CodeRoleNotFound        = "ROLE_NOT_FOUND"
@@ -61,6 +62,15 @@ const (
 	// Master category.
 	CodeMasterCategoryNotFound  = "MASTER_CATEGORY_NOT_FOUND"
 	CodeMasterCategoryNameTaken = "MASTER_CATEGORY_NAME_TAKEN"
+
+	// Budget
+	CodeBudgetNotFound         = "BUDGET_NOT_FOUND"
+	CodeBudgetCategoryTaken    = "BUDGET_CATEGORY_TAKEN"
+	CodeBudgetInvalidCategory  = "BUDGET_INVALID_CATEGORY"
+	CodeBudgetInvalidCurrency  = "BUDGET_INVALID_CURRENCY"
+	CodeBudgetInvalidLimit     = "BUDGET_INVALID_LIMIT"
+	CodeBudgetInvalidThreshold = "BUDGET_INVALID_THRESHOLD"
+	CodeBudgetInvalidFixed     = "BUDGET_INVALID_FIXED"
 
 	// Menu.
 	CodeMenuNotFound = "MENU_NOT_FOUND"

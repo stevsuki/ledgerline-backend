@@ -12,10 +12,14 @@ import (
 
 type CategoryService struct {
 	categoryRepo domain.CategoryRepository
+	budgetRepo   domain.BudgetRepository
 }
 
-func NewCategoryService(categoryRepo domain.CategoryRepository) domain.CategoryService {
-	return &CategoryService{categoryRepo: categoryRepo}
+func NewCategoryService(
+	categoryRepo domain.CategoryRepository,
+	budgetRepo domain.BudgetRepository,
+) domain.CategoryService {
+	return &CategoryService{categoryRepo: categoryRepo, budgetRepo: budgetRepo}
 }
 
 func (s *CategoryService) List(ctx context.Context, userID uuid.UUID) ([]domain.Category, error) {
@@ -96,6 +100,14 @@ func (s *CategoryService) Update(ctx context.Context, userID, id uuid.UUID, inpu
 }
 
 func (s *CategoryService) Delete(ctx context.Context, userID, id uuid.UUID) error {
+	inUse, err := s.budgetRepo.ExistsByCategory(ctx, id, userID)
+	if err != nil {
+		return err
+	}
+	if inUse {
+		return domain.Conflict(domain.CodeCategoryInUse,
+			"a budget still limits this category; remove the budget first")
+	}
 	return s.categoryRepo.Delete(ctx, id, userID)
 }
 

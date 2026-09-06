@@ -74,6 +74,19 @@ The source of truth is [internal/domain/error_codes.go](internal/domain/error_co
 | `CATEGORY_INVALID_MASTER` | 400 | `master_category_id` names no master row (`field: master_category_id`) |
 | `CATEGORY_INVALID_SLUG` | 400 | `slug` on `/categories/options` is neither `filter` nor `budget` (`field: slug`) |
 | `CATEGORY_INVALID_DATA` | 400 | Another category field was rejected |
+| `CATEGORY_IN_USE` | 409 | The category still has a budget on it, so it cannot be deleted |
+
+## Budget
+
+| Code | Status | When |
+|---|---|---|
+| `BUDGET_NOT_FOUND` | 404 | No budget with that id for this user |
+| `BUDGET_CATEGORY_TAKEN` | 409 | The user already has a budget for that category (`field: category_id`) |
+| `BUDGET_INVALID_CATEGORY` | 400 | `category_id` names no category (`field: category_id`) |
+| `BUDGET_INVALID_CURRENCY` | 400 | `currency` is not IDR, USD or SGD (`field: currency`) |
+| `BUDGET_INVALID_LIMIT` | 400 | `monthly_limit` is not greater than 0 (`field: monthly_limit`) |
+| `BUDGET_INVALID_THRESHOLD` | 400 | `alert_threshold_percent` is outside 1-100 (`field: alert_threshold_percent`) |
+| `BUDGET_INVALID_FIXED` | 400 | `is_fixed` is true but `alert_threshold_percent` is not 100 (`field: alert_threshold_percent`) |
 
 ## Role
 
