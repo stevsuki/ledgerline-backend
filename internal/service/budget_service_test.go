@@ -239,3 +239,34 @@ func TestBudgetOverviewOf_LeavesOtherCurrenciesOut(t *testing.T) {
 	require.Len(t, overview.Shares, 1)
 	assert.Equal(t, 100, overview.Shares[0].Percent)
 }
+
+func TestBudgetOverviewOf_CarryWidensWhatIsLeft(t *testing.T) {
+	t.Parallel()
+
+	carried := usage("Food & Drink", 3_000_000, 3_400_000, 80, false)
+	carried.CarriedOver = 800_000
+
+	overview := budgetOverviewOf([]domain.BudgetUsage{carried}, time.Now())
+
+	// Allocated stays the plan; only what is left counts the carry.
+	assert.Equal(t, int64(3_000_000), overview.TotalAllocated)
+	assert.Equal(t, int64(800_000), overview.TotalCarriedOver)
+	assert.Equal(t, int64(400_000), overview.TotalLeft)
+	assert.Equal(t, 89, overview.UsedPercent)
+	assert.False(t, overview.IsOver)
+}
+
+func TestBudgetAttention_CarryKeepsABudgetQuiet(t *testing.T) {
+	t.Parallel()
+
+	carried := usage("Food & Drink", 1_000_000, 1_200_000, 80, false)
+	carried.CarriedOver = 600_000
+
+	assert.Empty(t, budgetAttention([]domain.BudgetUsage{carried}))
+
+	// The same spend without a carry is over its limit.
+	carried.CarriedOver = 0
+	items := budgetAttention([]domain.BudgetUsage{carried})
+	require.Len(t, items, 1)
+	assert.True(t, items[0].IsOver)
+}

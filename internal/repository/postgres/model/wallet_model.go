@@ -19,6 +19,7 @@ type WalletModel struct {
 	Reference        string    `gorm:"size:50"`
 	Icon             string    `gorm:"size:50"`
 	Balance          int64     `gorm:"not null;default:0"`
+	CurrentBalance   int64     `gorm:"->"`
 	BalanceUpdatedAt time.Time
 	BalanceUpdatedBy *uuid.UUID `gorm:"type:uuid"`
 	IncludeInTotal   bool       `gorm:"not null;default:true"`
@@ -44,6 +45,7 @@ func (m WalletModel) ToDomain() *domain.Wallet {
 		Currency:         domain.Currency(m.Currency),
 		Reference:        m.Reference,
 		Balance:          m.Balance,
+		CurrentBalance:   m.CurrentBalance,
 		BalanceUpdatedAt: m.BalanceUpdatedAt,
 		BalanceUpdatedBy: m.BalanceUpdatedBy,
 		IncludeInTotal:   m.IncludeInTotal,

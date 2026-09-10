@@ -70,6 +70,11 @@ const (
 	CodeTransactionInvalidData     = "TRANSACTION_INVALID_DATA"
 	CodeTransactionInvalidType     = "TRANSACTION_INVALID_TYPE"
 	CodeTransactionInvalidAmount   = "TRANSACTION_INVALID_AMOUNT"
+	CodeTransactionInvalidCurrency = "TRANSACTION_INVALID_CURRENCY"
+	// A row in a currency its wallet does not hold; the wallet balance could not absorb it.
+	CodeTransactionCurrencyMismatch = "TRANSACTION_CURRENCY_MISMATCH"
+	// An expense filed under an income category, or the other way around.
+	CodeTransactionCategoryMismatch = "TRANSACTION_CATEGORY_MISMATCH"
 
 	CodeMenuNotFound = "MENU_NOT_FOUND"
 

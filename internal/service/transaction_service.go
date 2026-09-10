@@ -50,11 +50,16 @@ func (t *TransactionService) Create(ctx context.Context, userID uuid.UUID, input
 		return nil, domain.InvalidInput(domain.CodeTransactionInvalidType, "transaction type must be debit or credit").WithField("type")
 	}
 
+	if !input.Currency.Valid() {
+		return nil, domain.InvalidInput(domain.CodeTransactionInvalidCurrency,
+			"transaction currency must be IDR, USD, or SGD").WithField("currency")
+	}
+
 	if err := checkAmountSign(input.Amount, input.Type); err != nil {
 		return nil, err
 	}
 
-	_, err := t.walletRepo.GetByID(ctx, input.WalletID, userID)
+	wallet, err := t.walletRepo.GetByID(ctx, input.WalletID, userID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			return nil, domain.InvalidInput(domain.CodeTransactionInvalidWallet,
@@ -62,13 +67,19 @@ func (t *TransactionService) Create(ctx context.Context, userID uuid.UUID, input
 		}
 		return nil, err
 	}
+	if err := checkWalletCurrency(input.Currency, wallet); err != nil {
+		return nil, err
+	}
 
-	_, err = t.categoryRepo.GetByID(ctx, input.CategoryID, userID)
+	category, err := t.categoryRepo.GetByID(ctx, input.CategoryID, userID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			return nil, domain.InvalidInput(domain.CodeTransactionInvalidCategory,
 				"category_id does not refer to one of your categories").WithField("category_id")
 		}
+		return nil, err
+	}
+	if err := checkCategoryType(input.Type, category); err != nil {
 		return nil, err
 	}
 
@@ -103,8 +114,14 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 		return nil, err
 	}
 
+	// Kept for the pairing checks at the end, which only read once every field the
+	// patch touches has been applied.
+	var wallet *domain.Wallet
+	var category *domain.Category
+
 	if input.WalletID != nil {
-		if _, err := t.walletRepo.GetByID(ctx, *input.WalletID, userID); err != nil {
+		wallet, err = t.walletRepo.GetByID(ctx, *input.WalletID, userID)
+		if err != nil {
 			if errors.Is(err, domain.ErrNotFound) {
 				return nil, domain.InvalidInput(domain.CodeTransactionInvalidWallet,
 					"wallet_id does not refer to one of your wallets").WithField("wallet_id")
@@ -115,7 +132,8 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 	}
 
 	if input.CategoryID != nil {
-		if _, err := t.categoryRepo.GetByID(ctx, *input.CategoryID, userID); err != nil {
+		category, err = t.categoryRepo.GetByID(ctx, *input.CategoryID, userID)
+		if err != nil {
 			if errors.Is(err, domain.ErrNotFound) {
 				return nil, domain.InvalidInput(domain.CodeTransactionInvalidCategory,
 					"category_id does not refer to one of your categories").WithField("category_id")
@@ -150,7 +168,8 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 
 	if input.Currency != nil {
 		if !input.Currency.Valid() {
-			return nil, domain.InvalidInput(domain.CodeTransactionInvalidData, "transaction currency must be IDR, USD, or SGD").WithField("currency")
+			return nil, domain.InvalidInput(domain.CodeTransactionInvalidCurrency,
+				"transaction currency must be IDR, USD, or SGD").WithField("currency")
 		}
 		transaction.Currency = *input.Currency
 	}
@@ -167,6 +186,31 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 		return nil, err
 	}
 
+	// A currency change has to answer to the wallet it sits in even when the wallet
+	// itself was not touched, and the same the other way around — so whichever side
+	// the patch left unread is read now.
+	if input.Currency != nil && wallet == nil {
+		if wallet, err = t.walletRepo.GetByID(ctx, transaction.WalletID, userID); err != nil {
+			return nil, err
+		}
+	}
+	if wallet != nil {
+		if err := checkWalletCurrency(transaction.Currency, wallet); err != nil {
+			return nil, err
+		}
+	}
+
+	if input.Type != nil && category == nil {
+		if category, err = t.categoryRepo.GetByID(ctx, transaction.CategoryID, userID); err != nil {
+			return nil, err
+		}
+	}
+	if category != nil {
+		if err := checkCategoryType(transaction.Type, category); err != nil {
+			return nil, err
+		}
+	}
+
 	if err := t.transactionRepo.Update(ctx, transaction); err != nil {
 		return nil, err
 	}
@@ -175,6 +219,30 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 
 func (t *TransactionService) Delete(ctx context.Context, id, userID uuid.UUID) error {
 	return t.transactionRepo.Delete(ctx, id, userID)
+}
+
+// checkWalletCurrency: a wallet holds one currency, and its balance sums only the rows
+// kept in that currency — a row in another one would be money the wallet can never
+// account for, so it is refused instead of filed where nothing will count it.
+func checkWalletCurrency(currency domain.Currency, wallet *domain.Wallet) error {
+	if currency == wallet.Currency {
+		return nil
+	}
+	return domain.InvalidInput(domain.CodeTransactionCurrencyMismatch,
+		fmt.Sprintf("%s holds %s, so this transaction cannot be kept in %s",
+			wallet.Name, wallet.Currency, currency)).WithField("currency")
+}
+
+// checkCategoryType: income belongs under an income category and expense under an
+// expense one, or the same row would read as earning on one screen and spending on
+// the next — and a budget would measure against a category that cannot be spent on.
+func checkCategoryType(transactionType domain.TransactionType, category *domain.Category) error {
+	if transactionType.MatchesCategoryType(category.Type) {
+		return nil
+	}
+	return domain.InvalidInput(domain.CodeTransactionCategoryMismatch,
+		fmt.Sprintf("%s is a %s category, so it cannot carry a %s transaction",
+			category.Name, category.Type, transactionType)).WithField("category_id")
 }
 
 func checkAmountSign(amount int64, transactionType domain.TransactionType) error {

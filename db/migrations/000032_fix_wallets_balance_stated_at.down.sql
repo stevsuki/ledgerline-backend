@@ -1,0 +1,1 @@
+-- Deliberately empty: nothing records which rows carried the zero date before the fix.

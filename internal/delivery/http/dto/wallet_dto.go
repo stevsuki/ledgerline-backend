@@ -71,13 +71,17 @@ func (r UpdateWalletRequestDTO) ToInput() domain.UpdateWalletInput {
 
 // WalletResponseDTO: raw figures only; the client does the formatting.
 type WalletResponseDTO struct {
-	ID               uuid.UUID  `json:"id" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
-	Name             string     `json:"name" example:"BCA Payroll"`
-	Type             string     `json:"type" example:"bank"`
-	Icon             string     `json:"icon" example:"bank"`
-	Currency         string     `json:"currency" example:"IDR"`
-	Reference        string     `json:"reference" example:"1234567890"`
-	Balance          int64      `json:"balance" example:"41200000"`
+	ID        uuid.UUID `json:"id" example:"6f1e2b7e-2c8a-4c1f-9f3e-6a0f1c2d3e4b"`
+	Name      string    `json:"name" example:"BCA Payroll"`
+	Type      string    `json:"type" example:"bank"`
+	Icon      string    `json:"icon" example:"bank"`
+	Currency  string    `json:"currency" example:"IDR"`
+	Reference string    `json:"reference" example:"1234567890"`
+	// Balance: the figure its owner stated, as of BalanceUpdatedAt.
+	Balance int64 `json:"balance" example:"41200000"`
+	// CurrentBalance: that figure moved by every transaction filed since. This is
+	// the one to print; `balance` is the statement it was measured from.
+	CurrentBalance   int64      `json:"current_balance" example:"40870000"`
 	BalanceUpdatedAt time.Time  `json:"balance_updated_at" example:"2026-08-26T15:04:05Z"`
 	IncludeInTotal   bool       `json:"include_in_total" example:"true"`
 	CreditLimit      *int64     `json:"credit_limit" example:"25000000"`
@@ -97,6 +101,7 @@ func NewWalletResponseDTO(w *domain.Wallet) WalletResponseDTO {
 		Currency:         string(w.Currency),
 		Reference:        w.Reference,
 		Balance:          w.Balance,
+		CurrentBalance:   w.CurrentBalance,
 		BalanceUpdatedAt: w.BalanceUpdatedAt,
 		IncludeInTotal:   w.IncludeInTotal,
 		CreditLimit:      w.CreditLimit,
@@ -122,11 +127,15 @@ type CurrencyAmountResponseDTO struct {
 }
 
 type WalletOverviewResponseDTO struct {
-	BaseCurrency   string                      `json:"base_currency" example:"IDR"`
-	TotalHeld      int64                       `json:"total_held" example:"43680000"`
-	CountedWallets int                         `json:"counted_wallets" example:"3"`
-	OwedOnCards    int64                       `json:"owed_on_cards" example:"-3240000"`
-	HeldByCurrency []CurrencyAmountResponseDTO `json:"held_by_currency"`
+	BaseCurrency   string `json:"base_currency" example:"IDR"`
+	TotalHeld      int64  `json:"total_held" example:"43680000"`
+	CountedWallets int    `json:"counted_wallets" example:"3"`
+	OwedOnCards    int64  `json:"owed_on_cards" example:"-3240000"`
+	// Overdrawn: what the wallets that are not cards are short, stated apart from
+	// card debt because being short on a bank account is not the same as owing on a card.
+	Overdrawn        int64                       `json:"overdrawn" example:"0"`
+	OverdrawnWallets int                         `json:"overdrawn_wallets" example:"0"`
+	HeldByCurrency   []CurrencyAmountResponseDTO `json:"held_by_currency"`
 }
 
 func NewWalletOverviewResponseDTO(o domain.WalletOverview) WalletOverviewResponseDTO {
@@ -139,11 +148,13 @@ func NewWalletOverviewResponseDTO(o domain.WalletOverview) WalletOverviewRespons
 	}
 
 	return WalletOverviewResponseDTO{
-		BaseCurrency:   string(o.BaseCurrency),
-		TotalHeld:      o.TotalHeld,
-		CountedWallets: o.CountedWallets,
-		OwedOnCards:    o.OwedOnCards,
-		HeldByCurrency: held,
+		BaseCurrency:     string(o.BaseCurrency),
+		TotalHeld:        o.TotalHeld,
+		CountedWallets:   o.CountedWallets,
+		OwedOnCards:      o.OwedOnCards,
+		Overdrawn:        o.Overdrawn,
+		OverdrawnWallets: o.OverdrawnWallets,
+		HeldByCurrency:   held,
 	}
 }
 

@@ -54,6 +54,13 @@ func (t TransactionType) Valid() bool {
 	return false
 }
 
+// MatchesCategoryType: the two vocabularies are the same words, and a row has to
+// agree with the category it is filed under — an expense under an income category
+// would count as spending on one screen and as earning on the next.
+func (t TransactionType) MatchesCategoryType(categoryType string) bool {
+	return string(t) == categoryType
+}
+
 // TransactionCurrencyTotal: one currency's totals, for the currencies the headline cannot state.
 type TransactionCurrencyTotal struct {
 	Currency Currency

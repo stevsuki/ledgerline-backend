@@ -127,6 +127,9 @@ definitions:
       total_budget_allocated:
         example: 10000000
         type: integer
+      total_budget_carried_over:
+        example: 0
+        type: integer
       total_budget_left:
         example: 1000000
         type: integer
@@ -144,6 +147,9 @@ definitions:
     properties:
       alert_threshold_percent:
         example: 80
+        type: integer
+      carried_over:
+        example: 0
         type: integer
       category_id:
         example: b0000000-0000-0000-0000-000000000002
@@ -505,6 +511,9 @@ definitions:
       budget_id:
         example: b0000000-0000-0000-0000-000000000002
         type: string
+      carried_over:
+        example: 0
+        type: integer
       category_id:
         example: b0000000-0000-0000-0000-000000000002
         type: string
@@ -966,6 +975,15 @@ definitions:
         items:
           $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CurrencyAmountResponseDTO'
         type: array
+      overdrawn:
+        description: |-
+          Overdrawn: what the wallets that are not cards are short, stated apart from
+          card debt because being short on a bank account is not the same as owing on a card.
+        example: 0
+        type: integer
+      overdrawn_wallets:
+        example: 0
+        type: integer
       owed_on_cards:
         example: -3240000
         type: integer
@@ -976,6 +994,7 @@ definitions:
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO:
     properties:
       balance:
+        description: 'Balance: the figure its owner stated, as of BalanceUpdatedAt.'
         example: 41200000
         type: integer
       balance_updated_at:
@@ -993,6 +1012,12 @@ definitions:
       currency:
         example: IDR
         type: string
+      current_balance:
+        description: |-
+          CurrentBalance: that figure moved by every transaction filed since. This is
+          the one to print; `balance` is the statement it was measured from.
+        example: 40870000
+        type: integer
       due_day:
         example: 18
         type: integer

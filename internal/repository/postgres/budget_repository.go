@@ -35,6 +35,7 @@ func (r *budgetRepository) readQuery(ctx context.Context) *gorm.DB {
 			"budgets.currency",
 			"budgets.monthly_limit",
 			spentThisCycle,
+			carriedOverFromLastCycle,
 			"budgets.alert_threshold_percent",
 			"budgets.is_fixed",
 			"budgets.rollover",
@@ -143,12 +144,46 @@ type budgetUsageRow struct {
 	Currency              string
 	MonthlyLimit          int64
 	Spent                 int64
+	CarriedOver           int64
 	AlertThresholdPercent int
 	IsFixed               bool
 	Rollover              bool
 }
 
-const spentThisCycle = "0::bigint AS spent"
+// The cycle a budget is measured over: the calendar month, the same one the overview counts days of.
+const (
+	cycleStart     = "date_trunc('month', NOW())"
+	nextCycleStart = cycleStart + " + INTERVAL '1 month'"
+	lastCycleStart = cycleStart + " - INTERVAL '1 month'"
+)
+
+// expenseSum: what the budget's own category and currency spent inside a window, as a positive
+// number because the table stores expense amounts negative.
+func expenseSum(from, to string) string {
+	return `COALESCE((
+		SELECT -SUM(t.amount)
+		FROM transactions t
+		WHERE t.user_id = budgets.user_id
+		  AND t.category_id = budgets.category_id
+		  AND t.currency = budgets.currency
+		  AND t.type = 'expense'
+		  AND t.deleted_at IS NULL
+		  AND t.occurred_at >= ` + from + `
+		  AND t.occurred_at < ` + to + `
+	), 0)`
+}
+
+var (
+	spentThisCycle = expenseSum(cycleStart, nextCycleStart) + "::bigint AS spent"
+
+	// carriedOverFromLastCycle: a rollover budget keeps what it did not spend last cycle, and only if
+	// it already existed then. Last cycle's limit is read as the current one, the table keeps no history.
+	carriedOverFromLastCycle = `CASE
+		WHEN budgets.rollover AND budgets.created_at < ` + cycleStart + `
+		THEN GREATEST(budgets.monthly_limit - ` + expenseSum(lastCycleStart, cycleStart) + `, 0)
+		ELSE 0
+	END::bigint AS carried_over`
+)
 
 func (r *budgetRepository) Usage(ctx context.Context, userID uuid.UUID) ([]domain.BudgetUsage, error) {
 	var rows []budgetUsageRow
@@ -166,6 +201,7 @@ func (r *budgetRepository) Usage(ctx context.Context, userID uuid.UUID) ([]domai
 			"budgets.is_fixed",
 			"budgets.rollover",
 			spentThisCycle,
+			carriedOverFromLastCycle,
 		).
 		Joins("JOIN categories ON categories.id = budgets.category_id AND categories.deleted_at IS NULL").
 		Where("budgets.user_id = ?", userID).
@@ -186,6 +222,7 @@ func (r *budgetRepository) Usage(ctx context.Context, userID uuid.UUID) ([]domai
 			Currency:              domain.Currency(row.Currency),
 			MonthlyLimit:          row.MonthlyLimit,
 			Spent:                 row.Spent,
+			CarriedOver:           row.CarriedOver,
 			AlertThresholdPercent: row.AlertThresholdPercent,
 			IsFixed:               row.IsFixed,
 			Rollover:              row.Rollover,

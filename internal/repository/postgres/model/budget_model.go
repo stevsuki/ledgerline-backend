@@ -39,6 +39,7 @@ type BudgetRow struct {
 	Currency              string
 	MonthlyLimit          int64
 	Spent                 int64
+	CarriedOver           int64
 	AlertThresholdPercent int
 	IsFixed               bool
 	Rollover              bool
@@ -60,6 +61,7 @@ func (b *BudgetRow) ToDomain() *domain.Budget {
 		Currency:              domain.Currency(b.Currency),
 		MonthlyLimit:          b.MonthlyLimit,
 		Spent:                 b.Spent,
+		CarriedOver:           b.CarriedOver,
 		AlertThresholdPercent: b.AlertThresholdPercent,
 		IsFixed:               b.IsFixed,
 		Rollover:              b.Rollover,

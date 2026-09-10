@@ -1,0 +1,1 @@
+DROP INDEX IF EXISTS transactions_user_category_occurred_idx;

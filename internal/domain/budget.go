@@ -25,6 +25,7 @@ type Budget struct {
 	Currency              Currency
 	MonthlyLimit          int64
 	Spent                 int64
+	CarriedOver           int64
 	AlertThresholdPercent int
 	IsFixed               bool
 	Rollover              bool
@@ -43,12 +44,16 @@ func PercentOf(part, whole int64) int {
 	return int(math.Round(float64(part) / float64(whole) * FullPercent))
 }
 
+// EffectiveLimit: what this cycle may spend. A rollover budget carries last cycle's leftover,
+// so the carry widens what is left to spend without touching the limit that was planned.
+func (b Budget) EffectiveLimit() int64 { return b.MonthlyLimit + b.CarriedOver }
+
 // Remaining: negative once the limit is passed.
-func (b Budget) Remaining() int64 { return b.MonthlyLimit - b.Spent }
+func (b Budget) Remaining() int64 { return b.EffectiveLimit() - b.Spent }
 
-func (b Budget) UsedPercent() int { return PercentOf(b.Spent, b.MonthlyLimit) }
+func (b Budget) UsedPercent() int { return PercentOf(b.Spent, b.EffectiveLimit()) }
 
-func (b Budget) IsOver() bool { return b.Spent > b.MonthlyLimit }
+func (b Budget) IsOver() bool { return b.Spent > b.EffectiveLimit() }
 
 type BudgetRepository interface {
 	List(ctx context.Context, userID uuid.UUID) ([]Budget, error)
@@ -97,10 +102,13 @@ type BudgetUsage struct {
 	Currency              Currency
 	MonthlyLimit          int64
 	Spent                 int64
+	CarriedOver           int64
 	AlertThresholdPercent int
 	IsFixed               bool
 	Rollover              bool
 }
+
+func (u BudgetUsage) EffectiveLimit() int64 { return u.MonthlyLimit + u.CarriedOver }
 
 // BudgetShare: one slice of the allocation bar.
 type BudgetShare struct {
@@ -119,6 +127,7 @@ type BudgetAttention struct {
 	Color                 string
 	MonthlyLimit          int64
 	Spent                 int64
+	CarriedOver           int64
 	Remaining             int64
 	UsedPercent           int
 	AlertThresholdPercent int
@@ -130,6 +139,7 @@ type BudgetAttention struct {
 type BudgetOverview struct {
 	Currency            Currency
 	TotalAllocated      int64
+	TotalCarriedOver    int64
 	TotalSpent          int64
 	TotalLeft           int64
 	CategoryCount       int

@@ -31,14 +31,20 @@ const (
 )
 
 type Wallet struct {
-	ID               uuid.UUID
-	UserID           uuid.UUID
-	Name             string
-	Type             WalletType
-	Icon             string
-	Currency         Currency
-	Reference        string
-	Balance          int64
+	ID        uuid.UUID
+	UserID    uuid.UUID
+	Name      string
+	Type      WalletType
+	Icon      string
+	Currency  Currency
+	Reference string
+	// Balance: the figure its owner last stated, as of BalanceUpdatedAt. It is an
+	// opening position, not what is left — CurrentBalance is that.
+	Balance int64
+	// CurrentBalance: Balance plus every transaction filed against this wallet
+	// since BalanceUpdatedAt. Summed on read, never stored, so an edited or
+	// removed transaction can never leave a stale figure behind.
+	CurrentBalance   int64
 	BalanceUpdatedAt time.Time
 	BalanceUpdatedBy *uuid.UUID
 	IncludeInTotal   bool
@@ -63,7 +69,12 @@ type WalletOverview struct {
 	TotalHeld      int64
 	CountedWallets int
 	OwedOnCards    int64
-	HeldByCurrency []CurrencyAmount
+	// Overdrawn: what non-card wallets are short, which only happens once a balance
+	// follows its transactions. A card in the red owes; a bank account in the red is
+	// a different fact and is stated separately rather than folded into the debt.
+	Overdrawn        int64
+	OverdrawnWallets int
+	HeldByCurrency   []CurrencyAmount
 }
 
 type WalletRepository interface {

@@ -186,11 +186,15 @@ func budgetOverviewOf(all []domain.BudgetUsage, now time.Time) domain.BudgetOver
 
 	for _, usage := range usages {
 		overview.TotalAllocated += usage.MonthlyLimit
+		overview.TotalCarriedOver += usage.CarriedOver
 		overview.TotalSpent += usage.Spent
 	}
-	overview.TotalLeft = overview.TotalAllocated - overview.TotalSpent
-	overview.UsedPercent = domain.PercentOf(overview.TotalSpent, overview.TotalAllocated)
-	overview.IsOver = overview.TotalSpent > overview.TotalAllocated
+
+	// What is left answers against the plan plus the carry; allocated stays the plan alone.
+	spendable := overview.TotalAllocated + overview.TotalCarriedOver
+	overview.TotalLeft = spendable - overview.TotalSpent
+	overview.UsedPercent = domain.PercentOf(overview.TotalSpent, spendable)
+	overview.IsOver = overview.TotalSpent > spendable
 
 	return overview
 }
@@ -228,8 +232,9 @@ func budgetAttention(usages []domain.BudgetUsage) []domain.BudgetAttention {
 	items := make([]domain.BudgetAttention, 0, len(usages))
 
 	for _, usage := range usages {
-		used := domain.PercentOf(usage.Spent, usage.MonthlyLimit)
-		isOver := usage.Spent > usage.MonthlyLimit
+		limit := usage.EffectiveLimit()
+		used := domain.PercentOf(usage.Spent, limit)
+		isOver := usage.Spent > limit
 		if !isOver && (usage.IsFixed || used < usage.AlertThresholdPercent) {
 			continue
 		}
@@ -242,7 +247,8 @@ func budgetAttention(usages []domain.BudgetUsage) []domain.BudgetAttention {
 			Color:                 usage.Color,
 			MonthlyLimit:          usage.MonthlyLimit,
 			Spent:                 usage.Spent,
-			Remaining:             usage.MonthlyLimit - usage.Spent,
+			CarriedOver:           usage.CarriedOver,
+			Remaining:             limit - usage.Spent,
 			UsedPercent:           used,
 			AlertThresholdPercent: usage.AlertThresholdPercent,
 			IsFixed:               usage.IsFixed,

@@ -58,6 +58,7 @@ type BudgetResponseDTO struct {
 	Currency              string    `json:"currency" example:"IDR" enum:"IDR,USD,SGD"`
 	MonthlyLimit          int64     `json:"monthly_limit" example:"10000000"`
 	Spent                 int64     `json:"spent" example:"8400000"`
+	CarriedOver           int64     `json:"carried_over" example:"0"`
 	Remaining             int64     `json:"remaining" example:"1600000"`
 	UsedPercent           int       `json:"used_percent" example:"84"`
 	IsOver                bool      `json:"is_over" example:"false"`
@@ -76,6 +77,7 @@ func NewBudgetResponseDTO(budget *domain.Budget) BudgetResponseDTO {
 		Currency:              string(budget.Currency),
 		MonthlyLimit:          budget.MonthlyLimit,
 		Spent:                 budget.Spent,
+		CarriedOver:           budget.CarriedOver,
 		Remaining:             budget.Remaining(),
 		UsedPercent:           budget.UsedPercent(),
 		IsOver:                budget.IsOver(),
@@ -96,6 +98,7 @@ func NewBudgetResponseDTOs(budgets []domain.Budget) []BudgetResponseDTO {
 type BudgetOverviewResponseDTO struct {
 	Currency             string             `json:"currency" example:"IDR"`
 	TotalBudgetAllocated int64              `json:"total_budget_allocated" example:"10000000"`
+	TotalBudgetCarried   int64              `json:"total_budget_carried_over" example:"0"`
 	TotalBudgetSpent     int64              `json:"total_budget_spent" example:"9000000"`
 	TotalBudgetLeft      int64              `json:"total_budget_left" example:"1000000"`
 	AcrossCategory       int                `json:"across_category" example:"6"`
@@ -125,6 +128,7 @@ type NeedAttentionDTO struct {
 	Color                 string    `json:"color" example:"c2"`
 	MonthlyLimit          int64     `json:"monthly_limit" example:"4000000"`
 	Spent                 int64     `json:"spent" example:"4320000"`
+	CarriedOver           int64     `json:"carried_over" example:"0"`
 	Remaining             int64     `json:"remaining" example:"-320000"`
 	UsedPercent           int       `json:"used_percent" example:"108"`
 	AlertThresholdPercent int       `json:"alert_threshold_percent" example:"80"`
@@ -153,6 +157,7 @@ func NewBudgetOverviewResponseDTO(o domain.BudgetOverview) BudgetOverviewRespons
 			Color:                 item.Color,
 			MonthlyLimit:          item.MonthlyLimit,
 			Spent:                 item.Spent,
+			CarriedOver:           item.CarriedOver,
 			Remaining:             item.Remaining,
 			UsedPercent:           item.UsedPercent,
 			AlertThresholdPercent: item.AlertThresholdPercent,
@@ -164,6 +169,7 @@ func NewBudgetOverviewResponseDTO(o domain.BudgetOverview) BudgetOverviewRespons
 	return BudgetOverviewResponseDTO{
 		Currency:             string(o.Currency),
 		TotalBudgetAllocated: o.TotalAllocated,
+		TotalBudgetCarried:   o.TotalCarriedOver,
 		TotalBudgetSpent:     o.TotalSpent,
 		TotalBudgetLeft:      o.TotalLeft,
 		AcrossCategory:       o.CategoryCount,

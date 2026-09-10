@@ -2797,6 +2797,10 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 10000000
                 },
+                "total_budget_carried_over": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "total_budget_left": {
                     "type": "integer",
                     "example": 1000000
@@ -2821,6 +2825,10 @@ const docTemplate = `{
                 "alert_threshold_percent": {
                     "type": "integer",
                     "example": 80
+                },
+                "carried_over": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "category_id": {
                     "type": "string",
@@ -3317,6 +3325,10 @@ const docTemplate = `{
                 "budget_id": {
                     "type": "string",
                     "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "carried_over": {
+                    "type": "integer",
+                    "example": 0
                 },
                 "category_id": {
                     "type": "string",
@@ -3962,6 +3974,15 @@ const docTemplate = `{
                         "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CurrencyAmountResponseDTO"
                     }
                 },
+                "overdrawn": {
+                    "description": "Overdrawn: what the wallets that are not cards are short, stated apart from\ncard debt because being short on a bank account is not the same as owing on a card.",
+                    "type": "integer",
+                    "example": 0
+                },
+                "overdrawn_wallets": {
+                    "type": "integer",
+                    "example": 0
+                },
                 "owed_on_cards": {
                     "type": "integer",
                     "example": -3240000
@@ -3976,6 +3997,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "balance": {
+                    "description": "Balance: the figure its owner stated, as of BalanceUpdatedAt.",
                     "type": "integer",
                     "example": 41200000
                 },
@@ -3998,6 +4020,11 @@ const docTemplate = `{
                 "currency": {
                     "type": "string",
                     "example": "IDR"
+                },
+                "current_balance": {
+                    "description": "CurrentBalance: that figure moved by every transaction filed since. This is\nthe one to print; ` + "`" + `balance` + "`" + ` is the statement it was measured from.",
+                    "type": "integer",
+                    "example": 40870000
                 },
                 "due_day": {
                     "type": "integer",
