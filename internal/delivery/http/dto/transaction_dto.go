@@ -198,3 +198,135 @@ func NewTransactionGroupResponseDTOs(ts []domain.Transaction) []TransactionGroup
 	}
 	return groups
 }
+
+/* ── the dashboard ─────────────────────────────────────────────────────── */
+
+// CategorySpendResponseDTO: one slice of a month's spending, stated positive.
+type CategorySpendResponseDTO struct {
+	CategoryID uuid.UUID `json:"category_id" example:"b0000000-0000-0000-0000-000000000002"`
+	Name       string    `json:"name" example:"Food & Drink"`
+	Icon       string    `json:"icon" example:"food"`
+	Color      string    `json:"color" example:"c2"`
+	Spent      int64     `json:"spent" example:"2700000"`
+}
+
+// TransactionPeriodResponseDTO: one period. `money_out` stays negative, as the rows are
+// stored, so `net` is the two added together rather than a subtraction the client invents.
+type TransactionPeriodResponseDTO struct {
+	MoneyIn        int64                      `json:"money_in" example:"18400000"`
+	MoneyOut       int64                      `json:"money_out" example:"-6958000"`
+	Net            int64                      `json:"net" example:"11442000"`
+	IncomeEntries  int                        `json:"income_entries" example:"14"`
+	ExpenseEntries int                        `json:"expense_entries" example:"40"`
+	ByCategory     []CategorySpendResponseDTO `json:"by_category"`
+}
+
+// TransactionOverviewResponseDTO: the dashboard's month beside the month it is compared
+// with. Figures only — every percentage the cards print is a ratio of two of these, and
+// the client decides how to say "no comparison" when the earlier month is empty.
+type TransactionOverviewResponseDTO struct {
+	BaseCurrency string                       `json:"base_currency" example:"IDR"`
+	Month        string                       `json:"month" example:"2026-09"`
+	Current      TransactionPeriodResponseDTO `json:"current"`
+	Previous     TransactionPeriodResponseDTO `json:"previous"`
+	OtherEntries int                          `json:"other_entries" example:"2"`
+}
+
+const monthLayout = "2006-01"
+
+func newTransactionPeriodResponseDTO(period domain.TransactionPeriodTotals) TransactionPeriodResponseDTO {
+	categories := make([]CategorySpendResponseDTO, 0, len(period.ByCategory))
+	for _, entry := range period.ByCategory {
+		categories = append(categories, CategorySpendResponseDTO{
+			CategoryID: entry.CategoryID,
+			Name:       entry.Name,
+			Icon:       entry.Icon,
+			Color:      entry.Color,
+			Spent:      entry.Spent,
+		})
+	}
+
+	return TransactionPeriodResponseDTO{
+		MoneyIn:        period.MoneyIn,
+		MoneyOut:       period.MoneyOut,
+		Net:            period.Net,
+		IncomeEntries:  period.IncomeEntries,
+		ExpenseEntries: period.ExpenseEntries,
+		ByCategory:     categories,
+	}
+}
+
+func NewTransactionOverviewResponseDTO(overview domain.TransactionOverview) TransactionOverviewResponseDTO {
+	return TransactionOverviewResponseDTO{
+		BaseCurrency: string(overview.BaseCurrency),
+		Month:        overview.PeriodStart.Format(monthLayout),
+		Current:      newTransactionPeriodResponseDTO(overview.Current),
+		Previous:     newTransactionPeriodResponseDTO(overview.Previous),
+		OtherEntries: overview.OtherEntries,
+	}
+}
+
+// TransactionTrendPointResponseDTO: one bar. It carries the period it starts on rather than
+// a label, because naming a week or a month is wording, and wording belongs to the client.
+type TransactionTrendPointResponseDTO struct {
+	Start    time.Time `json:"start" example:"2026-09-01T00:00:00+07:00"`
+	MoneyIn  int64     `json:"money_in" example:"4200000"`
+	MoneyOut int64     `json:"money_out" example:"-1740000"`
+}
+
+type TransactionTrendResponseDTO struct {
+	BaseCurrency string                             `json:"base_currency" example:"IDR"`
+	Range        string                             `json:"range" example:"monthly" enum:"weekly,monthly"`
+	Points       []TransactionTrendPointResponseDTO `json:"points"`
+}
+
+func NewTransactionTrendResponseDTO(
+	trendRange domain.TransactionTrendRange, points []domain.TransactionTrendPoint,
+) TransactionTrendResponseDTO {
+	out := make([]TransactionTrendPointResponseDTO, 0, len(points))
+	for _, point := range points {
+		out = append(out, TransactionTrendPointResponseDTO{
+			Start:    point.Start,
+			MoneyIn:  point.MoneyIn,
+			MoneyOut: point.MoneyOut,
+		})
+	}
+
+	return TransactionTrendResponseDTO{
+		BaseCurrency: string(domain.BaseCurrency),
+		Range:        string(trendRange),
+		Points:       out,
+	}
+}
+
+// OverviewTransactionsQuery: which month to report. Absent means the month the server is in,
+// which is what the dashboard asks for.
+type OverviewTransactionsQuery struct {
+	Month string `form:"month" binding:"omitempty,len=7" example:"2026-09"`
+}
+
+// Period answers the month asked for, or the current one when the field is empty.
+func (q OverviewTransactionsQuery) Period(now time.Time) (time.Time, error) {
+	if q.Month == "" {
+		return now, nil
+	}
+
+	month, err := time.ParseInLocation(monthLayout, q.Month, now.Location())
+	if err != nil {
+		return time.Time{}, domain.InvalidInput(domain.CodeTransactionInvalid,
+			"month must be written as YYYY-MM").WithField("month")
+	}
+	return month, nil
+}
+
+// TrendTransactionsQuery: which window the chart draws.
+type TrendTransactionsQuery struct {
+	Range string `form:"range" binding:"omitempty,oneof=weekly monthly" example:"monthly"`
+}
+
+func (q TrendTransactionsQuery) TrendRange() domain.TransactionTrendRange {
+	if q.Range == "" {
+		return domain.TrendRangeWeekly
+	}
+	return domain.TransactionTrendRange(q.Range)
+}

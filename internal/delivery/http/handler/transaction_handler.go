@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stevensuki/ledgerline-backend/internal/delivery/http/dto"
@@ -231,4 +232,77 @@ func (h *TransactionHandler) Delete(c *gin.Context) {
 		return
 	}
 	response.OK(c, http.StatusOK, "transaction deleted", nil)
+}
+
+// Overview godoc
+//
+//	@Summary	The dashboard's month, beside the month before it
+//	@Tags		transactions
+//	@Produce	json
+//	@Security	BearerAuth
+//	@Param		month	query		string	false	"Month to report, as YYYY-MM. Defaults to the current month"
+//	@Success	200		{object}	response.Success{data=dto.TransactionOverviewResponseDTO}
+//	@Failure	400		{object}	response.Error
+//	@Failure	401		{object}	response.Error
+//	@Router		/transactions/overview [get]
+func (h *TransactionHandler) Overview(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		handleError(c, domain.ErrAuthRequired)
+		return
+	}
+
+	var query dto.OverviewTransactionsQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		handleBindError(c, err)
+		return
+	}
+
+	month, err := query.Period(time.Now())
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	overview, err := h.transactionService.Overview(c.Request.Context(), userID, month)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	response.OK(c, http.StatusOK, "transaction overview", dto.NewTransactionOverviewResponseDTO(overview))
+}
+
+// Trend godoc
+//
+//	@Summary	Money in and out per period, for the dashboard's bar chart
+//	@Tags		transactions
+//	@Produce	json
+//	@Security	BearerAuth
+//	@Param		range	query		string	false	"weekly (the weeks of this month) or monthly (the last six months)"	Enums(weekly, monthly)
+//	@Success	200		{object}	response.Success{data=dto.TransactionTrendResponseDTO}
+//	@Failure	400		{object}	response.Error
+//	@Failure	401		{object}	response.Error
+//	@Router		/transactions/trend [get]
+func (h *TransactionHandler) Trend(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		handleError(c, domain.ErrAuthRequired)
+		return
+	}
+
+	var query dto.TrendTransactionsQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		handleBindError(c, err)
+		return
+	}
+
+	trendRange := query.TrendRange()
+	points, err := h.transactionService.Trend(c.Request.Context(), userID, trendRange, time.Now())
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	response.OK(c, http.StatusOK, "transaction trend", dto.NewTransactionTrendResponseDTO(trendRange, points))
 }

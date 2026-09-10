@@ -1818,6 +1818,122 @@
                 }
             }
         },
+        "/transactions/overview": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "The dashboard's month, beside the month before it",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Month to report, as YYYY-MM. Defaults to the current month",
+                        "name": "month",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionOverviewResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/transactions/trend": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Money in and out per period, for the dashboard's bar chart",
+                "parameters": [
+                    {
+                        "enum": [
+                            "weekly",
+                            "monthly"
+                        ],
+                        "type": "string",
+                        "description": "weekly (the weeks of this month) or monthly (the last six months)",
+                        "name": "range",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionTrendResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/transactions/{id}": {
             "get": {
                 "security": [
@@ -2946,6 +3062,31 @@
                 }
             }
         },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategorySpendResponseDTO": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "color": {
+                    "type": "string",
+                    "example": "c2"
+                },
+                "icon": {
+                    "type": "string",
+                    "example": "food"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Food \u0026 Drink"
+                },
+                "spent": {
+                    "type": "integer",
+                    "example": 2700000
+                }
+            }
+        },
         "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateBudgetRequestDTO": {
             "type": "object",
             "required": [
@@ -3629,6 +3770,60 @@
                 }
             }
         },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionOverviewResponseDTO": {
+            "type": "object",
+            "properties": {
+                "base_currency": {
+                    "type": "string",
+                    "example": "IDR"
+                },
+                "current": {
+                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionPeriodResponseDTO"
+                },
+                "month": {
+                    "type": "string",
+                    "example": "2026-09"
+                },
+                "other_entries": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "previous": {
+                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionPeriodResponseDTO"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionPeriodResponseDTO": {
+            "type": "object",
+            "properties": {
+                "by_category": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CategorySpendResponseDTO"
+                    }
+                },
+                "expense_entries": {
+                    "type": "integer",
+                    "example": 40
+                },
+                "income_entries": {
+                    "type": "integer",
+                    "example": 14
+                },
+                "money_in": {
+                    "type": "integer",
+                    "example": 18400000
+                },
+                "money_out": {
+                    "type": "integer",
+                    "example": -6958000
+                },
+                "net": {
+                    "type": "integer",
+                    "example": 11442000
+                }
+            }
+        },
         "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionResponseDTO": {
             "type": "object",
             "properties": {
@@ -3696,6 +3891,42 @@
                 "other_entries": {
                     "type": "integer",
                     "example": 2
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionTrendPointResponseDTO": {
+            "type": "object",
+            "properties": {
+                "money_in": {
+                    "type": "integer",
+                    "example": 4200000
+                },
+                "money_out": {
+                    "type": "integer",
+                    "example": -1740000
+                },
+                "start": {
+                    "type": "string",
+                    "example": "2026-09-01T00:00:00+07:00"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionTrendResponseDTO": {
+            "type": "object",
+            "properties": {
+                "base_currency": {
+                    "type": "string",
+                    "example": "IDR"
+                },
+                "points": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionTrendPointResponseDTO"
+                    }
+                },
+                "range": {
+                    "type": "string",
+                    "example": "monthly"
                 }
             }
         },

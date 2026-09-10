@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stevensuki/ledgerline-backend/internal/domain"
@@ -258,4 +259,115 @@ func checkAmountSign(amount int64, transactionType domain.TransactionType) error
 			"expense transaction must have negative amount").WithField("amount")
 	}
 	return nil
+}
+
+/* ── the dashboard ─────────────────────────────────────────────────────── */
+
+// monthStart: the first instant of the month an instant falls in, in its own zone.
+func monthStart(at time.Time) time.Time {
+	return time.Date(at.Year(), at.Month(), 1, 0, 0, 0, 0, at.Location())
+}
+
+// Overview: the month asked for and the month before it, each as a half-open range so the
+// midnight between them belongs to exactly one of the two.
+func (t *TransactionService) Overview(
+	ctx context.Context, userID uuid.UUID, month time.Time,
+) (domain.TransactionOverview, error) {
+	start := monthStart(month)
+	current := domain.TimeRange{From: start, To: start.AddDate(0, 1, 0)}
+	previous := domain.TimeRange{From: start.AddDate(0, -1, 0), To: start}
+
+	return t.transactionRepo.Overview(ctx, userID, current, previous)
+}
+
+// Trend: the window the range names, with a point for every period in it.
+func (t *TransactionService) Trend(
+	ctx context.Context, userID uuid.UUID, trendRange domain.TransactionTrendRange, now time.Time,
+) ([]domain.TransactionTrendPoint, error) {
+	if !trendRange.Valid() {
+		return nil, domain.InvalidInput(domain.CodeTransactionInvalid,
+			"trend range must be weekly or monthly").WithField("range")
+	}
+
+	buckets, bucket := trendBuckets(trendRange, now)
+	if len(buckets) == 0 {
+		return []domain.TransactionTrendPoint{}, nil
+	}
+
+	window := domain.TimeRange{
+		From: buckets[0],
+		To:   bucketEnd(buckets[len(buckets)-1], bucket),
+	}
+
+	points, err := t.transactionRepo.Trend(ctx, userID, window, bucket)
+	if err != nil {
+		return nil, err
+	}
+	return fillTrend(buckets, bucket, points), nil
+}
+
+// weekStart: the Monday of the week an instant falls in, matching what Postgres
+// `date_trunc('week', …)` answers, so a row cannot land outside the bucket it was counted in.
+func weekStart(at time.Time) time.Time {
+	daysSinceMonday := (int(at.Weekday()) + 6) % 7
+	day := time.Date(at.Year(), at.Month(), at.Day(), 0, 0, 0, 0, at.Location())
+	return day.AddDate(0, 0, -daysSinceMonday)
+}
+
+func bucketEnd(start time.Time, bucket domain.TransactionTrendBucket) time.Time {
+	if bucket == domain.TrendBucketWeek {
+		return start.AddDate(0, 0, 7)
+	}
+	return start.AddDate(0, 1, 0)
+}
+
+// trendBuckets: every period the chart is meant to draw, earliest first.
+//
+// Weekly is the weeks of the month being reported, because that is the range the label
+// states; monthly is the last TrendMonths months, this one included. An empty period is
+// still a bar — a chart that omits a quiet week draws a shape the month did not have.
+func trendBuckets(
+	trendRange domain.TransactionTrendRange, now time.Time,
+) ([]time.Time, domain.TransactionTrendBucket) {
+	start := monthStart(now)
+
+	if trendRange == domain.TrendRangeWeekly {
+		nextMonth := start.AddDate(0, 1, 0)
+		weeks := []time.Time{}
+		for week := weekStart(start); week.Before(nextMonth); week = week.AddDate(0, 0, 7) {
+			weeks = append(weeks, week)
+		}
+		return weeks, domain.TrendBucketWeek
+	}
+
+	months := make([]time.Time, 0, domain.TrendMonths)
+	for i := domain.TrendMonths - 1; i >= 0; i-- {
+		months = append(months, start.AddDate(0, -i, 0))
+	}
+	return months, domain.TrendBucketMonth
+}
+
+// fillTrend: the database's rows laid onto the periods that were asked for.
+//
+// A row is matched by the period it falls inside rather than by an equal timestamp: the
+// bucket start comes back from Postgres in the session's zone, and comparing instants for
+// equality across zones is how a bar silently loses its figures.
+func fillTrend(
+	buckets []time.Time, bucket domain.TransactionTrendBucket, points []domain.TransactionTrendPoint,
+) []domain.TransactionTrendPoint {
+	filled := make([]domain.TransactionTrendPoint, 0, len(buckets))
+
+	for _, start := range buckets {
+		end := bucketEnd(start, bucket)
+		point := domain.TransactionTrendPoint{Start: start}
+
+		for _, row := range points {
+			if !row.Start.Before(start) && row.Start.Before(end) {
+				point.MoneyIn += row.MoneyIn
+				point.MoneyOut += row.MoneyOut
+			}
+		}
+		filled = append(filled, point)
+	}
+	return filled
 }

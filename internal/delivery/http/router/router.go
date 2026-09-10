@@ -165,6 +165,8 @@ func registerTransactionRoutes(rg *gin.RouterGroup, deps Dependencies) {
 	transactions := rg.Group("/transactions", middleware.Authenticate(deps.TokenManager))
 	{
 		transactions.GET("", deps.Transaction.List)
+		transactions.GET("/overview", deps.Transaction.Overview)
+		transactions.GET("/trend", deps.Transaction.Trend)
 		transactions.GET("/:id", deps.Transaction.GetByID)
 		transactions.POST("", deps.Transaction.Create)
 		transactions.PATCH("/:id", deps.Transaction.Update)
