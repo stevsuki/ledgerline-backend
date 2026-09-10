@@ -27,6 +27,10 @@ func (s *WalletService) Overview(ctx context.Context, userID uuid.UUID) (domain.
 	return s.walletRepo.Overview(ctx, userID)
 }
 
+func (s *WalletService) Options(ctx context.Context, userID uuid.UUID) ([]domain.WalletOption, error) {
+	return s.walletRepo.Options(ctx, userID)
+}
+
 // checkCardFields: the card-only fields must match the type stored with them.
 func checkCardFields(walletType domain.WalletType, limit *int64, dueDay *int) error {
 	if walletType != domain.WalletTypeCard {

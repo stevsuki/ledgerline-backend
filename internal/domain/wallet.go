@@ -73,6 +73,13 @@ type WalletRepository interface {
 	Update(ctx context.Context, wallet *Wallet) error
 	Delete(ctx context.Context, id, userID uuid.UUID) error
 	Overview(ctx context.Context, userID uuid.UUID) (WalletOverview, error)
+	Options(ctx context.Context, userID uuid.UUID) ([]WalletOption, error)
+}
+
+// WalletOption: id and name only, for the wallet filter dropdown.
+type WalletOption struct {
+	ID   uuid.UUID
+	Name string
 }
 
 type CreateWalletInput struct {
@@ -106,4 +113,5 @@ type WalletService interface {
 	Update(ctx context.Context, userID, id uuid.UUID, input UpdateWalletInput) (*Wallet, error)
 	Delete(ctx context.Context, userID, id uuid.UUID) error
 	Overview(ctx context.Context, userID uuid.UUID) (WalletOverview, error)
+	Options(ctx context.Context, userID uuid.UUID) ([]WalletOption, error)
 }

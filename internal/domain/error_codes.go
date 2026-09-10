@@ -63,6 +63,14 @@ const (
 	CodeBudgetInvalidThreshold = "BUDGET_INVALID_THRESHOLD"
 	CodeBudgetInvalidFixed     = "BUDGET_INVALID_FIXED"
 
+	CodeTransactionNotFound        = "TRANSACTION_NOT_FOUND"
+	CodeTransactionInvalid         = "TRANSACTION_INVALID"
+	CodeTransactionInvalidCategory = "TRANSACTION_INVALID_CATEGORY"
+	CodeTransactionInvalidWallet   = "TRANSACTION_INVALID_WALLET"
+	CodeTransactionInvalidData     = "TRANSACTION_INVALID_DATA"
+	CodeTransactionInvalidType     = "TRANSACTION_INVALID_TYPE"
+	CodeTransactionInvalidAmount   = "TRANSACTION_INVALID_AMOUNT"
+
 	CodeMenuNotFound = "MENU_NOT_FOUND"
 
 	CodeAuditLogNotFound = "AUDIT_LOG_NOT_FOUND"

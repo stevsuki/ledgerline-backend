@@ -203,3 +203,28 @@ func (h *WalletHandler) Overview(c *gin.Context) {
 	}
 	response.OK(c, http.StatusOK, "wallet overview", dto.NewWalletOverviewResponseDTO(overview))
 }
+
+// Options godoc
+//
+//	@Summary	Wallet options for the filter dropdown
+//	@Tags		wallets
+//	@Produce	json
+//	@Security	BearerAuth
+//	@Success	200	{object}	response.Success{data=[]dto.WalletOptionResponseDTO}
+//	@Failure	401	{object}	response.Error
+//	@Router		/wallets/options [get]
+func (h *WalletHandler) Options(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		handleError(c, domain.ErrAuthRequired)
+		return
+	}
+
+	options, err := h.walletService.Options(c.Request.Context(), userID)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	response.OK(c, http.StatusOK, "filter wallet options", dto.NewWalletOptionsResponseDTOs(options))
+}

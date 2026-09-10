@@ -1649,6 +1649,338 @@ const docTemplate = `{
                 }
             }
         },
+        "/transactions": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "List transactions owned by the logged-in user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search by transaction name",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "-occurred_at",
+                        "description": "Order: name, amount, note, type, category, wallet, occurred_at, created_at, updated_at. Prefix - for desc",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Items per page",
+                        "name": "per_page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by category ID (UUID)",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by wallet ID (UUID)",
+                        "name": "wallet",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "income",
+                            "expense"
+                        ],
+                        "type": "string",
+                        "description": "Filter by type: income or expense",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter occurred_at from (RFC3339)",
+                        "name": "occurred_from",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter occurred_at to (RFC3339)",
+                        "name": "occurred_to",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionListResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Create a transaction",
+                "parameters": [
+                    {
+                        "description": "Transaction data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateTransactionRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/transactions/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Transaction detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Transaction ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Delete a transaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Transaction ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "transactions"
+                ],
+                "summary": "Update a transaction",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Transaction ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateTransactionRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "security": [
@@ -2030,6 +2362,51 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/wallets/options": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "wallets"
+                ],
+                "summary": "Wallet options for the filter dropdown",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletOptionResponseDTO"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
                         "schema": {
                             "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
                         }
@@ -2684,6 +3061,44 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateTransactionRequestDTO": {
+            "type": "object",
+            "required": [
+                "amount",
+                "category_id",
+                "currency",
+                "name",
+                "occurred_at",
+                "type",
+                "wallet_id"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "occurred_at": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "wallet_id": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateUserRequestDTO": {
             "type": "object",
             "required": [
@@ -3146,6 +3561,134 @@ const docTemplate = `{
                 }
             }
         },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionCurrencyTotalResponseDTO": {
+            "type": "object",
+            "properties": {
+                "currency": {
+                    "type": "string",
+                    "example": "USD"
+                },
+                "entries": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "money_in": {
+                    "type": "integer",
+                    "example": 118000
+                },
+                "money_out": {
+                    "type": "integer",
+                    "example": -2000
+                },
+                "net": {
+                    "type": "integer",
+                    "example": 116000
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionGroupResponseDTO": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionResponseDTO"
+                    }
+                },
+                "occurred_at": {
+                    "type": "string",
+                    "example": "2026-01-02T00:00:00Z"
+                },
+                "total": {
+                    "type": "integer",
+                    "example": -280000
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionListResponseDTO": {
+            "type": "object",
+            "properties": {
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionGroupResponseDTO"
+                    }
+                },
+                "summary": {
+                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionSummaryResponseDTO"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionResponseDTO": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "category_name": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "occurred_at": {
+                    "type": "string",
+                    "example": "2026-01-02T15:04:05Z"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "wallet_id": {
+                    "type": "string"
+                },
+                "wallet_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionSummaryResponseDTO": {
+            "type": "object",
+            "properties": {
+                "base_currency": {
+                    "type": "string",
+                    "example": "IDR"
+                },
+                "by_currency": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionCurrencyTotalResponseDTO"
+                    }
+                },
+                "money_in": {
+                    "type": "integer",
+                    "example": 21450000
+                },
+                "money_out": {
+                    "type": "integer",
+                    "example": -12780000
+                },
+                "net": {
+                    "type": "integer",
+                    "example": 8670000
+                },
+                "other_entries": {
+                    "type": "integer",
+                    "example": 2
+                }
+            }
+        },
         "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateBudgetRequestDTO": {
             "type": "object",
             "properties": {
@@ -3223,6 +3766,35 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequestDTO"
                     }
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateTransactionRequestDTO": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "category_id": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "note": {
+                    "type": "string"
+                },
+                "occurred_at": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "wallet_id": {
+                    "type": "string"
                 }
             }
         },
@@ -3359,6 +3931,17 @@ const docTemplate = `{
                 "otp": {
                     "type": "string",
                     "example": "123456"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletOptionResponseDTO": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
                 }
             }
         },

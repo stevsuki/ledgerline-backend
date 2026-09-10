@@ -29,6 +29,7 @@ type Dependencies struct {
 	AuditLog     *handler.AuditLogHandler
 	Wallet       *handler.WalletHandler
 	Budget       *handler.BudgetHandler
+	Transaction  *handler.TransactionHandler
 }
 
 // New assembles the Gin engine with global middleware and all routes.
@@ -71,6 +72,7 @@ func New(deps Dependencies) *gin.Engine {
 	registerAuditLogRoutes(v1, deps)
 	registerWalletRoutes(v1, deps)
 	registerBudgetRoutes(v1, deps)
+	registerTransactionRoutes(v1, deps)
 
 	return engine
 }
@@ -143,8 +145,10 @@ func registerWalletRoutes(rg *gin.RouterGroup, deps Dependencies) {
 		wallets.PATCH("/:id", deps.Wallet.Update)
 		wallets.DELETE("/:id", deps.Wallet.Delete)
 		wallets.GET("/overview", deps.Wallet.Overview)
+		wallets.GET("/options", deps.Wallet.Options)
 	}
 }
+
 func registerBudgetRoutes(rg *gin.RouterGroup, deps Dependencies) {
 	budgets := rg.Group("/budgets", middleware.Authenticate(deps.TokenManager))
 	{
@@ -154,5 +158,16 @@ func registerBudgetRoutes(rg *gin.RouterGroup, deps Dependencies) {
 		budgets.PATCH("/:id", deps.Budget.Update)
 		budgets.DELETE("/:id", deps.Budget.Delete)
 		budgets.GET("/overview", deps.Budget.Overview)
+	}
+}
+
+func registerTransactionRoutes(rg *gin.RouterGroup, deps Dependencies) {
+	transactions := rg.Group("/transactions", middleware.Authenticate(deps.TokenManager))
+	{
+		transactions.GET("", deps.Transaction.List)
+		transactions.GET("/:id", deps.Transaction.GetByID)
+		transactions.POST("", deps.Transaction.Create)
+		transactions.PATCH("/:id", deps.Transaction.Update)
+		transactions.DELETE("/:id", deps.Transaction.Delete)
 	}
 }

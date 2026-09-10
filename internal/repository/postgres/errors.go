@@ -73,6 +73,11 @@ var (
 		invalid:  domain.InvalidInput(domain.CodeBudgetInvalidCategory, "category_id does not refer to an existing category").WithField("category_id"),
 	}
 
+	transactionErrors = resourceErrors{
+		notFound: domain.NotFound(domain.CodeTransactionNotFound, "transaction not found"),
+		invalid:  domain.InvalidInput(domain.CodeTransactionInvalidCategory, "category_id does not refer to an existing category").WithField("category_id"),
+	}
+
 	masterCategoryErrors = resourceErrors{
 		notFound: domain.NotFound(domain.CodeMasterCategoryNotFound, "master category not found"),
 		conflict: domain.Conflict(domain.CodeMasterCategoryNameTaken, "a master category with that name already exists").WithField("name"),

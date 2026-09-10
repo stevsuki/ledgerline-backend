@@ -146,3 +146,20 @@ func NewWalletOverviewResponseDTO(o domain.WalletOverview) WalletOverviewRespons
 		HeldByCurrency: held,
 	}
 }
+
+// WalletOptionResponseDTO: id and name only, for the wallet filter dropdown.
+type WalletOptionResponseDTO struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
+func NewWalletOptionsResponseDTOs(ws []domain.WalletOption) []WalletOptionResponseDTO {
+	options := make([]WalletOptionResponseDTO, 0, len(ws))
+	for _, w := range ws {
+		options = append(options, WalletOptionResponseDTO{
+			ID:   w.ID,
+			Name: w.Name,
+		})
+	}
+	return options
+}

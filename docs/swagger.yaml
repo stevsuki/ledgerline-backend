@@ -317,6 +317,33 @@ definitions:
     required:
     - name
     type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateTransactionRequestDTO:
+    properties:
+      amount:
+        type: integer
+      category_id:
+        type: string
+      currency:
+        type: string
+      name:
+        type: string
+      note:
+        type: string
+      occurred_at:
+        type: string
+      type:
+        type: string
+      wallet_id:
+        type: string
+    required:
+    - amount
+    - category_id
+    - currency
+    - name
+    - occurred_at
+    - type
+    - wallet_id
+    type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateUserRequestDTO:
     properties:
       email:
@@ -653,6 +680,94 @@ definitions:
         example: Bearer
         type: string
     type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionCurrencyTotalResponseDTO:
+    properties:
+      currency:
+        example: USD
+        type: string
+      entries:
+        example: 2
+        type: integer
+      money_in:
+        example: 118000
+        type: integer
+      money_out:
+        example: -2000
+        type: integer
+      net:
+        example: 116000
+        type: integer
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionGroupResponseDTO:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionResponseDTO'
+        type: array
+      occurred_at:
+        example: "2026-01-02T00:00:00Z"
+        type: string
+      total:
+        example: -280000
+        type: integer
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionListResponseDTO:
+    properties:
+      groups:
+        items:
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionGroupResponseDTO'
+        type: array
+      summary:
+        $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionSummaryResponseDTO'
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionResponseDTO:
+    properties:
+      amount:
+        type: integer
+      category_id:
+        type: string
+      category_name:
+        type: string
+      currency:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      note:
+        type: string
+      occurred_at:
+        example: "2026-01-02T15:04:05Z"
+        type: string
+      type:
+        type: string
+      wallet_id:
+        type: string
+      wallet_name:
+        type: string
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionSummaryResponseDTO:
+    properties:
+      base_currency:
+        example: IDR
+        type: string
+      by_currency:
+        items:
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionCurrencyTotalResponseDTO'
+        type: array
+      money_in:
+        example: 21450000
+        type: integer
+      money_out:
+        example: -12780000
+        type: integer
+      net:
+        example: 8670000
+        type: integer
+      other_entries:
+        example: 2
+        type: integer
+    type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateBudgetRequestDTO:
     properties:
       alert_threshold_percent:
@@ -710,6 +825,25 @@ definitions:
         items:
           $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequestDTO'
         type: array
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateTransactionRequestDTO:
+    properties:
+      amount:
+        type: integer
+      category_id:
+        type: string
+      currency:
+        type: string
+      name:
+        type: string
+      note:
+        type: string
+      occurred_at:
+        type: string
+      type:
+        type: string
+      wallet_id:
+        type: string
     type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateUserRequestDTO:
     properties:
@@ -812,6 +946,13 @@ definitions:
     required:
     - email
     - otp
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletOptionResponseDTO:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
     type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletOverviewResponseDTO:
     properties:
@@ -1931,6 +2072,208 @@ paths:
       summary: Update role data
       tags:
       - roles
+  /transactions:
+    get:
+      parameters:
+      - description: Search by transaction name
+        in: query
+        name: search
+        type: string
+      - default: -occurred_at
+        description: 'Order: name, amount, note, type, category, wallet, occurred_at,
+          created_at, updated_at. Prefix - for desc'
+        in: query
+        name: sort
+        type: string
+      - default: 1
+        description: Page
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Items per page
+        in: query
+        name: per_page
+        type: integer
+      - description: Filter by category ID (UUID)
+        in: query
+        name: category
+        type: string
+      - description: Filter by wallet ID (UUID)
+        in: query
+        name: wallet
+        type: string
+      - description: 'Filter by type: income or expense'
+        enum:
+        - income
+        - expense
+        in: query
+        name: type
+        type: string
+      - description: Filter occurred_at from (RFC3339)
+        in: query
+        name: occurred_from
+        type: string
+      - description: Filter occurred_at to (RFC3339)
+        in: query
+        name: occurred_to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionListResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: List transactions owned by the logged-in user
+      tags:
+      - transactions
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Transaction data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateTransactionRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Create a transaction
+      tags:
+      - transactions
+  /transactions/{id}:
+    delete:
+      parameters:
+      - description: Transaction ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Delete a transaction
+      tags:
+      - transactions
+    get:
+      parameters:
+      - description: Transaction ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionResponseDTO'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Transaction detail
+      tags:
+      - transactions
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Transaction ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateTransactionRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.TransactionResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Update a transaction
+      tags:
+      - transactions
   /users:
     get:
       parameters:
@@ -2254,6 +2597,31 @@ paths:
       security:
       - BearerAuth: []
       summary: Update a wallet
+      tags:
+      - wallets
+  /wallets/options:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletOptionResponseDTO'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Wallet options for the filter dropdown
       tags:
       - wallets
   /wallets/overview:
