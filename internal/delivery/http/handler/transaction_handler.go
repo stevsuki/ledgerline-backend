@@ -122,7 +122,7 @@ func (h *TransactionHandler) GetByID(c *gin.Context) {
 		return
 	}
 
-	transaction, err := h.transactionService.GetByID(c.Request.Context(), userID, id)
+	transaction, err := h.transactionService.GetByID(c.Request.Context(), id, userID)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -196,7 +196,7 @@ func (h *TransactionHandler) Update(c *gin.Context) {
 		return
 	}
 
-	transaction, err := h.transactionService.Update(c.Request.Context(), userID, id, req.ToInput())
+	transaction, err := h.transactionService.Update(c.Request.Context(), id, userID, req.ToInput())
 	if err != nil {
 		handleError(c, err)
 		return
@@ -227,7 +227,7 @@ func (h *TransactionHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.transactionService.Delete(c.Request.Context(), userID, id); err != nil {
+	if err := h.transactionService.Delete(c.Request.Context(), id, userID); err != nil {
 		handleError(c, err)
 		return
 	}
