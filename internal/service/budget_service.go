@@ -23,21 +23,28 @@ func NewBudgetService(
 	return &BudgetService{budgetRepo: budgetRepo, categoryRepo: categoryRepo}
 }
 
-func (s *BudgetService) checkCategory(ctx context.Context, userID, categoryID uuid.UUID) error {
-	category, err := s.categoryRepo.GetByID(ctx, categoryID, userID)
+// checkCategory: the category a budget will limit, as an id this account owns.
+//
+// The picker offers master rows beside the account's own, so the id may name
+// either — it comes back resolved, and the caller stores what it hands over
+// rather than what it was given.
+func (s *BudgetService) checkCategory(
+	ctx context.Context, userID, categoryID uuid.UUID,
+) (uuid.UUID, error) {
+	category, err := s.categoryRepo.ResolveForUser(ctx, userID, categoryID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
-			return domain.InvalidInput(domain.CodeBudgetInvalidCategory,
+			return uuid.Nil, domain.InvalidInput(domain.CodeBudgetInvalidCategory,
 				"category_id does not refer to one of your categories").WithField("category_id")
 		}
-		return err
+		return uuid.Nil, err
 	}
 
 	if category.Type != domain.CategoryTypeExpense {
-		return domain.InvalidInput(domain.CodeBudgetInvalidCategory,
+		return uuid.Nil, domain.InvalidInput(domain.CodeBudgetInvalidCategory,
 			"a budget can only limit an expense category").WithField("category_id")
 	}
-	return nil
+	return category.ID, nil
 }
 
 func (s *BudgetService) List(ctx context.Context, userID uuid.UUID) ([]domain.Budget, error) {
@@ -78,9 +85,13 @@ func (s *BudgetService) Create(ctx context.Context, userID uuid.UUID, input doma
 		return nil, err
 	}
 
-	if err := s.checkCategory(ctx, userID, input.CategoryID); err != nil {
+	// Resolved rather than checked: the id may have named a master row, and the
+	// budget has to point at the category that came of it.
+	categoryID, err := s.checkCategory(ctx, userID, input.CategoryID)
+	if err != nil {
 		return nil, err
 	}
+	input.CategoryID = categoryID
 
 	id, err := uuid.NewV7()
 	if err != nil {
@@ -112,10 +123,11 @@ func (s *BudgetService) Update(ctx context.Context, userID, id uuid.UUID, input 
 	}
 
 	if input.CategoryID != nil {
-		if err := s.checkCategory(ctx, userID, *input.CategoryID); err != nil {
+		categoryID, err := s.checkCategory(ctx, userID, *input.CategoryID)
+		if err != nil {
 			return nil, err
 		}
-		budget.CategoryID = *input.CategoryID
+		budget.CategoryID = categoryID
 	}
 
 	if input.Currency != nil {

@@ -135,6 +135,20 @@ func (r *transactionRepository) List(ctx context.Context, userID uuid.UUID, filt
 	return model.TransactionsToDomain(rows), int(total), nil
 }
 
+func (r *transactionRepository) ExistsByCategory(
+	ctx context.Context, categoryID, userID uuid.UUID,
+) (bool, error) {
+	var count int64
+	err := dbFrom(ctx, r.db).
+		Model(&model.TransactionModel{}).
+		Where("category_id = ? AND user_id = ?", categoryID, userID).
+		Count(&count).Error
+	if err != nil {
+		return false, transactionErrors.wrap("transaction exists by category", err)
+	}
+	return count > 0, nil
+}
+
 // GetByID always includes user_id so other users cannot reach this data.
 func (r *transactionRepository) GetByID(ctx context.Context, id, userID uuid.UUID) (*domain.Transaction, error) {
 	var row model.TransactionModel

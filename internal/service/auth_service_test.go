@@ -38,7 +38,7 @@ func TestAuthService_Login(t *testing.T) {
 		token.On("GenerateAccessToken", mock.AnythingOfType("domain.TokenClaims")).Return("access", 900, nil)
 		token.On("GenerateRefreshToken", mock.AnythingOfType("domain.TokenClaims")).Return("refresh", nil)
 
-		pair, err := service.NewAuthService(repo, hasher, token, new(mocks.Mailer), new(mocks.OTPGenerator), new(mocks.PasswordResetTokenRepository), new(mocks.MenuRepository), new(mocks.TxManager), 10*time.Minute, new(mocks.AuditLogRepository), new(mocks.CategoryRepository)).
+		pair, err := service.NewAuthService(repo, hasher, token, new(mocks.Mailer), new(mocks.OTPGenerator), new(mocks.PasswordResetTokenRepository), new(mocks.MenuRepository), new(mocks.TxManager), 10*time.Minute, new(mocks.AuditLogRepository)).
 			Login(context.Background(), domain.LoginInput{Email: "Budi@example.com", Password: "Rahasia123!"}, domain.RequestMeta{})
 
 		require.NoError(t, err)
@@ -56,7 +56,7 @@ func TestAuthService_Login(t *testing.T) {
 		repo.On("GetByEmail", mock.Anything, user.Email).Return(user, nil)
 		hasher.On("Compare", "hashed", "wrong-password").Return(bcrypt.ErrMismatchedHashAndPassword)
 
-		_, err := service.NewAuthService(repo, hasher, new(mocks.TokenManager), new(mocks.Mailer), new(mocks.OTPGenerator), new(mocks.PasswordResetTokenRepository), new(mocks.MenuRepository), new(mocks.TxManager), 10*time.Minute, new(mocks.AuditLogRepository), new(mocks.CategoryRepository)).
+		_, err := service.NewAuthService(repo, hasher, new(mocks.TokenManager), new(mocks.Mailer), new(mocks.OTPGenerator), new(mocks.PasswordResetTokenRepository), new(mocks.MenuRepository), new(mocks.TxManager), 10*time.Minute, new(mocks.AuditLogRepository)).
 			Login(context.Background(), domain.LoginInput{Email: user.Email, Password: "wrong-password"}, domain.RequestMeta{})
 
 		require.ErrorIs(t, err, domain.ErrInvalidCredentials)
@@ -68,7 +68,7 @@ func TestAuthService_Login(t *testing.T) {
 		repo := new(mocks.UserRepository)
 		repo.On("GetByEmail", mock.Anything, "hantu@example.com").Return(nil, domain.ErrNotFound)
 
-		_, err := service.NewAuthService(repo, new(mocks.PasswordHasher), new(mocks.TokenManager), new(mocks.Mailer), new(mocks.OTPGenerator), new(mocks.PasswordResetTokenRepository), new(mocks.MenuRepository), new(mocks.TxManager), 10*time.Minute, new(mocks.AuditLogRepository), new(mocks.CategoryRepository)).
+		_, err := service.NewAuthService(repo, new(mocks.PasswordHasher), new(mocks.TokenManager), new(mocks.Mailer), new(mocks.OTPGenerator), new(mocks.PasswordResetTokenRepository), new(mocks.MenuRepository), new(mocks.TxManager), 10*time.Minute, new(mocks.AuditLogRepository)).
 			Login(context.Background(), domain.LoginInput{Email: "hantu@example.com", Password: "Rahasia123!"}, domain.RequestMeta{})
 
 		require.ErrorIs(t, err, domain.ErrInvalidCredentials)
@@ -92,7 +92,7 @@ func TestAuthService_Refresh(t *testing.T) {
 		token.On("GenerateAccessToken", mock.AnythingOfType("domain.TokenClaims")).Return("new-access", 900, nil)
 		token.On("GenerateRefreshToken", mock.AnythingOfType("domain.TokenClaims")).Return("new-refresh", nil)
 
-		pair, err := service.NewAuthService(repo, new(mocks.PasswordHasher), token, new(mocks.Mailer), new(mocks.OTPGenerator), new(mocks.PasswordResetTokenRepository), new(mocks.MenuRepository), new(mocks.TxManager), 10*time.Minute, new(mocks.AuditLogRepository), new(mocks.CategoryRepository)).
+		pair, err := service.NewAuthService(repo, new(mocks.PasswordHasher), token, new(mocks.Mailer), new(mocks.OTPGenerator), new(mocks.PasswordResetTokenRepository), new(mocks.MenuRepository), new(mocks.TxManager), 10*time.Minute, new(mocks.AuditLogRepository)).
 			Refresh(context.Background(), "refresh-token")
 
 		require.NoError(t, err)
@@ -105,7 +105,7 @@ func TestAuthService_Refresh(t *testing.T) {
 		token := new(mocks.TokenManager)
 		token.On("VerifyRefreshToken", "expired").Return(nil, domain.ErrTokenExpired)
 
-		_, err := service.NewAuthService(new(mocks.UserRepository), new(mocks.PasswordHasher), token, new(mocks.Mailer), new(mocks.OTPGenerator), new(mocks.PasswordResetTokenRepository), new(mocks.MenuRepository), new(mocks.TxManager), 10*time.Minute, new(mocks.AuditLogRepository), new(mocks.CategoryRepository)).
+		_, err := service.NewAuthService(new(mocks.UserRepository), new(mocks.PasswordHasher), token, new(mocks.Mailer), new(mocks.OTPGenerator), new(mocks.PasswordResetTokenRepository), new(mocks.MenuRepository), new(mocks.TxManager), 10*time.Minute, new(mocks.AuditLogRepository)).
 			Refresh(context.Background(), "expired")
 
 		require.ErrorIs(t, err, domain.ErrTokenExpired)

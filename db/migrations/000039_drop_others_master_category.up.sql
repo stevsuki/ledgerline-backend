@@ -1,0 +1,11 @@
+-- "Others" goes. Its last job was to be somewhere to put an entry that fitted
+-- nothing else, and the add-transaction sheet answers that better now: naming a
+-- category there is one field and one click, and what comes out says what the
+-- money actually went on. A bucket called "Others" only ever says that nobody
+-- decided — six months on it is the largest slice of the chart and teaches
+-- nothing.
+--
+-- Only the template goes. An account that already adopted it keeps its own
+-- "Others" category, transactions and all; it simply stops being offered to
+-- anyone new.
+DELETE FROM master_categories WHERE id = '00000000-0000-0000-0000-000000000007';

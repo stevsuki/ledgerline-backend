@@ -36,7 +36,6 @@ const (
 	CodeCategoryInvalidType   = "CATEGORY_INVALID_TYPE"
 	CodeCategoryInvalidMaster = "CATEGORY_INVALID_MASTER"
 	CodeCategoryInvalidData   = "CATEGORY_INVALID_DATA"
-	CodeCategoryInvalidSlug   = "CATEGORY_INVALID_SLUG"
 	CodeCategoryInUse         = "CATEGORY_IN_USE"
 
 	CodeRoleNotFound        = "ROLE_NOT_FOUND"

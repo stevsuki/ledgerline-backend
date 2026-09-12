@@ -11,15 +11,21 @@ import (
 )
 
 type CategoryService struct {
-	categoryRepo domain.CategoryRepository
-	budgetRepo   domain.BudgetRepository
+	categoryRepo    domain.CategoryRepository
+	budgetRepo      domain.BudgetRepository
+	transactionRepo domain.TransactionRepository
 }
 
 func NewCategoryService(
 	categoryRepo domain.CategoryRepository,
 	budgetRepo domain.BudgetRepository,
+	transactionRepo domain.TransactionRepository,
 ) domain.CategoryService {
-	return &CategoryService{categoryRepo: categoryRepo, budgetRepo: budgetRepo}
+	return &CategoryService{
+		categoryRepo:    categoryRepo,
+		budgetRepo:      budgetRepo,
+		transactionRepo: transactionRepo,
+	}
 }
 
 func (s *CategoryService) List(ctx context.Context, userID uuid.UUID) ([]domain.Category, error) {
@@ -28,15 +34,6 @@ func (s *CategoryService) List(ctx context.Context, userID uuid.UUID) ([]domain.
 
 func (s *CategoryService) GetByID(ctx context.Context, userID, id uuid.UUID) (*domain.Category, error) {
 	return s.categoryRepo.GetByID(ctx, id, userID)
-}
-
-// masterCategoryOrOthers: a category always derives from a master row, so one
-// that names none falls back to Others.
-func masterCategoryOrOthers(id uuid.UUID) uuid.UUID {
-	if id == uuid.Nil {
-		return domain.MasterCategoryIDOthers
-	}
-	return id
 }
 
 func (s *CategoryService) Create(ctx context.Context, userID uuid.UUID, input domain.CreateCategoryInput) (*domain.Category, error) {
@@ -55,13 +52,12 @@ func (s *CategoryService) Create(ctx context.Context, userID uuid.UUID, input do
 	}
 
 	category := &domain.Category{
-		ID:               id,
-		UserID:           userID,
-		MasterCategoryID: masterCategoryOrOthers(input.MasterCategoryID),
-		Name:             name,
-		Type:             input.Type,
-		Icon:             strings.TrimSpace(input.Icon),
-		Color:            strings.TrimSpace(input.Color),
+		ID:     id,
+		UserID: userID,
+		Name:   name,
+		Type:   input.Type,
+		Icon:   strings.TrimSpace(input.Icon),
+		Color:  strings.TrimSpace(input.Color),
 	}
 
 	if err := s.categoryRepo.Create(ctx, category); err != nil {
@@ -71,7 +67,10 @@ func (s *CategoryService) Create(ctx context.Context, userID uuid.UUID, input do
 }
 
 func (s *CategoryService) Update(ctx context.Context, userID, id uuid.UUID, input domain.UpdateCategoryInput) (*domain.Category, error) {
-	category, err := s.categoryRepo.GetByID(ctx, id, userID)
+	// The list offers shared rows beside the account's own, so a pencil may land
+	// on one it does not hold yet. Adopting it here is the same swap the writers
+	// make: what gets edited is always a row of the account's.
+	category, err := s.categoryRepo.ResolveForUser(ctx, userID, id)
 	if err != nil {
 		return nil, err
 	}
@@ -91,10 +90,6 @@ func (s *CategoryService) Update(ctx context.Context, userID, id uuid.UUID, inpu
 		category.Type = *input.Type
 	}
 
-	if input.MasterCategoryID != nil {
-		category.MasterCategoryID = masterCategoryOrOthers(*input.MasterCategoryID)
-	}
-
 	if input.Icon != nil {
 		category.Icon = strings.TrimSpace(*input.Icon)
 	}
@@ -108,26 +103,59 @@ func (s *CategoryService) Update(ctx context.Context, userID, id uuid.UUID, inpu
 	return category, nil
 }
 
+/*
+Delete refuses while anything is filed under the category.
+
+Removal here is a soft delete, so the ON DELETE RESTRICT on transactions and
+budgets never fires — the row stays and the reference stays valid. What breaks
+instead is quieter: the dashboard's category ring and the budgets list both join
+categories with a not-deleted filter, while the month's totals join nothing at
+all. Delete a category still carrying spending and the stat card keeps counting
+it while the ring stops drawing it, with nothing on screen admitting that the
+two no longer agree.
+
+Budgets were already guarded. Transactions were not, and that was the half that
+could put two different figures for the same month on one screen.
+*/
 func (s *CategoryService) Delete(ctx context.Context, userID, id uuid.UUID) error {
-	inUse, err := s.budgetRepo.ExistsByCategory(ctx, id, userID)
+	budgeted, err := s.budgetRepo.ExistsByCategory(ctx, id, userID)
 	if err != nil {
 		return err
 	}
-	if inUse {
+	if budgeted {
 		return domain.Conflict(domain.CodeCategoryInUse,
 			"a budget still limits this category; remove the budget first")
 	}
+
+	recorded, err := s.transactionRepo.ExistsByCategory(ctx, id, userID)
+	if err != nil {
+		return err
+	}
+	if recorded {
+		return domain.Conflict(domain.CodeCategoryInUse,
+			"transactions are still filed under this category; move or remove them first")
+	}
+
 	return s.categoryRepo.Delete(ctx, id, userID)
 }
 
+// OptionsCategoryType: what a picker may offer, narrowed to one direction when
+// the caller names one. An empty type means both.
+//
+// Which direction a screen wants is the screen's business, not this list's — a
+// budget asks for expense because that is all it can limit, and the rule that
+// makes it so is enforced where budgets are written, not here.
 func (s *CategoryService) OptionsCategoryType(
-	ctx context.Context, userID uuid.UUID, slug string,
+	ctx context.Context, userID uuid.UUID, categoryType string,
 ) ([]domain.OptionCategoryType, error) {
-	types, ok := domain.CategoryTypesForSlug(slug)
-	if !ok {
-		return nil, domain.InvalidInput(
-			domain.CodeCategoryInvalidSlug, "category option slug must be filter or budget",
-		).WithField("slug")
+	var types []string
+	if categoryType != "" {
+		if !domain.ValidCategoryType(categoryType) {
+			return nil, domain.InvalidInput(
+				domain.CodeCategoryInvalidType, "category type must be income or expense",
+			).WithField("type")
+		}
+		types = []string{categoryType}
 	}
 	return s.categoryRepo.OptionsCategoryType(ctx, userID, types)
 }

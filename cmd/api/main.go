@@ -101,8 +101,8 @@ func run() error {
 	}
 
 	userService := service.NewUserService(userRepo, hasher, auditLogRepo)
-	categoryService := service.NewCategoryService(categoryRepo, budgetRepo)
-	authService := service.NewAuthService(userRepo, hasher, tokenManager, mail, otpGenerator, passwordResetTokenRepo, menuRepo, txManager, cfg.OTP.TTL, auditLogRepo, categoryRepo)
+	categoryService := service.NewCategoryService(categoryRepo, budgetRepo, transactionRepo)
+	authService := service.NewAuthService(userRepo, hasher, tokenManager, mail, otpGenerator, passwordResetTokenRepo, menuRepo, txManager, cfg.OTP.TTL, auditLogRepo)
 	roleService := service.NewRoleService(roleRepo, auditLogRepo)
 	auditLogService := service.NewAuditLogService(auditLogRepo)
 	walletService := service.NewWalletService(walletRepo, auditLogRepo)

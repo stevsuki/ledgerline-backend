@@ -170,7 +170,7 @@ func TestBudgetService_CreateChecksCategory(t *testing.T) {
 		{
 			name: "rejects a category the user does not own",
 			setupMock: func(_ *mocks.BudgetRepository, categories *mocks.CategoryRepository) {
-				categories.On("GetByID", mock.Anything, categoryID, userID).
+				categories.On("ResolveForUser", mock.Anything, userID, categoryID).
 					Return(nil, domain.NotFound(domain.CodeCategoryNotFound, "category not found"))
 			},
 			wantCode: domain.CodeBudgetInvalidCategory,
@@ -178,7 +178,7 @@ func TestBudgetService_CreateChecksCategory(t *testing.T) {
 		{
 			name: "rejects an income category",
 			setupMock: func(_ *mocks.BudgetRepository, categories *mocks.CategoryRepository) {
-				categories.On("GetByID", mock.Anything, categoryID, userID).
+				categories.On("ResolveForUser", mock.Anything, userID, categoryID).
 					Return(&domain.Category{ID: categoryID, Type: domain.CategoryTypeIncome}, nil)
 			},
 			wantCode: domain.CodeBudgetInvalidCategory,
@@ -186,7 +186,7 @@ func TestBudgetService_CreateChecksCategory(t *testing.T) {
 		{
 			name: "accepts an expense category the user owns",
 			setupMock: func(budgets *mocks.BudgetRepository, categories *mocks.CategoryRepository) {
-				categories.On("GetByID", mock.Anything, categoryID, userID).
+				categories.On("ResolveForUser", mock.Anything, userID, categoryID).
 					Return(&domain.Category{ID: categoryID, Type: domain.CategoryTypeExpense}, nil)
 				budgets.On("Create", mock.Anything, mock.AnythingOfType("*domain.Budget")).Return(nil)
 				budgets.On("GetByID", mock.Anything, mock.AnythingOfType("uuid.UUID"), userID).

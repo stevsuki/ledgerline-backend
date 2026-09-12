@@ -35,7 +35,6 @@ type authService struct {
 	tx                     domain.TxManager
 	otpTTL                 time.Duration
 	auditLogRepo           domain.AuditLogRepository
-	categoryRepo           domain.CategoryRepository
 }
 
 func NewAuthService(
@@ -49,9 +48,8 @@ func NewAuthService(
 	tx domain.TxManager,
 	otpTTL time.Duration,
 	auditLogRepo domain.AuditLogRepository,
-	categoryRepo domain.CategoryRepository,
 ) domain.AuthService {
-	return &authService{userRepo: userRepo, hasher: hasher, token: token, mailer: mailer, otp: otp, passwordResetTokenRepo: passwordResetTokenRepo, menuRepo: menuRepo, tx: tx, otpTTL: otpTTL, auditLogRepo: auditLogRepo, categoryRepo: categoryRepo}
+	return &authService{userRepo: userRepo, hasher: hasher, token: token, mailer: mailer, otp: otp, passwordResetTokenRepo: passwordResetTokenRepo, menuRepo: menuRepo, tx: tx, otpTTL: otpTTL, auditLogRepo: auditLogRepo}
 }
 
 func (s *authService) Register(ctx context.Context, input domain.RegisterInput) (*domain.User, error) {
@@ -83,13 +81,11 @@ func (s *authService) Register(ctx context.Context, input domain.RegisterInput) 
 		RoleID:       domain.RoleIDUser,
 	}
 
-	err = s.tx.Do(ctx, func(ctx context.Context) error {
-		if err := s.userRepo.Create(ctx, user); err != nil {
-			return err
-		}
-		return s.categoryRepo.SeedDefaults(ctx, user.ID)
-	})
-	if err != nil {
+	// No categories are written here any more. A new account is offered the
+	// master rows by the pickers themselves, and owns a category only once it
+	// files something against one — so registration creates a user and nothing
+	// else, and an account that never records anything costs no rows at all.
+	if err := s.userRepo.Create(ctx, user); err != nil {
 		return nil, err
 	}
 	return user, nil

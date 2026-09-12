@@ -8,46 +8,45 @@ import (
 )
 
 type CreateCategoryRequestDTO struct {
-	Name             string    `json:"name"`
-	MasterCategoryID uuid.UUID `json:"master_category_id"`
-	Type             string    `json:"type"`
-	Icon             string    `json:"icon" binding:"omitempty,max=50" example:"cup"`
-	Color            string    `json:"color" binding:"omitempty,max=10" example:"c2"`
+	Name  string `json:"name"`
+	Type  string `json:"type"`
+	Icon  string `json:"icon" binding:"omitempty,max=50" example:"cup"`
+	Color string `json:"color" binding:"omitempty,max=10" example:"c2"`
 }
 
 func (c CreateCategoryRequestDTO) ToInput() domain.CreateCategoryInput {
 	return domain.CreateCategoryInput{
-		Name:             c.Name,
-		MasterCategoryID: c.MasterCategoryID,
-		Type:             c.Type,
-		Icon:             c.Icon,
-		Color:            c.Color,
+		Name:  c.Name,
+		Type:  c.Type,
+		Icon:  c.Icon,
+		Color: c.Color,
 	}
 }
 
 // UpdateCategoryRequestDTO: pointers so partial updates are detectable.
 type UpdateCategoryRequestDTO struct {
-	Name             *string    `json:"name"`
-	MasterCategoryID *uuid.UUID `json:"master_category_id"`
-	Type             *string    `json:"type"`
-	Icon             *string    `json:"icon" binding:"omitempty,max=50" example:"cup"`
-	Color            *string    `json:"color" binding:"omitempty,max=10" example:"c2"`
+	Name  *string `json:"name"`
+	Type  *string `json:"type"`
+	Icon  *string `json:"icon" binding:"omitempty,max=50" example:"cup"`
+	Color *string `json:"color" binding:"omitempty,max=10" example:"c2"`
 }
 
 func (c UpdateCategoryRequestDTO) ToInput() domain.UpdateCategoryInput {
 	return domain.UpdateCategoryInput{
-		Name:             c.Name,
-		MasterCategoryID: c.MasterCategoryID,
-		Type:             c.Type,
-		Icon:             c.Icon,
-		Color:            c.Color,
+		Name:  c.Name,
+		Type:  c.Type,
+		Icon:  c.Icon,
+		Color: c.Color,
 	}
 }
 
 type CategoryResponseDTO struct {
 	ID               uuid.UUID  `json:"id"`
 	UserID           uuid.UUID  `json:"user_id"`
-	MasterCategoryID uuid.UUID  `json:"master_category_id"`
+	// IsOwn false marks a shared row the account may use but does not hold yet.
+	IsOwn            bool       `json:"is_own"`
+	// IsBuiltIn: this name and direction are one of the shared master rows.
+	IsBuiltIn        bool       `json:"is_built_in"`
 	Name             string     `json:"name"`
 	Type             string     `json:"type"`
 	Icon             string     `json:"icon" example:"cup"`
@@ -63,7 +62,8 @@ func NewCategoryResponseDTO(c *domain.Category) CategoryResponseDTO {
 	return CategoryResponseDTO{
 		ID:               c.ID,
 		UserID:           c.UserID,
-		MasterCategoryID: c.MasterCategoryID,
+		IsOwn:            c.IsOwn,
+		IsBuiltIn:        c.IsBuiltIn,
 		Name:             c.Name,
 		Type:             c.Type,
 		Icon:             c.Icon,
@@ -84,14 +84,18 @@ func NewCategoryResponseDTOs(cs []domain.Category) []CategoryResponseDTO {
 	return categories
 }
 
-// OptionCategoryTypeQueryDTO: slug names the screen asking for the options.
+// OptionCategoryTypeQueryDTO: the direction the caller wants, or none for both.
 type OptionCategoryTypeQueryDTO struct {
-	Slug string `form:"slug" binding:"required,oneof=filter budget" example:"budget"`
+	Type string `form:"type" binding:"omitempty,oneof=income expense" example:"expense"`
 }
 
+// OptionCategoryResponseDTO: an id here may name one of the caller's own
+// categories or a master row it has not taken up yet. The caller does not have
+// to tell them apart — it sends the id back as `category_id` either way.
 type OptionCategoryResponseDTO struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
+	Type string    `json:"type" example:"expense"`
 }
 
 func NewOptionCategoryResponseDTOs(cs []domain.OptionCategoryType) []OptionCategoryResponseDTO {
@@ -100,6 +104,7 @@ func NewOptionCategoryResponseDTOs(cs []domain.OptionCategoryType) []OptionCateg
 		categories = append(categories, OptionCategoryResponseDTO{
 			ID:   c.ID,
 			Name: c.Name,
+			Type: c.Type,
 		})
 	}
 	return categories

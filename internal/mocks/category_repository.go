@@ -39,8 +39,12 @@ func (m *CategoryRepository) Delete(ctx context.Context, id, userID uuid.UUID) e
 	return m.Called(ctx, id, userID).Error(0)
 }
 
-func (m *CategoryRepository) SeedDefaults(ctx context.Context, userID uuid.UUID) error {
-	return m.Called(ctx, userID).Error(0)
+func (m *CategoryRepository) ResolveForUser(
+	ctx context.Context, userID, id uuid.UUID,
+) (*domain.Category, error) {
+	args := m.Called(ctx, userID, id)
+	category, _ := args.Get(0).(*domain.Category)
+	return category, args.Error(1)
 }
 
 func (m *CategoryRepository) OptionsCategoryType(

@@ -1,0 +1,16 @@
+-- The link has no job left. It used to carry the tile and the colour a seeded
+-- category was drawn with, but 000033 moved those onto master_categories and
+-- 000035 copied them onto the categories themselves, so a category now states
+-- its own appearance and nothing reads the link to render anything.
+--
+-- What remained was provenance — "from the shared list" versus "added by hand"
+-- — and one special case built on it: the row linked to Others could not be
+-- deleted. Both cost more than they were worth. CategoryService forced every
+-- category naming no master to claim Others, which is how a hand-made
+-- "Education" came to read as the bucket for unnamed spending (cleaned up in
+-- 000036), and the same rule locked that row's type to Expense even after
+-- Others started existing on both sides.
+--
+-- After seeding, a category is simply the account's own. That is what this
+-- drop says.
+ALTER TABLE categories DROP COLUMN IF EXISTS master_category_id;

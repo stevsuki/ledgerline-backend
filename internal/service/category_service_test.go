@@ -20,22 +20,40 @@ func TestCategoryService_Delete(t *testing.T) {
 	userID := uuid.New()
 	categoryID := uuid.New()
 
+	type repos struct {
+		categories   *mocks.CategoryRepository
+		budgets      *mocks.BudgetRepository
+		transactions *mocks.TransactionRepository
+	}
+
 	tests := []struct {
 		name      string
-		setupMock func(*mocks.CategoryRepository, *mocks.BudgetRepository)
+		setupMock func(repos)
 		wantCode  string
 	}{
 		{
-			name: "deletes a category no budget limits",
-			setupMock: func(categories *mocks.CategoryRepository, budgets *mocks.BudgetRepository) {
-				budgets.On("ExistsByCategory", mock.Anything, categoryID, userID).Return(false, nil)
-				categories.On("Delete", mock.Anything, categoryID, userID).Return(nil)
+			name: "deletes a category nothing points at",
+			setupMock: func(r repos) {
+				r.budgets.On("ExistsByCategory", mock.Anything, categoryID, userID).Return(false, nil)
+				r.transactions.On("ExistsByCategory", mock.Anything, categoryID, userID).Return(false, nil)
+				r.categories.On("Delete", mock.Anything, categoryID, userID).Return(nil)
 			},
 		},
 		{
 			name: "refuses a category a budget still limits",
-			setupMock: func(_ *mocks.CategoryRepository, budgets *mocks.BudgetRepository) {
-				budgets.On("ExistsByCategory", mock.Anything, categoryID, userID).Return(true, nil)
+			setupMock: func(r repos) {
+				r.budgets.On("ExistsByCategory", mock.Anything, categoryID, userID).Return(true, nil)
+			},
+			wantCode: domain.CodeCategoryInUse,
+		},
+		{
+			// The half that used to slip through: nothing refused it, and the
+			// dashboard then counted its spending in the total while leaving it
+			// out of the ring.
+			name: "refuses a category transactions are still filed under",
+			setupMock: func(r repos) {
+				r.budgets.On("ExistsByCategory", mock.Anything, categoryID, userID).Return(false, nil)
+				r.transactions.On("ExistsByCategory", mock.Anything, categoryID, userID).Return(true, nil)
 			},
 			wantCode: domain.CodeCategoryInUse,
 		},
@@ -47,9 +65,10 @@ func TestCategoryService_Delete(t *testing.T) {
 
 			categories := &mocks.CategoryRepository{}
 			budgets := &mocks.BudgetRepository{}
-			tt.setupMock(categories, budgets)
+			transactions := &mocks.TransactionRepository{}
+			tt.setupMock(repos{categories, budgets, transactions})
 
-			err := service.NewCategoryService(categories, budgets).
+			err := service.NewCategoryService(categories, budgets, transactions).
 				Delete(context.Background(), userID, categoryID)
 
 			if tt.wantCode == "" {
@@ -62,41 +81,6 @@ func TestCategoryService_Delete(t *testing.T) {
 			require.ErrorAs(t, err, &domainErr)
 			assert.Equal(t, tt.wantCode, domainErr.Code)
 			categories.AssertNotCalled(t, "Delete", mock.Anything, mock.Anything, mock.Anything)
-		})
-	}
-}
-
-func TestCategoryService_CreateFallsBackToOthers(t *testing.T) {
-	t.Parallel()
-
-	userID := uuid.New()
-	master := uuid.New()
-
-	tests := []struct {
-		name  string
-		given uuid.UUID
-		want  uuid.UUID
-	}{
-		{name: "no master named", given: uuid.Nil, want: domain.MasterCategoryIDOthers},
-		{name: "a master named", given: master, want: master},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			t.Parallel()
-
-			categories := &mocks.CategoryRepository{}
-			categories.On("Create", mock.Anything, mock.AnythingOfType("*domain.Category")).Return(nil)
-
-			category, err := service.NewCategoryService(categories, &mocks.BudgetRepository{}).
-				Create(context.Background(), userID, domain.CreateCategoryInput{
-					Name:             "Education",
-					Type:             domain.CategoryTypeExpense,
-					MasterCategoryID: tt.given,
-				})
-
-			require.NoError(t, err)
-			assert.Equal(t, tt.want, category.MasterCategoryID)
 		})
 	}
 }

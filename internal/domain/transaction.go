@@ -167,6 +167,9 @@ type TransactionRepository interface {
 	Create(ctx context.Context, transaction *Transaction) error
 	Update(ctx context.Context, transaction *Transaction) error
 	Delete(ctx context.Context, id, userID uuid.UUID) error
+	// ExistsByCategory: whether anything is filed under a category, which is what
+	// stops that category from being removed out from under it.
+	ExistsByCategory(ctx context.Context, categoryID, userID uuid.UUID) (bool, error)
 }
 
 type CreateTransactionInput struct {

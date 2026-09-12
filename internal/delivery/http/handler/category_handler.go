@@ -185,7 +185,7 @@ func (h *CategoryHandler) Delete(c *gin.Context) {
 //	@Tags		categories
 //	@Produce	json
 //	@Security	BearerAuth
-//	@Param		slug	query		string	true	"Screen asking: filter takes every type, budget only expense"	Enums(filter, budget)
+//	@Param		type	query		string	false	"Narrow to one direction; omit for both"	Enums(income, expense)
 //	@Success	200		{object}	response.Success{data=[]dto.OptionCategoryResponseDTO}
 //	@Failure	400		{object}	response.Error
 //	@Failure	401		{object}	response.Error
@@ -203,7 +203,7 @@ func (h *CategoryHandler) OptionsCategoryType(c *gin.Context) {
 		return
 	}
 
-	options, err := h.categoryService.OptionsCategoryType(c.Request.Context(), userID, query.Slug)
+	options, err := h.categoryService.OptionsCategoryType(c.Request.Context(), userID, query.Type)
 	if err != nil {
 		handleError(c, err)
 		return

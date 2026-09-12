@@ -72,7 +72,10 @@ func (t *TransactionService) Create(ctx context.Context, userID uuid.UUID, input
 		return nil, err
 	}
 
-	category, err := t.categoryRepo.GetByID(ctx, input.CategoryID, userID)
+	// The picker offers master rows beside the account's own, so the id may name
+	// either; adopting turns it into a category this account owns before anything
+	// points at it.
+	category, err := t.categoryRepo.ResolveForUser(ctx, userID, input.CategoryID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
 			return nil, domain.InvalidInput(domain.CodeTransactionInvalidCategory,
@@ -83,6 +86,7 @@ func (t *TransactionService) Create(ctx context.Context, userID uuid.UUID, input
 	if err := checkCategoryType(input.Type, category); err != nil {
 		return nil, err
 	}
+	input.CategoryID = category.ID
 
 	id, err := uuid.NewV7()
 	if err != nil {
@@ -133,7 +137,7 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 	}
 
 	if input.CategoryID != nil {
-		category, err = t.categoryRepo.GetByID(ctx, *input.CategoryID, userID)
+		category, err = t.categoryRepo.ResolveForUser(ctx, userID, *input.CategoryID)
 		if err != nil {
 			if errors.Is(err, domain.ErrNotFound) {
 				return nil, domain.InvalidInput(domain.CodeTransactionInvalidCategory,
@@ -141,7 +145,8 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 			}
 			return nil, err
 		}
-		transaction.CategoryID = *input.CategoryID
+		// The resolved id, never the one that came in: that one may name a master row.
+		transaction.CategoryID = category.ID
 	}
 
 	if input.Name != nil {
@@ -205,6 +210,11 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 		if category, err = t.categoryRepo.GetByID(ctx, transaction.CategoryID, userID); err != nil {
 			return nil, err
 		}
+	}
+	// Set on the way out too, so a patch that named a master row stores the
+	// category it became.
+	if category != nil {
+		transaction.CategoryID = category.ID
 	}
 	if category != nil {
 		if err := checkCategoryType(transaction.Type, category); err != nil {

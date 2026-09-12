@@ -6,12 +6,18 @@ import (
 	"github.com/google/uuid"
 )
 
-// MasterCategoryIDOthers: the bucket a category falls back to, seeded in 000023.
-var MasterCategoryIDOthers = uuid.MustParse("00000000-0000-0000-0000-000000000007")
-
+// MasterCategory: a category every account can pick without owning it yet.
+//
+// The rows are offered alongside the account's own in the options list. Picking
+// one adopts it — a category of the account's own is created from this row's
+// name, type, icon and colour — and from then on the account's copy is what is
+// read. Nothing links the two afterwards.
 type MasterCategory struct {
-	ID   uuid.UUID
-	Name string
+	ID    uuid.UUID
+	Name  string
+	Type  string
+	Icon  string
+	Color string
 }
 
 type MasterCategoryRepository interface {
