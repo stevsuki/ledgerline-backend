@@ -150,15 +150,14 @@ type budgetUsageRow struct {
 	Rollover              bool
 }
 
-// The cycle a budget is measured over: the calendar month, the same one the overview counts days of.
+// The cycle a budget is measured over: the calendar month.
 const (
 	cycleStart     = "date_trunc('month', NOW())"
 	nextCycleStart = cycleStart + " + INTERVAL '1 month'"
 	lastCycleStart = cycleStart + " - INTERVAL '1 month'"
 )
 
-// expenseSum: what the budget's own category and currency spent inside a window, as a positive
-// number because the table stores expense amounts negative.
+// expenseSum: what the budget's category and currency spent in a window, as a positive number.
 func expenseSum(from, to string) string {
 	return `COALESCE((
 		SELECT -SUM(t.amount)
@@ -176,8 +175,6 @@ func expenseSum(from, to string) string {
 var (
 	spentThisCycle = expenseSum(cycleStart, nextCycleStart) + "::bigint AS spent"
 
-	// carriedOverFromLastCycle: a rollover budget keeps what it did not spend last cycle, and only if
-	// it already existed then. Last cycle's limit is read as the current one, the table keeps no history.
 	carriedOverFromLastCycle = `CASE
 		WHEN budgets.rollover AND budgets.created_at < ` + cycleStart + `
 		THEN GREATEST(budgets.monthly_limit - ` + expenseSum(lastCycleStart, cycleStart) + `, 0)

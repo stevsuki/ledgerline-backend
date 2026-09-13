@@ -248,7 +248,6 @@ func TestBudgetOverviewOf_CarryWidensWhatIsLeft(t *testing.T) {
 
 	overview := budgetOverviewOf([]domain.BudgetUsage{carried}, time.Now())
 
-	// Allocated stays the plan; only what is left counts the carry.
 	assert.Equal(t, int64(3_000_000), overview.TotalAllocated)
 	assert.Equal(t, int64(800_000), overview.TotalCarriedOver)
 	assert.Equal(t, int64(400_000), overview.TotalLeft)
@@ -264,7 +263,6 @@ func TestBudgetAttention_CarryKeepsABudgetQuiet(t *testing.T) {
 
 	assert.Empty(t, budgetAttention([]domain.BudgetUsage{carried}))
 
-	// The same spend without a carry is over its limit.
 	carried.CarriedOver = 0
 	items := budgetAttention([]domain.BudgetUsage{carried})
 	require.Len(t, items, 1)

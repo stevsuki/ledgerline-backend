@@ -17,12 +17,12 @@ type CategoryModel struct {
 	Type      string    `gorm:"size:20;not null"`
 	Icon      string    `gorm:"size:50;not null;default:''"`
 	Color     string    `gorm:"size:10;not null;default:''"`
-	CreatedAt        time.Time
-	CreatedBy        *uuid.UUID `gorm:"type:uuid"`
-	UpdatedAt        time.Time
-	UpdatedBy        *uuid.UUID     `gorm:"type:uuid"`
-	DeletedAt        gorm.DeletedAt `gorm:"index"`
-	DeletedBy        *uuid.UUID     `gorm:"type:uuid"`
+	CreatedAt time.Time
+	CreatedBy *uuid.UUID `gorm:"type:uuid"`
+	UpdatedAt time.Time
+	UpdatedBy *uuid.UUID     `gorm:"type:uuid"`
+	DeletedAt gorm.DeletedAt `gorm:"index"`
+	DeletedBy *uuid.UUID     `gorm:"type:uuid"`
 }
 
 func (CategoryModel) TableName() string { return "categories" }

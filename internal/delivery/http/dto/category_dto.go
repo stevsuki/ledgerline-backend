@@ -41,38 +41,36 @@ func (c UpdateCategoryRequestDTO) ToInput() domain.UpdateCategoryInput {
 }
 
 type CategoryResponseDTO struct {
-	ID               uuid.UUID  `json:"id"`
-	UserID           uuid.UUID  `json:"user_id"`
-	// IsOwn false marks a shared row the account may use but does not hold yet.
-	IsOwn            bool       `json:"is_own"`
-	// IsBuiltIn: this name and direction are one of the shared master rows.
-	IsBuiltIn        bool       `json:"is_built_in"`
-	Name             string     `json:"name"`
-	Type             string     `json:"type"`
-	Icon             string     `json:"icon" example:"cup"`
-	Color            string     `json:"color" example:"c2"`
-	CreatedAt        time.Time  `json:"created_at"`
-	UpdatedAt        time.Time  `json:"updated_at"`
-	CreatedBy        *uuid.UUID `json:"created_by"`
-	UpdatedBy        *uuid.UUID `json:"updated_by"`
-	DeletedBy        *uuid.UUID `json:"deleted_by"`
+	ID        uuid.UUID  `json:"id"`
+	UserID    uuid.UUID  `json:"user_id"`
+	IsOwn     bool       `json:"is_own"`
+	IsBuiltIn bool       `json:"is_built_in"`
+	Name      string     `json:"name"`
+	Type      string     `json:"type"`
+	Icon      string     `json:"icon" example:"cup"`
+	Color     string     `json:"color" example:"c2"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+	CreatedBy *uuid.UUID `json:"created_by"`
+	UpdatedBy *uuid.UUID `json:"updated_by"`
+	DeletedBy *uuid.UUID `json:"deleted_by"`
 }
 
 func NewCategoryResponseDTO(c *domain.Category) CategoryResponseDTO {
 	return CategoryResponseDTO{
-		ID:               c.ID,
-		UserID:           c.UserID,
-		IsOwn:            c.IsOwn,
-		IsBuiltIn:        c.IsBuiltIn,
-		Name:             c.Name,
-		Type:             c.Type,
-		Icon:             c.Icon,
-		Color:            c.Color,
-		CreatedAt:        c.CreatedAt,
-		UpdatedAt:        c.UpdatedAt,
-		CreatedBy:        c.CreatedBy,
-		UpdatedBy:        c.UpdatedBy,
-		DeletedBy:        c.DeletedBy,
+		ID:        c.ID,
+		UserID:    c.UserID,
+		IsOwn:     c.IsOwn,
+		IsBuiltIn: c.IsBuiltIn,
+		Name:      c.Name,
+		Type:      c.Type,
+		Icon:      c.Icon,
+		Color:     c.Color,
+		CreatedAt: c.CreatedAt,
+		UpdatedAt: c.UpdatedAt,
+		CreatedBy: c.CreatedBy,
+		UpdatedBy: c.UpdatedBy,
+		DeletedBy: c.DeletedBy,
 	}
 }
 
@@ -89,9 +87,7 @@ type OptionCategoryTypeQueryDTO struct {
 	Type string `form:"type" binding:"omitempty,oneof=income expense" example:"expense"`
 }
 
-// OptionCategoryResponseDTO: an id here may name one of the caller's own
-// categories or a master row it has not taken up yet. The caller does not have
-// to tell them apart — it sends the id back as `category_id` either way.
+// OptionCategoryResponseDTO: an id may name the caller's own category or a master row.
 type OptionCategoryResponseDTO struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`

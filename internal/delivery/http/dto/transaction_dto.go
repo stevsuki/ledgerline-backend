@@ -177,7 +177,7 @@ type TransactionListResponseDTO struct {
 	Groups  []TransactionGroupResponseDTO `json:"groups"`
 }
 
-// NewTransactionGroupResponseDTOs folds rows into one group per day, keeping the order the query returned.
+// NewTransactionGroupResponseDTOs folds rows into one group per day, in query order.
 func NewTransactionGroupResponseDTOs(ts []domain.Transaction) []TransactionGroupResponseDTO {
 	groups := make([]TransactionGroupResponseDTO, 0, len(ts))
 	for i := range ts {
@@ -210,8 +210,7 @@ type CategorySpendResponseDTO struct {
 	Spent      int64     `json:"spent" example:"2700000"`
 }
 
-// TransactionPeriodResponseDTO: one period. `money_out` stays negative, as the rows are
-// stored, so `net` is the two added together rather than a subtraction the client invents.
+// TransactionPeriodResponseDTO: one period; money_out stays negative, so net is a sum.
 type TransactionPeriodResponseDTO struct {
 	MoneyIn        int64                      `json:"money_in" example:"18400000"`
 	MoneyOut       int64                      `json:"money_out" example:"-6958000"`
@@ -221,9 +220,7 @@ type TransactionPeriodResponseDTO struct {
 	ByCategory     []CategorySpendResponseDTO `json:"by_category"`
 }
 
-// TransactionOverviewResponseDTO: the dashboard's month beside the month it is compared
-// with. Figures only — every percentage the cards print is a ratio of two of these, and
-// the client decides how to say "no comparison" when the earlier month is empty.
+// TransactionOverviewResponseDTO: the dashboard's month beside its comparison month.
 type TransactionOverviewResponseDTO struct {
 	BaseCurrency string                       `json:"base_currency" example:"IDR"`
 	Month        string                       `json:"month" example:"2026-09"`
@@ -266,8 +263,7 @@ func NewTransactionOverviewResponseDTO(overview domain.TransactionOverview) Tran
 	}
 }
 
-// TransactionTrendPointResponseDTO: one bar. It carries the period it starts on rather than
-// a label, because naming a week or a month is wording, and wording belongs to the client.
+// TransactionTrendPointResponseDTO: one bar, carrying its start period rather than a label.
 type TransactionTrendPointResponseDTO struct {
 	Start    time.Time `json:"start" example:"2026-09-01T00:00:00+07:00"`
 	MoneyIn  int64     `json:"money_in" example:"4200000"`
@@ -299,8 +295,7 @@ func NewTransactionTrendResponseDTO(
 	}
 }
 
-// OverviewTransactionsQuery: which month to report. Absent means the month the server is in,
-// which is what the dashboard asks for.
+// OverviewTransactionsQuery: which month to report; absent means the current one.
 type OverviewTransactionsQuery struct {
 	Month string `form:"month" binding:"omitempty,len=7" example:"2026-09"`
 }

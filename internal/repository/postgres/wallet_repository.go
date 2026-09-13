@@ -14,12 +14,7 @@ import (
 // defaultWalletOrder: oldest first, id as the tie breaker.
 const defaultWalletOrder = "created_at ASC, id ASC"
 
-// currentBalance: the stated balance moved by every transaction filed since it was
-// stated. Strictly after balance_updated_at, because the figure its owner gave for
-// that moment already contains everything up to it; counting those rows again would
-// apply them twice. Income is stored positive and expense negative, so a plain SUM
-// is the whole arithmetic. A row in another currency is left out rather than added
-// at a rate nothing here knows.
+// currentBalance: the stated balance moved by every transaction filed strictly after it.
 const currentBalance = `wallets.balance + COALESCE((
 	SELECT SUM(t.amount)
 	FROM transactions t
@@ -86,9 +81,6 @@ func (r *walletRepository) Create(ctx context.Context, wallet *domain.Wallet) er
 	wallet.CreatedBy, wallet.UpdatedBy = actor, actor
 	wallet.BalanceUpdatedBy = actor
 
-	// The opening balance is stated now, and saying so is load-bearing: the running
-	// balance counts transactions after this moment, so a zero value here would pull
-	// in every row the wallet ever carried, backdated ones included.
 	if wallet.BalanceUpdatedAt.IsZero() {
 		wallet.BalanceUpdatedAt = time.Now()
 	}
@@ -176,12 +168,7 @@ type overviewRow struct {
 	Total          int64
 }
 
-// Overview sums in SQL rather than over a fetched list.
-//
-// It groups over the same per-wallet expression the cards are read with, reached
-// through a derived table so it is written once: a headline summing the stated
-// balance while the cards below it state the current one is a panel arguing with
-// itself, which is the whole reason `getWalletsScreen()` reads the two together.
+// Overview sums in SQL over the same per-wallet expression the cards are read with.
 func (r *walletRepository) Overview(ctx context.Context, userID uuid.UUID) (domain.WalletOverview, error) {
 	counted := dbFrom(ctx, r.db).
 		Model(&model.WalletModel{}).
@@ -194,9 +181,6 @@ func (r *walletRepository) Overview(ctx context.Context, userID uuid.UUID) (doma
 		Select(
 			"currency",
 			"COALESCE(SUM(current_balance) FILTER (WHERE current_balance >= 0), 0) AS held",
-			// A card in the red owes; anything else in the red is overdrawn, and the two
-			// are not the same statement. Before the balance followed its transactions
-			// only a card could go negative, so one sum could answer for both.
 			"COALESCE(SUM(current_balance) FILTER (WHERE current_balance < 0 AND type = 'card'), 0) AS owed",
 			"COUNT(*) FILTER (WHERE current_balance >= 0) AS held_count",
 			"COALESCE(SUM(current_balance) FILTER (WHERE current_balance < 0 AND type <> 'card'), 0) AS overdrawn",

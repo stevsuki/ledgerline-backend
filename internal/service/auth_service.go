@@ -81,10 +81,6 @@ func (s *authService) Register(ctx context.Context, input domain.RegisterInput) 
 		RoleID:       domain.RoleIDUser,
 	}
 
-	// No categories are written here any more. A new account is offered the
-	// master rows by the pickers themselves, and owns a category only once it
-	// files something against one — so registration creates a user and nothing
-	// else, and an account that never records anything costs no rows at all.
 	if err := s.userRepo.Create(ctx, user); err != nil {
 		return nil, err
 	}

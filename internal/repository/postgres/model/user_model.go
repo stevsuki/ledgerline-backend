@@ -1,4 +1,4 @@
-// Package model: GORM persistence models, one file per entity, plus their mappers to and from the domain.
+// Package model: GORM persistence models, one file per entity, plus their domain mappers.
 package model
 
 import (

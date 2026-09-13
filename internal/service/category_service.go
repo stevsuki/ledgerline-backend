@@ -67,9 +67,6 @@ func (s *CategoryService) Create(ctx context.Context, userID uuid.UUID, input do
 }
 
 func (s *CategoryService) Update(ctx context.Context, userID, id uuid.UUID, input domain.UpdateCategoryInput) (*domain.Category, error) {
-	// The list offers shared rows beside the account's own, so a pencil may land
-	// on one it does not hold yet. Adopting it here is the same swap the writers
-	// make: what gets edited is always a row of the account's.
 	category, err := s.categoryRepo.ResolveForUser(ctx, userID, id)
 	if err != nil {
 		return nil, err
@@ -139,12 +136,7 @@ func (s *CategoryService) Delete(ctx context.Context, userID, id uuid.UUID) erro
 	return s.categoryRepo.Delete(ctx, id, userID)
 }
 
-// OptionsCategoryType: what a picker may offer, narrowed to one direction when
-// the caller names one. An empty type means both.
-//
-// Which direction a screen wants is the screen's business, not this list's — a
-// budget asks for expense because that is all it can limit, and the rule that
-// makes it so is enforced where budgets are written, not here.
+// OptionsCategoryType: what a picker may offer, narrowed to one direction when named.
 func (s *CategoryService) OptionsCategoryType(
 	ctx context.Context, userID uuid.UUID, categoryType string,
 ) ([]domain.OptionCategoryType, error) {

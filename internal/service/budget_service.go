@@ -23,11 +23,7 @@ func NewBudgetService(
 	return &BudgetService{budgetRepo: budgetRepo, categoryRepo: categoryRepo}
 }
 
-// checkCategory: the category a budget will limit, as an id this account owns.
-//
-// The picker offers master rows beside the account's own, so the id may name
-// either — it comes back resolved, and the caller stores what it hands over
-// rather than what it was given.
+// checkCategory: the category a budget will limit, resolved to an id this account owns.
 func (s *BudgetService) checkCategory(
 	ctx context.Context, userID, categoryID uuid.UUID,
 ) (uuid.UUID, error) {
@@ -85,8 +81,6 @@ func (s *BudgetService) Create(ctx context.Context, userID uuid.UUID, input doma
 		return nil, err
 	}
 
-	// Resolved rather than checked: the id may have named a master row, and the
-	// budget has to point at the category that came of it.
 	categoryID, err := s.checkCategory(ctx, userID, input.CategoryID)
 	if err != nil {
 		return nil, err
@@ -202,7 +196,6 @@ func budgetOverviewOf(all []domain.BudgetUsage, now time.Time) domain.BudgetOver
 		overview.TotalSpent += usage.Spent
 	}
 
-	// What is left answers against the plan plus the carry; allocated stays the plan alone.
 	spendable := overview.TotalAllocated + overview.TotalCarriedOver
 	overview.TotalLeft = spendable - overview.TotalSpent
 	overview.UsedPercent = domain.PercentOf(overview.TotalSpent, spendable)

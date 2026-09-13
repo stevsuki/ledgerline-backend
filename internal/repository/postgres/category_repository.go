@@ -24,8 +24,7 @@ func NewCategoryRepository(db *gorm.DB) domain.CategoryRepository {
 	return &categoryRepository{db: db}
 }
 
-// categoryListRow: the two sources scanned as one. A master row has no id of
-// the account's, so the columns it cannot fill come back NULL.
+// categoryListRow: the two sources scanned as one; a master row leaves its own columns NULL.
 type categoryListRow struct {
 	ID        uuid.UUID
 	UserID    *uuid.UUID
@@ -158,10 +157,6 @@ func (r *categoryRepository) Update(ctx context.Context, category *domain.Catego
 }
 
 // adoptMaster: the account's own copy of a master row, created if it has none.
-//
-// ON CONFLICT covers the account that already holds a category of that name and
-// direction — made by hand, or adopted a moment ago from another tab. Nothing is
-// overwritten in that case; the row it already has is the answer.
 const adoptMaster = `
 	INSERT INTO categories (id, user_id, name, type, icon, color, created_by, updated_by)
 	SELECT gen_random_uuid(), ?, m.name, m.type, m.icon, m.color, ?, ?
@@ -197,16 +192,12 @@ func (r *categoryRepository) ResolveForUser(
 		return nil, categoryErrors.wrap("adopt master category", err)
 	}
 
-	// Read back by what the row was made from rather than by a returned id: the
-	// insert states nothing when it conflicts, and that is exactly the case where
-	// the account already had one.
 	var row model.CategoryModel
 	err = dbFrom(ctx, r.db).Model(&model.CategoryModel{}).
 		Joins("JOIN master_categories m ON m.type = categories.type AND LOWER(m.name) = LOWER(categories.name)").
 		Where("m.id = ? AND categories.user_id = ?", id, userID).
 		First(&row).Error
 	if err != nil {
-		// Neither the account's own nor a master row: the id names no category.
 		return nil, categoryErrors.wrap("resolve category", err)
 	}
 	return row.ToDomain(), nil

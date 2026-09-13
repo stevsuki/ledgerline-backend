@@ -54,9 +54,7 @@ func (t TransactionType) Valid() bool {
 	return false
 }
 
-// MatchesCategoryType: the two vocabularies are the same words, and a row has to
-// agree with the category it is filed under — an expense under an income category
-// would count as spending on one screen and as earning on the next.
+// MatchesCategoryType: a row has to agree with the category it is filed under.
 func (t TransactionType) MatchesCategoryType(categoryType string) bool {
 	return string(t) == categoryType
 }
@@ -70,8 +68,7 @@ type TransactionCurrencyTotal struct {
 	Entries  int
 }
 
-// TransactionSummary: totals over everything the filter matches, not just the page.
-// The headline is base currency only; anything else stays unconverted in ByCurrency.
+// TransactionSummary: totals over everything the filter matches, base currency headline only.
 type TransactionSummary struct {
 	BaseCurrency Currency
 	MoneyIn      int64
@@ -81,16 +78,13 @@ type TransactionSummary struct {
 	ByCurrency   []TransactionCurrencyTotal
 }
 
-// TimeRange: half-open, [From, To). Half-open is the only shape where a month boundary
-// falls in exactly one period, so two periods compared against each other cannot both
-// claim the same midnight.
+// TimeRange: half-open, [From, To), so a boundary falls in exactly one period.
 type TimeRange struct {
 	From time.Time
 	To   time.Time
 }
 
-// CategorySpend: one category's expense inside a period, stated positive even though the
-// rows behind it are negative, because a spend is read as a magnitude.
+// CategorySpend: one category's expense inside a period, stated positive.
 type CategorySpend struct {
 	CategoryID uuid.UUID
 	Name       string
@@ -99,8 +93,7 @@ type CategorySpend struct {
 	Spent      int64
 }
 
-// TransactionPeriodTotals: one period, base currency only. MoneyOut stays negative, as the
-// rows are stored, which is what lets Net be a plain sum of the two.
+// TransactionPeriodTotals: one period, base currency only; MoneyOut stays negative.
 type TransactionPeriodTotals struct {
 	MoneyIn        int64
 	MoneyOut       int64
@@ -110,16 +103,12 @@ type TransactionPeriodTotals struct {
 	ByCategory     []CategorySpend
 }
 
-// TransactionOverview: the month the dashboard reports, beside the month its deltas are
-// measured against. Both are counted the same way, because every delta divides one by the
-// other and two different definitions would make the percentage meaningless.
+// TransactionOverview: the reported month beside the month its deltas are measured against.
 type TransactionOverview struct {
 	BaseCurrency Currency
 	PeriodStart  time.Time
 	Current      TransactionPeriodTotals
 	Previous     TransactionPeriodTotals
-	// OtherEntries: rows outside the base currency in the reported month, counted but never
-	// added in, the same way the wallets and budgets totals leave them out.
 	OtherEntries int
 }
 
@@ -150,8 +139,7 @@ func (r TransactionTrendRange) Valid() bool {
 // TrendMonths: how many months the monthly range covers, the current one included.
 const TrendMonths = 6
 
-// TransactionTrendPoint: one bar. Empty periods are points too — a chart that simply omits
-// a quiet week draws a shape the months did not have.
+// TransactionTrendPoint: one bar; empty periods are points too.
 type TransactionTrendPoint struct {
 	Start    time.Time
 	MoneyIn  int64
@@ -167,8 +155,6 @@ type TransactionRepository interface {
 	Create(ctx context.Context, transaction *Transaction) error
 	Update(ctx context.Context, transaction *Transaction) error
 	Delete(ctx context.Context, id, userID uuid.UUID) error
-	// ExistsByCategory: whether anything is filed under a category, which is what
-	// stops that category from being removed out from under it.
 	ExistsByCategory(ctx context.Context, categoryID, userID uuid.UUID) (bool, error)
 }
 
@@ -197,8 +183,6 @@ type UpdateTransactionInput struct {
 type TransactionService interface {
 	List(ctx context.Context, userID uuid.UUID, filter TransactionFilter) ([]Transaction, int, error)
 	Summary(ctx context.Context, userID uuid.UUID, filter TransactionFilter) (TransactionSummary, error)
-	// Overview: the given month and the one before it. month is any instant inside the month
-	// wanted; the service takes the calendar from there.
 	Overview(ctx context.Context, userID uuid.UUID, month time.Time) (TransactionOverview, error)
 	Trend(ctx context.Context, userID uuid.UUID, trendRange TransactionTrendRange, now time.Time) ([]TransactionTrendPoint, error)
 	GetByID(ctx context.Context, id, userID uuid.UUID) (*Transaction, error)

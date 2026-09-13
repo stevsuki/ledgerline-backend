@@ -47,9 +47,6 @@ func TestCategoryService_Delete(t *testing.T) {
 			wantCode: domain.CodeCategoryInUse,
 		},
 		{
-			// The half that used to slip through: nothing refused it, and the
-			// dashboard then counted its spending in the total while leaving it
-			// out of the ring.
 			name: "refuses a category transactions are still filed under",
 			setupMock: func(r repos) {
 				r.budgets.On("ExistsByCategory", mock.Anything, categoryID, userID).Return(false, nil)

@@ -44,8 +44,7 @@ func PercentOf(part, whole int64) int {
 	return int(math.Round(float64(part) / float64(whole) * FullPercent))
 }
 
-// EffectiveLimit: what this cycle may spend. A rollover budget carries last cycle's leftover,
-// so the carry widens what is left to spend without touching the limit that was planned.
+// EffectiveLimit: what this cycle may spend, including a rollover carry.
 func (b Budget) EffectiveLimit() int64 { return b.MonthlyLimit + b.CarriedOver }
 
 // Remaining: negative once the limit is passed.

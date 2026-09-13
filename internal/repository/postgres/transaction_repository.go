@@ -229,8 +229,7 @@ func (r *transactionRepository) Delete(ctx context.Context, id, userID uuid.UUID
 
 /* ── the dashboard's two reads ─────────────────────────────────────────── */
 
-// overviewTotalsRow: one currency with both periods beside each other, so the base currency
-// and the ones the totals cannot absorb come back from the same grouped read.
+// overviewTotalsRow: one currency with both periods beside each other.
 type overviewTotalsRow struct {
 	Currency               string
 	MoneyIn                int64
@@ -244,8 +243,7 @@ type overviewTotalsRow struct {
 	PreviousExpenseEntries int
 }
 
-// overviewCategoryRow: one category, both periods. The donut needs this month; the "driven
-// by" note needs the difference, which is a comparison rather than a total.
+// overviewCategoryRow: one category, both periods, for the donut and the "driven by" note.
 type overviewCategoryRow struct {
 	CategoryID    uuid.UUID
 	Name          string
@@ -255,8 +253,7 @@ type overviewCategoryRow struct {
 	PreviousSpent int64
 }
 
-// The windows are passed in rather than derived here, so every figure the dashboard prints
-// is measured against one set of month boundaries instead of each query keeping its own.
+// The windows are passed in, so every dashboard figure uses one set of month boundaries.
 const overviewTotalsSelect = `transactions.currency,
 	COALESCE(SUM(transactions.amount) FILTER (WHERE transactions.type = 'income'  AND transactions.occurred_at >= ? AND transactions.occurred_at < ?), 0) AS money_in,
 	COALESCE(SUM(transactions.amount) FILTER (WHERE transactions.type = 'expense' AND transactions.occurred_at >= ? AND transactions.occurred_at < ?), 0) AS money_out,
@@ -342,8 +339,7 @@ func (r *transactionRepository) Overview(
 	return overview, nil
 }
 
-// categorySpend: one period's rows, spenders only. A category that spent nothing is not a
-// slice of the month, and a zero slice would still take a legend entry and a colour.
+// categorySpend: one period's rows, spenders only.
 func categorySpend(rows []overviewCategoryRow, spentOf func(overviewCategoryRow) int64) []domain.CategorySpend {
 	spend := make([]domain.CategorySpend, 0, len(rows))
 	for _, row := range rows {
@@ -369,8 +365,7 @@ type trendRow struct {
 	MoneyOut    int64
 }
 
-// Trend: one row per period that has rows in it. Filling the gaps is the service's job,
-// because only it knows which periods the window was supposed to cover.
+// Trend: one row per period that has rows; filling the gaps is the service's job.
 func (r *transactionRepository) Trend(
 	ctx context.Context, userID uuid.UUID, window domain.TimeRange, bucket domain.TransactionTrendBucket,
 ) ([]domain.TransactionTrendPoint, error) {

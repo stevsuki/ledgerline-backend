@@ -72,9 +72,6 @@ func (t *TransactionService) Create(ctx context.Context, userID uuid.UUID, input
 		return nil, err
 	}
 
-	// The picker offers master rows beside the account's own, so the id may name
-	// either; adopting turns it into a category this account owns before anything
-	// points at it.
 	category, err := t.categoryRepo.ResolveForUser(ctx, userID, input.CategoryID)
 	if err != nil {
 		if errors.Is(err, domain.ErrNotFound) {
@@ -119,8 +116,6 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 		return nil, err
 	}
 
-	// Kept for the pairing checks at the end, which only read once every field the
-	// patch touches has been applied.
 	var wallet *domain.Wallet
 	var category *domain.Category
 
@@ -145,7 +140,6 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 			}
 			return nil, err
 		}
-		// The resolved id, never the one that came in: that one may name a master row.
 		transaction.CategoryID = category.ID
 	}
 
@@ -192,9 +186,6 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 		return nil, err
 	}
 
-	// A currency change has to answer to the wallet it sits in even when the wallet
-	// itself was not touched, and the same the other way around — so whichever side
-	// the patch left unread is read now.
 	if input.Currency != nil && wallet == nil {
 		if wallet, err = t.walletRepo.GetByID(ctx, transaction.WalletID, userID); err != nil {
 			return nil, err
@@ -211,8 +202,6 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 			return nil, err
 		}
 	}
-	// Set on the way out too, so a patch that named a master row stores the
-	// category it became.
 	if category != nil {
 		transaction.CategoryID = category.ID
 	}
@@ -232,9 +221,7 @@ func (t *TransactionService) Delete(ctx context.Context, id, userID uuid.UUID) e
 	return t.transactionRepo.Delete(ctx, id, userID)
 }
 
-// checkWalletCurrency: a wallet holds one currency, and its balance sums only the rows
-// kept in that currency — a row in another one would be money the wallet can never
-// account for, so it is refused instead of filed where nothing will count it.
+// checkWalletCurrency: a wallet holds one currency, and its balance sums only those rows.
 func checkWalletCurrency(currency domain.Currency, wallet *domain.Wallet) error {
 	if currency == wallet.Currency {
 		return nil
@@ -244,9 +231,7 @@ func checkWalletCurrency(currency domain.Currency, wallet *domain.Wallet) error 
 			wallet.Name, wallet.Currency, currency)).WithField("currency")
 }
 
-// checkCategoryType: income belongs under an income category and expense under an
-// expense one, or the same row would read as earning on one screen and spending on
-// the next — and a budget would measure against a category that cannot be spent on.
+// checkCategoryType: income belongs under an income category and expense under an expense one.
 func checkCategoryType(transactionType domain.TransactionType, category *domain.Category) error {
 	if transactionType.MatchesCategoryType(category.Type) {
 		return nil
@@ -278,8 +263,7 @@ func monthStart(at time.Time) time.Time {
 	return time.Date(at.Year(), at.Month(), 1, 0, 0, 0, 0, at.Location())
 }
 
-// Overview: the month asked for and the month before it, each as a half-open range so the
-// midnight between them belongs to exactly one of the two.
+// Overview: the month asked for and the month before it, each as a half-open range.
 func (t *TransactionService) Overview(
 	ctx context.Context, userID uuid.UUID, month time.Time,
 ) (domain.TransactionOverview, error) {
@@ -316,8 +300,7 @@ func (t *TransactionService) Trend(
 	return fillTrend(buckets, bucket, points), nil
 }
 
-// weekStart: the Monday of the week an instant falls in, matching what Postgres
-// `date_trunc('week', …)` answers, so a row cannot land outside the bucket it was counted in.
+// weekStart: the Monday of the week an instant falls in, matching Postgres date_trunc('week').
 func weekStart(at time.Time) time.Time {
 	daysSinceMonday := (int(at.Weekday()) + 6) % 7
 	day := time.Date(at.Year(), at.Month(), at.Day(), 0, 0, 0, 0, at.Location())
@@ -332,10 +315,6 @@ func bucketEnd(start time.Time, bucket domain.TransactionTrendBucket) time.Time 
 }
 
 // trendBuckets: every period the chart is meant to draw, earliest first.
-//
-// Weekly is the weeks of the month being reported, because that is the range the label
-// states; monthly is the last TrendMonths months, this one included. An empty period is
-// still a bar — a chart that omits a quiet week draws a shape the month did not have.
 func trendBuckets(
 	trendRange domain.TransactionTrendRange, now time.Time,
 ) ([]time.Time, domain.TransactionTrendBucket) {
@@ -357,11 +336,7 @@ func trendBuckets(
 	return months, domain.TrendBucketMonth
 }
 
-// fillTrend: the database's rows laid onto the periods that were asked for.
-//
-// A row is matched by the period it falls inside rather than by an equal timestamp: the
-// bucket start comes back from Postgres in the session's zone, and comparing instants for
-// equality across zones is how a bar silently loses its figures.
+// fillTrend: the database's rows laid onto the periods asked for, matched by period.
 func fillTrend(
 	buckets []time.Time, bucket domain.TransactionTrendBucket, points []domain.TransactionTrendPoint,
 ) []domain.TransactionTrendPoint {

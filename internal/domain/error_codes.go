@@ -62,17 +62,15 @@ const (
 	CodeBudgetInvalidThreshold = "BUDGET_INVALID_THRESHOLD"
 	CodeBudgetInvalidFixed     = "BUDGET_INVALID_FIXED"
 
-	CodeTransactionNotFound        = "TRANSACTION_NOT_FOUND"
-	CodeTransactionInvalid         = "TRANSACTION_INVALID"
-	CodeTransactionInvalidCategory = "TRANSACTION_INVALID_CATEGORY"
-	CodeTransactionInvalidWallet   = "TRANSACTION_INVALID_WALLET"
-	CodeTransactionInvalidData     = "TRANSACTION_INVALID_DATA"
-	CodeTransactionInvalidType     = "TRANSACTION_INVALID_TYPE"
-	CodeTransactionInvalidAmount   = "TRANSACTION_INVALID_AMOUNT"
-	CodeTransactionInvalidCurrency = "TRANSACTION_INVALID_CURRENCY"
-	// A row in a currency its wallet does not hold; the wallet balance could not absorb it.
+	CodeTransactionNotFound         = "TRANSACTION_NOT_FOUND"
+	CodeTransactionInvalid          = "TRANSACTION_INVALID"
+	CodeTransactionInvalidCategory  = "TRANSACTION_INVALID_CATEGORY"
+	CodeTransactionInvalidWallet    = "TRANSACTION_INVALID_WALLET"
+	CodeTransactionInvalidData      = "TRANSACTION_INVALID_DATA"
+	CodeTransactionInvalidType      = "TRANSACTION_INVALID_TYPE"
+	CodeTransactionInvalidAmount    = "TRANSACTION_INVALID_AMOUNT"
+	CodeTransactionInvalidCurrency  = "TRANSACTION_INVALID_CURRENCY"
 	CodeTransactionCurrencyMismatch = "TRANSACTION_CURRENCY_MISMATCH"
-	// An expense filed under an income category, or the other way around.
 	CodeTransactionCategoryMismatch = "TRANSACTION_CATEGORY_MISMATCH"
 
 	CodeMenuNotFound = "MENU_NOT_FOUND"
