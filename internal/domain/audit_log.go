@@ -114,10 +114,10 @@ type AuditLogFilter struct {
 
 type AuditLogRepository interface {
 	List(ctx context.Context, filter AuditLogFilter) ([]AuditLog, int, error)
+	ListRows(ctx context.Context, filter AuditLogFilter) ([]AuditLog, error)
 	Create(ctx context.Context, log *AuditLog) error
 	Overview(ctx context.Context, window time.Duration) (AuditLogOverview, error)
 	DistinctActors(ctx context.Context) ([]AuditActorOption, error)
-	ListRows(ctx context.Context, filter AuditLogFilter) ([]AuditLog, error)
 }
 
 type AuditLogService interface {

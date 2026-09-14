@@ -28,10 +28,6 @@ func (t *TransactionService) List(ctx context.Context, userID uuid.UUID, filter 
 	return t.transactionRepo.List(ctx, userID, filter)
 }
 
-func (t *TransactionService) Summary(ctx context.Context, userID uuid.UUID, filter domain.TransactionFilter) (domain.TransactionSummary, error) {
-	return t.transactionRepo.Summary(ctx, userID, filter)
-}
-
 func (t *TransactionService) GetByID(ctx context.Context, id, userID uuid.UUID) (*domain.Transaction, error) {
 	return t.transactionRepo.GetByID(ctx, id, userID)
 }
@@ -219,6 +215,10 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 
 func (t *TransactionService) Delete(ctx context.Context, id, userID uuid.UUID) error {
 	return t.transactionRepo.Delete(ctx, id, userID)
+}
+
+func (t *TransactionService) Summary(ctx context.Context, userID uuid.UUID, filter domain.TransactionFilter) (domain.TransactionSummary, error) {
+	return t.transactionRepo.Summary(ctx, userID, filter)
 }
 
 // checkWalletCurrency: a wallet holds one currency, and its balance sums only those rows.

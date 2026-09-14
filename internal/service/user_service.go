@@ -21,6 +21,17 @@ func NewUserService(userRepo domain.UserRepository, hasher domain.PasswordHasher
 	return &userService{userRepo: userRepo, hasher: hasher, auditLogRepo: auditLogRepo}
 }
 
+func (s *userService) List(ctx context.Context, filter domain.UserFilter) ([]domain.User, int, error) {
+	if filter.Limit <= 0 {
+		filter.Limit = 10
+	}
+	return s.userRepo.List(ctx, filter)
+}
+
+func (s *userService) GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+	return s.userRepo.GetByID(ctx, id)
+}
+
 func (s *userService) Create(ctx context.Context, input domain.CreateUserInput) (*domain.User, error) {
 	email := strings.ToLower(strings.TrimSpace(input.Email))
 
@@ -57,17 +68,6 @@ func (s *userService) Create(ctx context.Context, input domain.CreateUserInput) 
 		return nil, err
 	}
 	return user, nil
-}
-
-func (s *userService) GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
-	return s.userRepo.GetByID(ctx, id)
-}
-
-func (s *userService) List(ctx context.Context, filter domain.UserFilter) ([]domain.User, int, error) {
-	if filter.Limit <= 0 {
-		filter.Limit = 10
-	}
-	return s.userRepo.List(ctx, filter)
 }
 
 func (s *userService) Update(ctx context.Context, id uuid.UUID, input domain.UpdateUserInput) (*domain.User, error) {

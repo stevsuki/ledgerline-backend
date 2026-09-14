@@ -148,14 +148,14 @@ type TransactionTrendPoint struct {
 
 type TransactionRepository interface {
 	List(ctx context.Context, userID uuid.UUID, filter TransactionFilter) ([]Transaction, int, error)
-	Summary(ctx context.Context, userID uuid.UUID, filter TransactionFilter) (TransactionSummary, error)
-	Overview(ctx context.Context, userID uuid.UUID, current, previous TimeRange) (TransactionOverview, error)
-	Trend(ctx context.Context, userID uuid.UUID, window TimeRange, bucket TransactionTrendBucket) ([]TransactionTrendPoint, error)
 	GetByID(ctx context.Context, id, userID uuid.UUID) (*Transaction, error)
 	Create(ctx context.Context, transaction *Transaction) error
 	Update(ctx context.Context, transaction *Transaction) error
 	Delete(ctx context.Context, id, userID uuid.UUID) error
+	Summary(ctx context.Context, userID uuid.UUID, filter TransactionFilter) (TransactionSummary, error)
 	ExistsByCategory(ctx context.Context, categoryID, userID uuid.UUID) (bool, error)
+	Overview(ctx context.Context, userID uuid.UUID, current, previous TimeRange) (TransactionOverview, error)
+	Trend(ctx context.Context, userID uuid.UUID, window TimeRange, bucket TransactionTrendBucket) ([]TransactionTrendPoint, error)
 }
 
 type CreateTransactionInput struct {
@@ -182,11 +182,11 @@ type UpdateTransactionInput struct {
 
 type TransactionService interface {
 	List(ctx context.Context, userID uuid.UUID, filter TransactionFilter) ([]Transaction, int, error)
-	Summary(ctx context.Context, userID uuid.UUID, filter TransactionFilter) (TransactionSummary, error)
-	Overview(ctx context.Context, userID uuid.UUID, month time.Time) (TransactionOverview, error)
-	Trend(ctx context.Context, userID uuid.UUID, trendRange TransactionTrendRange, now time.Time) ([]TransactionTrendPoint, error)
 	GetByID(ctx context.Context, id, userID uuid.UUID) (*Transaction, error)
 	Create(ctx context.Context, userID uuid.UUID, input CreateTransactionInput) (*Transaction, error)
 	Update(ctx context.Context, id, userID uuid.UUID, input UpdateTransactionInput) (*Transaction, error)
 	Delete(ctx context.Context, id, userID uuid.UUID) error
+	Summary(ctx context.Context, userID uuid.UUID, filter TransactionFilter) (TransactionSummary, error)
+	Overview(ctx context.Context, userID uuid.UUID, month time.Time) (TransactionOverview, error)
+	Trend(ctx context.Context, userID uuid.UUID, trendRange TransactionTrendRange, now time.Time) ([]TransactionTrendPoint, error)
 }

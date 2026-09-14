@@ -156,6 +156,24 @@ func (r *categoryRepository) Update(ctx context.Context, category *domain.Catego
 	return nil
 }
 
+// Delete: soft delete stamped with who did it, in one statement.
+func (r *categoryRepository) Delete(ctx context.Context, id, userID uuid.UUID) error {
+	result := dbFrom(ctx, r.db).
+		Model(&model.CategoryModel{}).
+		Where("id = ? AND user_id = ?", id, userID).
+		UpdateColumns(map[string]any{
+			"deleted_at": time.Now(),
+			"deleted_by": domain.ActorFrom(ctx),
+		})
+	if result.Error != nil {
+		return categoryErrors.wrap("delete category", result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return categoryErrors.wrap("delete category", gorm.ErrRecordNotFound)
+	}
+	return nil
+}
+
 // adoptMaster: the account's own copy of a master row, created if it has none.
 const adoptMaster = `
 	INSERT INTO categories (id, user_id, name, type, icon, color, created_by, updated_by)
@@ -201,24 +219,6 @@ func (r *categoryRepository) ResolveForUser(
 		return nil, categoryErrors.wrap("resolve category", err)
 	}
 	return row.ToDomain(), nil
-}
-
-// Delete: soft delete stamped with who did it, in one statement.
-func (r *categoryRepository) Delete(ctx context.Context, id, userID uuid.UUID) error {
-	result := dbFrom(ctx, r.db).
-		Model(&model.CategoryModel{}).
-		Where("id = ? AND user_id = ?", id, userID).
-		UpdateColumns(map[string]any{
-			"deleted_at": time.Now(),
-			"deleted_by": domain.ActorFrom(ctx),
-		})
-	if result.Error != nil {
-		return categoryErrors.wrap("delete category", result.Error)
-	}
-	if result.RowsAffected == 0 {
-		return categoryErrors.wrap("delete category", gorm.ErrRecordNotFound)
-	}
-	return nil
 }
 
 /*

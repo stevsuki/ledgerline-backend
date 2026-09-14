@@ -56,23 +56,6 @@ func (r *auditLogRepository) filtered(ctx context.Context, filter domain.AuditLo
 	return query
 }
 
-// ListRows is List without the count, for walking a large result in batches.
-func (r *auditLogRepository) ListRows(ctx context.Context, filter domain.AuditLogFilter) ([]domain.AuditLog, error) {
-	orderBy := filter.OrderBy
-	if orderBy == "" {
-		orderBy = defaultAuditLogOrder
-	}
-
-	var logs []model.AuditLogModel
-	err := r.filtered(ctx, filter).
-		Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).
-		Find(&logs).Error
-	if err != nil {
-		return nil, auditLogErrors.wrap("list audit logs", err)
-	}
-	return model.AuditLogsToDomain(logs), nil
-}
-
 func (r *auditLogRepository) List(ctx context.Context, filter domain.AuditLogFilter) ([]domain.AuditLog, int, error) {
 	query := r.filtered(ctx, filter)
 
@@ -95,6 +78,23 @@ func (r *auditLogRepository) List(ctx context.Context, filter domain.AuditLogFil
 		return nil, 0, auditLogErrors.wrap("list audit logs", err)
 	}
 	return model.AuditLogsToDomain(logs), int(total), nil
+}
+
+// ListRows is List without the count, for walking a large result in batches.
+func (r *auditLogRepository) ListRows(ctx context.Context, filter domain.AuditLogFilter) ([]domain.AuditLog, error) {
+	orderBy := filter.OrderBy
+	if orderBy == "" {
+		orderBy = defaultAuditLogOrder
+	}
+
+	var logs []model.AuditLogModel
+	err := r.filtered(ctx, filter).
+		Order(orderBy).Limit(filter.Limit).Offset(filter.Offset).
+		Find(&logs).Error
+	if err != nil {
+		return nil, auditLogErrors.wrap("list audit logs", err)
+	}
+	return model.AuditLogsToDomain(logs), nil
 }
 
 func (r *auditLogRepository) Create(ctx context.Context, log *domain.AuditLog) error {

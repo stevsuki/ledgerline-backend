@@ -23,34 +23,8 @@ func (s *WalletService) List(ctx context.Context, userID uuid.UUID) ([]domain.Wa
 	return s.walletRepo.List(ctx, userID)
 }
 
-func (s *WalletService) Overview(ctx context.Context, userID uuid.UUID) (domain.WalletOverview, error) {
-	return s.walletRepo.Overview(ctx, userID)
-}
-
-func (s *WalletService) Options(ctx context.Context, userID uuid.UUID) ([]domain.WalletOption, error) {
-	return s.walletRepo.Options(ctx, userID)
-}
-
-// checkCardFields: the card-only fields must match the type stored with them.
-func checkCardFields(walletType domain.WalletType, limit *int64, dueDay *int) error {
-	if walletType != domain.WalletTypeCard {
-		if limit != nil || dueDay != nil {
-			return domain.InvalidInput(domain.CodeWalletInvalidCard,
-				"credit_limit and due_day apply to a card wallet only").WithField("type")
-		}
-		return nil
-	}
-
-	if limit != nil && *limit < 0 {
-		return domain.InvalidInput(domain.CodeWalletInvalidCard,
-			"credit_limit must not be negative").WithField("credit_limit")
-	}
-	if dueDay != nil && (*dueDay < domain.MinDueDay || *dueDay > domain.MaxDueDay) {
-		return domain.InvalidInput(domain.CodeWalletInvalidCard,
-			fmt.Sprintf("due_day must be between %d and %d", domain.MinDueDay, domain.MaxDueDay)).
-			WithField("due_day")
-	}
-	return nil
+func (s *WalletService) GetByID(ctx context.Context, userID, id uuid.UUID) (*domain.Wallet, error) {
+	return s.walletRepo.GetByID(ctx, id, userID)
 }
 
 func (s *WalletService) Create(ctx context.Context, userID uuid.UUID, input domain.CreateWalletInput) (*domain.Wallet, error) {
@@ -94,10 +68,6 @@ func (s *WalletService) Create(ctx context.Context, userID uuid.UUID, input doma
 		return nil, err
 	}
 	return wallet, nil
-}
-
-func (s *WalletService) GetByID(ctx context.Context, userID, id uuid.UUID) (*domain.Wallet, error) {
-	return s.walletRepo.GetByID(ctx, id, userID)
 }
 
 func (s *WalletService) Update(ctx context.Context, userID, id uuid.UUID, input domain.UpdateWalletInput) (*domain.Wallet, error) {
@@ -169,4 +139,33 @@ func (s *WalletService) Update(ctx context.Context, userID, id uuid.UUID, input 
 
 func (s *WalletService) Delete(ctx context.Context, userID, id uuid.UUID) error {
 	return s.walletRepo.Delete(ctx, id, userID)
+}
+func (s *WalletService) Overview(ctx context.Context, userID uuid.UUID) (domain.WalletOverview, error) {
+	return s.walletRepo.Overview(ctx, userID)
+}
+
+func (s *WalletService) Options(ctx context.Context, userID uuid.UUID) ([]domain.WalletOption, error) {
+	return s.walletRepo.Options(ctx, userID)
+}
+
+// checkCardFields: the card-only fields must match the type stored with them.
+func checkCardFields(walletType domain.WalletType, limit *int64, dueDay *int) error {
+	if walletType != domain.WalletTypeCard {
+		if limit != nil || dueDay != nil {
+			return domain.InvalidInput(domain.CodeWalletInvalidCard,
+				"credit_limit and due_day apply to a card wallet only").WithField("type")
+		}
+		return nil
+	}
+
+	if limit != nil && *limit < 0 {
+		return domain.InvalidInput(domain.CodeWalletInvalidCard,
+			"credit_limit must not be negative").WithField("credit_limit")
+	}
+	if dueDay != nil && (*dueDay < domain.MinDueDay || *dueDay > domain.MaxDueDay) {
+		return domain.InvalidInput(domain.CodeWalletInvalidCard,
+			fmt.Sprintf("due_day must be between %d and %d", domain.MinDueDay, domain.MaxDueDay)).
+			WithField("due_day")
+	}
+	return nil
 }

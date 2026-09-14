@@ -32,44 +32,6 @@ func (r *userRepository) withRole(ctx context.Context) *gorm.DB {
 		Joins("LEFT JOIN roles ON roles.id = users.role_id")
 }
 
-func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
-	actor := domain.ActorFrom(ctx)
-	user.CreatedBy, user.UpdatedBy = actor, actor
-
-	row := model.UserFromDomain(user)
-	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
-		return userErrors.wrap("create user", err)
-	}
-
-	user.Status = domain.Status(row.Status)
-	user.PasswordChangedAt = row.PasswordChangedAt
-	user.CreatedAt = row.CreatedAt
-	user.UpdatedAt = row.UpdatedAt
-
-	var created model.UserModel
-	if err := r.withRole(ctx).Where("users.id = ?", user.ID).Take(&created).Error; err == nil {
-		user.RoleName = created.RoleName
-	}
-	return nil
-}
-
-func (r *userRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
-	var row model.UserModel
-	if err := r.withRole(ctx).Where("users.id = ?", id).Take(&row).Error; err != nil {
-		return nil, userErrors.wrap("get user", err)
-	}
-	return row.ToDomain(), nil
-}
-
-func (r *userRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
-	var row model.UserModel
-	err := r.withRole(ctx).Where("users.email = ?", strings.ToLower(email)).Take(&row).Error
-	if err != nil {
-		return nil, userErrors.wrap("get user", err)
-	}
-	return row.ToDomain(), nil
-}
-
 func (r *userRepository) List(ctx context.Context, filter domain.UserFilter) ([]domain.User, int, error) {
 	query := dbFrom(ctx, r.db).Model(&model.UserModel{})
 
@@ -100,6 +62,35 @@ func (r *userRepository) List(ctx context.Context, filter domain.UserFilter) ([]
 		return nil, 0, userErrors.wrap("list users", err)
 	}
 	return model.UsersToDomain(rows), int(total), nil
+}
+
+func (r *userRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+	var row model.UserModel
+	if err := r.withRole(ctx).Where("users.id = ?", id).Take(&row).Error; err != nil {
+		return nil, userErrors.wrap("get user", err)
+	}
+	return row.ToDomain(), nil
+}
+
+func (r *userRepository) Create(ctx context.Context, user *domain.User) error {
+	actor := domain.ActorFrom(ctx)
+	user.CreatedBy, user.UpdatedBy = actor, actor
+
+	row := model.UserFromDomain(user)
+	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
+		return userErrors.wrap("create user", err)
+	}
+
+	user.Status = domain.Status(row.Status)
+	user.PasswordChangedAt = row.PasswordChangedAt
+	user.CreatedAt = row.CreatedAt
+	user.UpdatedAt = row.UpdatedAt
+
+	var created model.UserModel
+	if err := r.withRole(ctx).Where("users.id = ?", user.ID).Take(&created).Error; err == nil {
+		user.RoleName = created.RoleName
+	}
+	return nil
 }
 
 func (r *userRepository) Update(ctx context.Context, user *domain.User) error {
@@ -143,6 +134,15 @@ func (r *userRepository) Delete(ctx context.Context, id uuid.UUID) error {
 		return userErrors.wrap("delete user", gorm.ErrRecordNotFound)
 	}
 	return nil
+}
+
+func (r *userRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
+	var row model.UserModel
+	err := r.withRole(ctx).Where("users.email = ?", strings.ToLower(email)).Take(&row).Error
+	if err != nil {
+		return nil, userErrors.wrap("get user", err)
+	}
+	return row.ToDomain(), nil
 }
 
 func (r *userRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {

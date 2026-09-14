@@ -111,8 +111,8 @@ type UpdateWalletInput struct {
 
 type WalletService interface {
 	List(ctx context.Context, userID uuid.UUID) ([]Wallet, error)
-	Create(ctx context.Context, userID uuid.UUID, input CreateWalletInput) (*Wallet, error)
 	GetByID(ctx context.Context, userID, id uuid.UUID) (*Wallet, error)
+	Create(ctx context.Context, userID uuid.UUID, input CreateWalletInput) (*Wallet, error)
 	Update(ctx context.Context, userID, id uuid.UUID, input UpdateWalletInput) (*Wallet, error)
 	Delete(ctx context.Context, userID, id uuid.UUID) error
 	Overview(ctx context.Context, userID uuid.UUID) (WalletOverview, error)

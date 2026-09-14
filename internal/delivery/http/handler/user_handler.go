@@ -19,33 +19,6 @@ func NewUserHandler(userService domain.UserService) *UserHandler {
 	return &UserHandler{userService: userService}
 }
 
-// Create godoc
-//
-//	@Summary	Create a new user (admin)
-//	@Tags		users
-//	@Accept		json
-//	@Produce	json
-//	@Security	BearerAuth
-//	@Param		request	body		dto.CreateUserRequestDTO	true	"User data"
-//	@Success	201		{object}	response.Success{data=dto.UserResponseDTO}
-//	@Failure	403		{object}	response.Error
-//	@Failure	409		{object}	response.Error
-//	@Router		/users [post]
-func (h *UserHandler) Create(c *gin.Context) {
-	var req dto.CreateUserRequestDTO
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindError(c, err)
-		return
-	}
-
-	user, err := h.userService.Create(c.Request.Context(), req.ToInput())
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-	response.OK(c, http.StatusCreated, "user created", dto.NewUserResponseDTO(user))
-}
-
 // List godoc
 //
 //	@Summary	List users
@@ -114,6 +87,33 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 		return
 	}
 	response.OK(c, http.StatusOK, "success", dto.NewUserResponseDTO(user))
+}
+
+// Create godoc
+//
+//	@Summary	Create a new user (admin)
+//	@Tags		users
+//	@Accept		json
+//	@Produce	json
+//	@Security	BearerAuth
+//	@Param		request	body		dto.CreateUserRequestDTO	true	"User data"
+//	@Success	201		{object}	response.Success{data=dto.UserResponseDTO}
+//	@Failure	403		{object}	response.Error
+//	@Failure	409		{object}	response.Error
+//	@Router		/users [post]
+func (h *UserHandler) Create(c *gin.Context) {
+	var req dto.CreateUserRequestDTO
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleBindError(c, err)
+		return
+	}
+
+	user, err := h.userService.Create(c.Request.Context(), req.ToInput())
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	response.OK(c, http.StatusCreated, "user created", dto.NewUserResponseDTO(user))
 }
 
 // Update godoc

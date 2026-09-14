@@ -55,58 +55,6 @@ func (r *transactionRepository) filtered(ctx context.Context, userID uuid.UUID, 
 	return query
 }
 
-// transactionSummaryRow: one currency's totals, split by type so income and expense stay separate.
-type transactionSummaryRow struct {
-	Currency string
-	MoneyIn  int64
-	MoneyOut int64
-	Net      int64
-	Entries  int
-}
-
-// Summary sums in SQL over the whole filtered set, ignoring limit and offset.
-func (r *transactionRepository) Summary(ctx context.Context, userID uuid.UUID, filter domain.TransactionFilter) (domain.TransactionSummary, error) {
-	var rows []transactionSummaryRow
-	err := r.filtered(ctx, userID, filter).
-		Select(
-			"transactions.currency",
-			"COALESCE(SUM(transactions.amount) FILTER (WHERE transactions.type = 'income'), 0) AS money_in",
-			"COALESCE(SUM(transactions.amount) FILTER (WHERE transactions.type = 'expense'), 0) AS money_out",
-			"COALESCE(SUM(transactions.amount), 0) AS net",
-			"COUNT(*) AS entries",
-		).
-		Group("transactions.currency").
-		Order("transactions.currency ASC").
-		Scan(&rows).Error
-	if err != nil {
-		return domain.TransactionSummary{}, transactionErrors.wrap("summarize transactions", err)
-	}
-
-	summary := domain.TransactionSummary{
-		BaseCurrency: domain.BaseCurrency,
-		ByCurrency:   []domain.TransactionCurrencyTotal{},
-	}
-	for _, row := range rows {
-		currency := domain.Currency(row.Currency)
-		if currency == domain.BaseCurrency {
-			summary.MoneyIn = row.MoneyIn
-			summary.MoneyOut = row.MoneyOut
-			summary.Net = row.Net
-			continue
-		}
-
-		summary.OtherEntries += row.Entries
-		summary.ByCurrency = append(summary.ByCurrency, domain.TransactionCurrencyTotal{
-			Currency: currency,
-			MoneyIn:  row.MoneyIn,
-			MoneyOut: row.MoneyOut,
-			Net:      row.Net,
-			Entries:  row.Entries,
-		})
-	}
-	return summary, nil
-}
-
 func (r *transactionRepository) List(ctx context.Context, userID uuid.UUID, filter domain.TransactionFilter) ([]domain.Transaction, int, error) {
 	query := r.filtered(ctx, userID, filter)
 
@@ -133,20 +81,6 @@ func (r *transactionRepository) List(ctx context.Context, userID uuid.UUID, filt
 		return nil, 0, transactionErrors.wrap("list transactions", err)
 	}
 	return model.TransactionsToDomain(rows), int(total), nil
-}
-
-func (r *transactionRepository) ExistsByCategory(
-	ctx context.Context, categoryID, userID uuid.UUID,
-) (bool, error) {
-	var count int64
-	err := dbFrom(ctx, r.db).
-		Model(&model.TransactionModel{}).
-		Where("category_id = ? AND user_id = ?", categoryID, userID).
-		Count(&count).Error
-	if err != nil {
-		return false, transactionErrors.wrap("transaction exists by category", err)
-	}
-	return count > 0, nil
 }
 
 // GetByID always includes user_id so other users cannot reach this data.
@@ -225,6 +159,72 @@ func (r *transactionRepository) Delete(ctx context.Context, id, userID uuid.UUID
 		return transactionErrors.wrap("delete transaction", gorm.ErrRecordNotFound)
 	}
 	return nil
+}
+
+// transactionSummaryRow: one currency's totals, split by type so income and expense stay separate.
+type transactionSummaryRow struct {
+	Currency string
+	MoneyIn  int64
+	MoneyOut int64
+	Net      int64
+	Entries  int
+}
+
+// Summary sums in SQL over the whole filtered set, ignoring limit and offset.
+func (r *transactionRepository) Summary(ctx context.Context, userID uuid.UUID, filter domain.TransactionFilter) (domain.TransactionSummary, error) {
+	var rows []transactionSummaryRow
+	err := r.filtered(ctx, userID, filter).
+		Select(
+			"transactions.currency",
+			"COALESCE(SUM(transactions.amount) FILTER (WHERE transactions.type = 'income'), 0) AS money_in",
+			"COALESCE(SUM(transactions.amount) FILTER (WHERE transactions.type = 'expense'), 0) AS money_out",
+			"COALESCE(SUM(transactions.amount), 0) AS net",
+			"COUNT(*) AS entries",
+		).
+		Group("transactions.currency").
+		Order("transactions.currency ASC").
+		Scan(&rows).Error
+	if err != nil {
+		return domain.TransactionSummary{}, transactionErrors.wrap("summarize transactions", err)
+	}
+
+	summary := domain.TransactionSummary{
+		BaseCurrency: domain.BaseCurrency,
+		ByCurrency:   []domain.TransactionCurrencyTotal{},
+	}
+	for _, row := range rows {
+		currency := domain.Currency(row.Currency)
+		if currency == domain.BaseCurrency {
+			summary.MoneyIn = row.MoneyIn
+			summary.MoneyOut = row.MoneyOut
+			summary.Net = row.Net
+			continue
+		}
+
+		summary.OtherEntries += row.Entries
+		summary.ByCurrency = append(summary.ByCurrency, domain.TransactionCurrencyTotal{
+			Currency: currency,
+			MoneyIn:  row.MoneyIn,
+			MoneyOut: row.MoneyOut,
+			Net:      row.Net,
+			Entries:  row.Entries,
+		})
+	}
+	return summary, nil
+}
+
+func (r *transactionRepository) ExistsByCategory(
+	ctx context.Context, categoryID, userID uuid.UUID,
+) (bool, error) {
+	var count int64
+	err := dbFrom(ctx, r.db).
+		Model(&model.TransactionModel{}).
+		Where("category_id = ? AND user_id = ?", categoryID, userID).
+		Count(&count).Error
+	if err != nil {
+		return false, transactionErrors.wrap("transaction exists by category", err)
+	}
+	return count > 0, nil
 }
 
 /* ── the dashboard's two reads ─────────────────────────────────────────── */

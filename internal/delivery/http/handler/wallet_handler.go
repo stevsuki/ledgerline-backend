@@ -43,6 +43,37 @@ func (h *WalletHandler) List(c *gin.Context) {
 	response.OK(c, http.StatusOK, "wallet list", dto.NewWalletResponseDTOs(wallets))
 }
 
+// GetByID godoc
+//
+//	@Summary	Wallet detail
+//	@Tags		wallets
+//	@Produce	json
+//	@Security	BearerAuth
+//	@Param		id	path		string	true	"Wallet ID (UUID)"
+//	@Success	200	{object}	response.Success{data=dto.WalletResponseDTO}
+//	@Failure	404	{object}	response.Error
+//	@Router		/wallets/{id} [get]
+func (h *WalletHandler) GetByID(c *gin.Context) {
+	userID, ok := middleware.GetUserID(c)
+	if !ok {
+		handleError(c, domain.ErrAuthRequired)
+		return
+	}
+
+	id, err := parseUUIDParam(c, "id")
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	wallet, err := h.walletService.GetByID(c.Request.Context(), userID, id)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	response.OK(c, http.StatusOK, "wallet found", dto.NewWalletResponseDTO(wallet))
+}
+
 // Create godoc
 //
 //	@Summary	Create a wallet
@@ -75,37 +106,6 @@ func (h *WalletHandler) Create(c *gin.Context) {
 		return
 	}
 	response.OK(c, http.StatusCreated, "wallet created", dto.NewWalletResponseDTO(wallet))
-}
-
-// GetByID godoc
-//
-//	@Summary	Wallet detail
-//	@Tags		wallets
-//	@Produce	json
-//	@Security	BearerAuth
-//	@Param		id	path		string	true	"Wallet ID (UUID)"
-//	@Success	200	{object}	response.Success{data=dto.WalletResponseDTO}
-//	@Failure	404	{object}	response.Error
-//	@Router		/wallets/{id} [get]
-func (h *WalletHandler) GetByID(c *gin.Context) {
-	userID, ok := middleware.GetUserID(c)
-	if !ok {
-		handleError(c, domain.ErrAuthRequired)
-		return
-	}
-
-	id, err := parseUUIDParam(c, "id")
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-
-	wallet, err := h.walletService.GetByID(c.Request.Context(), userID, id)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-	response.OK(c, http.StatusOK, "wallet found", dto.NewWalletResponseDTO(wallet))
 }
 
 // Update godoc

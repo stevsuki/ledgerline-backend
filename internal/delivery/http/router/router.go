@@ -93,39 +93,49 @@ func registerAuthRoutes(rg *gin.RouterGroup, deps Dependencies) {
 func registerUserRoutes(rg *gin.RouterGroup, deps Dependencies) {
 	users := rg.Group("/users", middleware.Authenticate(deps.TokenManager))
 	{
+		// collection
 		users.GET("", deps.User.List)
-		users.GET("/:id", deps.User.GetByID)
 		users.POST("", deps.User.Create)
+
+		// item
+		users.GET("/:id", deps.User.GetByID)
 		users.PATCH("/:id", deps.User.Update)
 		users.DELETE("/:id", deps.User.Delete)
-
 	}
 }
 
 func registerCategoryRoutes(rg *gin.RouterGroup, deps Dependencies) {
 	categories := rg.Group("/categories", middleware.Authenticate(deps.TokenManager))
 	{
+		// static sub-paths first, so none of them can be read as an :id
+		categories.GET("/options", deps.Category.OptionsCategoryType)
+
+		// collection
 		categories.GET("", deps.Category.List)
-		categories.GET("/:id", deps.Category.GetByID)
 		categories.POST("", deps.Category.Create)
+
+		// item
+		categories.GET("/:id", deps.Category.GetByID)
 		categories.PATCH("/:id", deps.Category.Update)
 		categories.DELETE("/:id", deps.Category.Delete)
-		categories.GET("/options", deps.Category.OptionsCategoryType)
 	}
 }
 
 func registerRoleRoutes(rg *gin.RouterGroup, deps Dependencies) {
 	roles := rg.Group("/roles", middleware.Authenticate(deps.TokenManager))
 	{
+		// collection
 		roles.GET("", deps.Role.List)
-		roles.GET("/:id", deps.Role.GetByID)
 		roles.POST("", deps.Role.Create)
+
+		// item
+		roles.GET("/:id", deps.Role.GetByID)
 		roles.PATCH("/:id", deps.Role.Update)
 		roles.DELETE("/:id", deps.Role.Delete)
-
 	}
 }
 
+// registerAuditLogRoutes: read-only, and no /:id, so there is nothing to shadow.
 func registerAuditLogRoutes(rg *gin.RouterGroup, deps Dependencies) {
 	auditLogs := rg.Group("/audit-logs", middleware.Authenticate(deps.TokenManager))
 	{
@@ -139,36 +149,51 @@ func registerAuditLogRoutes(rg *gin.RouterGroup, deps Dependencies) {
 func registerWalletRoutes(rg *gin.RouterGroup, deps Dependencies) {
 	wallets := rg.Group("/wallets", middleware.Authenticate(deps.TokenManager))
 	{
-		wallets.GET("", deps.Wallet.List)
-		wallets.GET("/:id", deps.Wallet.GetByID)
-		wallets.POST("", deps.Wallet.Create)
-		wallets.PATCH("/:id", deps.Wallet.Update)
-		wallets.DELETE("/:id", deps.Wallet.Delete)
+		// static sub-paths first, so none of them can be read as an :id
 		wallets.GET("/overview", deps.Wallet.Overview)
 		wallets.GET("/options", deps.Wallet.Options)
+
+		// collection
+		wallets.GET("", deps.Wallet.List)
+		wallets.POST("", deps.Wallet.Create)
+
+		// item
+		wallets.GET("/:id", deps.Wallet.GetByID)
+		wallets.PATCH("/:id", deps.Wallet.Update)
+		wallets.DELETE("/:id", deps.Wallet.Delete)
 	}
 }
 
 func registerBudgetRoutes(rg *gin.RouterGroup, deps Dependencies) {
 	budgets := rg.Group("/budgets", middleware.Authenticate(deps.TokenManager))
 	{
+		// static sub-paths first, so none of them can be read as an :id
+		budgets.GET("/overview", deps.Budget.Overview)
+
+		// collection
 		budgets.GET("", deps.Budget.List)
-		budgets.GET("/:id", deps.Budget.GetByID)
 		budgets.POST("", deps.Budget.Create)
+
+		// item
+		budgets.GET("/:id", deps.Budget.GetByID)
 		budgets.PATCH("/:id", deps.Budget.Update)
 		budgets.DELETE("/:id", deps.Budget.Delete)
-		budgets.GET("/overview", deps.Budget.Overview)
 	}
 }
 
 func registerTransactionRoutes(rg *gin.RouterGroup, deps Dependencies) {
 	transactions := rg.Group("/transactions", middleware.Authenticate(deps.TokenManager))
 	{
-		transactions.GET("", deps.Transaction.List)
+		// static sub-paths first, so none of them can be read as an :id
 		transactions.GET("/overview", deps.Transaction.Overview)
 		transactions.GET("/trend", deps.Transaction.Trend)
-		transactions.GET("/:id", deps.Transaction.GetByID)
+
+		// collection
+		transactions.GET("", deps.Transaction.List)
 		transactions.POST("", deps.Transaction.Create)
+
+		// item
+		transactions.GET("/:id", deps.Transaction.GetByID)
 		transactions.PATCH("/:id", deps.Transaction.Update)
 		transactions.DELETE("/:id", deps.Transaction.Delete)
 	}

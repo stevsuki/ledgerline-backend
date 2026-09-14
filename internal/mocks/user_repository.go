@@ -17,8 +17,12 @@ type UserRepository struct {
 
 var _ domain.UserRepository = (*UserRepository)(nil)
 
-func (m *UserRepository) Create(ctx context.Context, user *domain.User) error {
-	return m.Called(ctx, user).Error(0)
+func (m *UserRepository) List(ctx context.Context, filter domain.UserFilter) ([]domain.User, int, error) {
+	args := m.Called(ctx, filter)
+	if args.Get(0) == nil {
+		return nil, args.Int(1), args.Error(2)
+	}
+	return args.Get(0).([]domain.User), args.Int(1), args.Error(2)
 }
 
 func (m *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.User, error) {
@@ -29,6 +33,18 @@ func (m *UserRepository) GetByID(ctx context.Context, id uuid.UUID) (*domain.Use
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
+func (m *UserRepository) Create(ctx context.Context, user *domain.User) error {
+	return m.Called(ctx, user).Error(0)
+}
+
+func (m *UserRepository) Update(ctx context.Context, user *domain.User) error {
+	return m.Called(ctx, user).Error(0)
+}
+
+func (m *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
+	return m.Called(ctx, id).Error(0)
+}
+
 func (m *UserRepository) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
 	args := m.Called(ctx, email)
 	if args.Get(0) == nil {
@@ -37,39 +53,13 @@ func (m *UserRepository) GetByEmail(ctx context.Context, email string) (*domain.
 	return args.Get(0).(*domain.User), args.Error(1)
 }
 
-func (m *UserRepository) List(ctx context.Context, filter domain.UserFilter) ([]domain.User, int, error) {
-	args := m.Called(ctx, filter)
-	if args.Get(0) == nil {
-		return nil, args.Int(1), args.Error(2)
-	}
-	return args.Get(0).([]domain.User), args.Int(1), args.Error(2)
-}
-
-func (m *UserRepository) Update(ctx context.Context, user *domain.User) error {
-	return m.Called(ctx, user).Error(0)
-}
-
-func (m *UserRepository) UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error {
-	return m.Called(ctx, userID, passwordHash).Error(0)
-}
-
-func (m *UserRepository) Delete(ctx context.Context, id uuid.UUID) error {
-	return m.Called(ctx, id).Error(0)
-}
-
 func (m *UserRepository) ExistsByEmail(ctx context.Context, email string) (bool, error) {
 	args := m.Called(ctx, email)
 	return args.Bool(0), args.Error(1)
 }
 
-// expects reports whether a test set an expectation for this method.
-func expects(m *mock.Mock, method string) bool {
-	for _, call := range m.ExpectedCalls {
-		if call.Method == method {
-			return true
-		}
-	}
-	return false
+func (m *UserRepository) UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error {
+	return m.Called(ctx, userID, passwordHash).Error(0)
 }
 
 // The three lockout calls below stay silent unless a test asks for them.
@@ -93,4 +83,14 @@ func (m *UserRepository) ClearFailedLogins(ctx context.Context, userID uuid.UUID
 		return nil
 	}
 	return m.Called(ctx, userID).Error(0)
+}
+
+// expects reports whether a test set an expectation for this method.
+func expects(m *mock.Mock, method string) bool {
+	for _, call := range m.ExpectedCalls {
+		if call.Method == method {
+			return true
+		}
+	}
+	return false
 }

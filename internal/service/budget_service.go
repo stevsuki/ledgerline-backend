@@ -23,53 +23,12 @@ func NewBudgetService(
 	return &BudgetService{budgetRepo: budgetRepo, categoryRepo: categoryRepo}
 }
 
-// checkCategory: the category a budget will limit, resolved to an id this account owns.
-func (s *BudgetService) checkCategory(
-	ctx context.Context, userID, categoryID uuid.UUID,
-) (uuid.UUID, error) {
-	category, err := s.categoryRepo.ResolveForUser(ctx, userID, categoryID)
-	if err != nil {
-		if errors.Is(err, domain.ErrNotFound) {
-			return uuid.Nil, domain.InvalidInput(domain.CodeBudgetInvalidCategory,
-				"category_id does not refer to one of your categories").WithField("category_id")
-		}
-		return uuid.Nil, err
-	}
-
-	if category.Type != domain.CategoryTypeExpense {
-		return uuid.Nil, domain.InvalidInput(domain.CodeBudgetInvalidCategory,
-			"a budget can only limit an expense category").WithField("category_id")
-	}
-	return category.ID, nil
-}
-
 func (s *BudgetService) List(ctx context.Context, userID uuid.UUID) ([]domain.Budget, error) {
 	return s.budgetRepo.List(ctx, userID)
 }
 
 func (s *BudgetService) GetByID(ctx context.Context, userID, id uuid.UUID) (*domain.Budget, error) {
 	return s.budgetRepo.GetByID(ctx, id, userID)
-}
-
-func checkBudgetLimits(monthlyLimit int64, threshold int, isFixed bool) error {
-	if monthlyLimit <= 0 {
-		return domain.InvalidInput(domain.CodeBudgetInvalidLimit,
-			"monthly_limit must be greater than 0").WithField("monthly_limit")
-	}
-
-	if threshold < domain.MinAlertThresholdPercent || threshold > domain.MaxAlertThresholdPercent {
-		return domain.InvalidInput(domain.CodeBudgetInvalidThreshold,
-			fmt.Sprintf("alert_threshold_percent must be between %d and %d",
-				domain.MinAlertThresholdPercent, domain.MaxAlertThresholdPercent)).
-			WithField("alert_threshold_percent")
-	}
-
-	if isFixed && threshold != domain.MaxAlertThresholdPercent {
-		return domain.InvalidInput(domain.CodeBudgetInvalidFixed,
-			fmt.Sprintf("a fixed budget alerts at %d percent only", domain.MaxAlertThresholdPercent)).
-			WithField("alert_threshold_percent")
-	}
-	return nil
 }
 
 func (s *BudgetService) Create(ctx context.Context, userID uuid.UUID, input domain.CreateBudgetInput) (*domain.Budget, error) {
@@ -157,6 +116,10 @@ func (s *BudgetService) Update(ctx context.Context, userID, id uuid.UUID, input 
 	return s.budgetRepo.GetByID(ctx, budget.ID, userID)
 }
 
+func (s *BudgetService) Delete(ctx context.Context, userID, id uuid.UUID) error {
+	return s.budgetRepo.Delete(ctx, id, userID)
+}
+
 func (s *BudgetService) Overview(ctx context.Context, userID uuid.UUID) (domain.BudgetOverview, error) {
 	usages, err := s.budgetRepo.Usage(ctx, userID)
 	if err != nil {
@@ -165,8 +128,45 @@ func (s *BudgetService) Overview(ctx context.Context, userID uuid.UUID) (domain.
 	return budgetOverviewOf(usages, time.Now()), nil
 }
 
-func (s *BudgetService) Delete(ctx context.Context, userID, id uuid.UUID) error {
-	return s.budgetRepo.Delete(ctx, id, userID)
+// checkCategory: the category a budget will limit, resolved to an id this account owns.
+func (s *BudgetService) checkCategory(
+	ctx context.Context, userID, categoryID uuid.UUID,
+) (uuid.UUID, error) {
+	category, err := s.categoryRepo.ResolveForUser(ctx, userID, categoryID)
+	if err != nil {
+		if errors.Is(err, domain.ErrNotFound) {
+			return uuid.Nil, domain.InvalidInput(domain.CodeBudgetInvalidCategory,
+				"category_id does not refer to one of your categories").WithField("category_id")
+		}
+		return uuid.Nil, err
+	}
+
+	if category.Type != domain.CategoryTypeExpense {
+		return uuid.Nil, domain.InvalidInput(domain.CodeBudgetInvalidCategory,
+			"a budget can only limit an expense category").WithField("category_id")
+	}
+	return category.ID, nil
+}
+
+func checkBudgetLimits(monthlyLimit int64, threshold int, isFixed bool) error {
+	if monthlyLimit <= 0 {
+		return domain.InvalidInput(domain.CodeBudgetInvalidLimit,
+			"monthly_limit must be greater than 0").WithField("monthly_limit")
+	}
+
+	if threshold < domain.MinAlertThresholdPercent || threshold > domain.MaxAlertThresholdPercent {
+		return domain.InvalidInput(domain.CodeBudgetInvalidThreshold,
+			fmt.Sprintf("alert_threshold_percent must be between %d and %d",
+				domain.MinAlertThresholdPercent, domain.MaxAlertThresholdPercent)).
+			WithField("alert_threshold_percent")
+	}
+
+	if isFixed && threshold != domain.MaxAlertThresholdPercent {
+		return domain.InvalidInput(domain.CodeBudgetInvalidFixed,
+			fmt.Sprintf("a fixed budget alerts at %d percent only", domain.MaxAlertThresholdPercent)).
+			WithField("alert_threshold_percent")
+	}
+	return nil
 }
 
 func budgetOverviewOf(all []domain.BudgetUsage, now time.Time) domain.BudgetOverview {

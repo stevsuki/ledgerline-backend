@@ -60,17 +60,17 @@ type UserFilter struct {
 
 // UserRepository: port to storage.
 type UserRepository interface {
-	Create(ctx context.Context, user *User) error
-	GetByID(ctx context.Context, id uuid.UUID) (*User, error)
-	GetByEmail(ctx context.Context, email string) (*User, error)
 	List(ctx context.Context, filter UserFilter) ([]User, int, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*User, error)
+	Create(ctx context.Context, user *User) error
 	Update(ctx context.Context, user *User) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	GetByEmail(ctx context.Context, email string) (*User, error)
+	ExistsByEmail(ctx context.Context, email string) (bool, error)
 	UpdatePassword(ctx context.Context, userID uuid.UUID, passwordHash string) error
 	IncrementFailedLogin(ctx context.Context, userID uuid.UUID) (int, error)
 	LockUntil(ctx context.Context, userID uuid.UUID, until time.Time) error
 	ClearFailedLogins(ctx context.Context, userID uuid.UUID) error
-	Delete(ctx context.Context, id uuid.UUID) error
-	ExistsByEmail(ctx context.Context, email string) (bool, error)
 }
 
 // Input models owned by the service, separate from the HTTP DTOs.
@@ -88,9 +88,9 @@ type UpdateUserInput struct {
 
 // UserService: the business logic contract for users.
 type UserService interface {
-	Create(ctx context.Context, input CreateUserInput) (*User, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*User, error)
 	List(ctx context.Context, filter UserFilter) ([]User, int, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*User, error)
+	Create(ctx context.Context, input CreateUserInput) (*User, error)
 	Update(ctx context.Context, id uuid.UUID, input UpdateUserInput) (*User, error)
 	Delete(ctx context.Context, id uuid.UUID) error
 }
