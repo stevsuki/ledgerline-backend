@@ -11,10 +11,12 @@ import (
 	"github.com/stevensuki/ledgerline-backend/pkg/response"
 )
 
+// AuthHandler handles HTTP requests related to authentication.
 type AuthHandler struct {
 	authService domain.AuthService
 }
 
+// NewAuthHandler creates a new AuthHandler instance.
 func NewAuthHandler(authService domain.AuthService) *AuthHandler {
 	return &AuthHandler{authService: authService}
 }
