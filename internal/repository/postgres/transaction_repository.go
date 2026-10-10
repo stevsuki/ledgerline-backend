@@ -29,7 +29,8 @@ func (r *transactionRepository) filtered(ctx context.Context, userID uuid.UUID, 
 
 	if filter.Search != "" {
 		keyword := "%" + strings.ToLower(filter.Search) + "%"
-		query = query.Where("LOWER(transactions.name) LIKE ?", keyword)
+		query = query.Where("LOWER(transactions.name) LIKE ?", keyword).
+			Or("LOWER(transactions.note) LIKE ?", keyword)
 	}
 
 	if filter.CategoryID != nil {
