@@ -31,6 +31,7 @@ type Dependencies struct {
 	Wallet       *handler.WalletHandler
 	Budget       *handler.BudgetHandler
 	Transaction  *handler.TransactionHandler
+	Recurring    *handler.RecurringHandler
 }
 
 // New assembles the Gin engine with global middleware and all routes.
@@ -74,6 +75,7 @@ func New(deps Dependencies) *gin.Engine {
 	registerWalletRoutes(v1, deps)
 	registerBudgetRoutes(v1, deps)
 	registerTransactionRoutes(v1, deps)
+	registerRecurringRoutes(v1, deps)
 
 	return engine
 }
@@ -204,5 +206,23 @@ func registerTransactionRoutes(rg *gin.RouterGroup, deps Dependencies) {
 		transactions.GET("/:id", deps.Transaction.GetByID)
 		transactions.PATCH("/:id", deps.Transaction.Update)
 		transactions.DELETE("/:id", deps.Transaction.Delete)
+	}
+}
+
+func registerRecurringRoutes(rg *gin.RouterGroup, deps Dependencies) {
+	recurring := rg.Group("/recurring", middleware.Authenticate(deps.TokenManager), middleware.RequireMenuAccess(deps.Menus, domain.MenuRecurring))
+	{
+		// static sub-paths first, so none of them can be read as an :id
+		recurring.GET("/overview", deps.Recurring.Overview)
+
+		// collection
+		recurring.GET("", deps.Recurring.List)
+		recurring.POST("", deps.Recurring.Create)
+
+		// item
+		recurring.GET("/:id", deps.Recurring.GetByID)
+		recurring.PATCH("/:id", deps.Recurring.Update)
+		recurring.DELETE("/:id", deps.Recurring.Delete)
+		recurring.POST("/:id/confirm", deps.Recurring.Confirm)
 	}
 }

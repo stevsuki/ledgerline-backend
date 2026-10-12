@@ -204,7 +204,7 @@ func (r *walletRepository) Overview(ctx context.Context, userID uuid.UUID) (doma
 func (r *walletRepository) Options(ctx context.Context, userID uuid.UUID) ([]domain.WalletOption, error) {
 	var rows []domain.WalletOption
 	err := dbFrom(ctx, r.db).Model(&model.WalletModel{}).
-		Select("id", "name").
+		Select("id", "name", "currency").
 		Where("user_id = ?", userID).
 		Order(defaultWalletOrder).
 		Find(&rows).Error

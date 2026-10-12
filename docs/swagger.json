@@ -1075,14 +1075,13 @@
                 "parameters": [
                     {
                         "enum": [
-                            "filter",
-                            "budget"
+                            "income",
+                            "expense"
                         ],
                         "type": "string",
-                        "description": "Screen asking: filter takes every type, budget only expense",
-                        "name": "slug",
-                        "in": "query",
-                        "required": true
+                        "description": "Narrow to one direction; omit for both",
+                        "name": "type",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1327,6 +1326,414 @@
                     },
                     "503": {
                         "description": "Service Unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/recurring": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recurring"
+                ],
+                "summary": "List recurring items owned by the logged-in user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recurring"
+                ],
+                "summary": "Create a recurring item",
+                "parameters": [
+                    {
+                        "description": "Recurring data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRecurringRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/recurring/overview": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recurring"
+                ],
+                "summary": "Recurring summary: monthly commitment and what is due soon",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The caller's today (YYYY-MM-DD)",
+                        "name": "date",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringOverviewResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/recurring/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recurring"
+                ],
+                "summary": "Recurring item detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Recurring ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recurring"
+                ],
+                "summary": "Delete a recurring item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Recurring ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recurring"
+                ],
+                "summary": "Update a recurring item",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Recurring ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRecurringRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/recurring/{id}/confirm": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "recurring"
+                ],
+                "summary": "Record this cycle's payment and move the item to its next due date",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Recurring ID (UUID)",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Overrides for this payment",
+                        "name": "request",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ConfirmRecurringRequestDTO"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error"
                         }
@@ -3042,8 +3449,11 @@
                 "id": {
                     "type": "string"
                 },
-                "master_category_id": {
-                    "type": "string"
+                "is_built_in": {
+                    "type": "boolean"
+                },
+                "is_own": {
+                    "type": "boolean"
                 },
                 "name": {
                     "type": "string"
@@ -3084,6 +3494,24 @@
                 "spent": {
                     "type": "integer",
                     "example": 2700000
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ConfirmRecurringRequestDTO": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "example": 425000
+                },
+                "note": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "September bill"
+                },
+                "occurred_at": {
+                    "type": "string",
+                    "example": "2026-09-01T09:00:00+07:00"
                 }
             }
         },
@@ -3135,14 +3563,53 @@
                     "maxLength": 50,
                     "example": "cup"
                 },
-                "master_category_id": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRecurringRequestDTO": {
+            "type": "object",
+            "required": [
+                "amount",
+                "category_id",
+                "frequency",
+                "name",
+                "next_due_date",
+                "wallet_id"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "example": 425000
+                },
+                "category_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "frequency": {
+                    "type": "string",
+                    "example": "monthly"
+                },
+                "is_paused": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Biznet Home"
+                },
+                "next_due_date": {
+                    "type": "string",
+                    "example": "2026-09-01"
+                },
+                "wallet_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
                 }
             }
         },
@@ -3519,6 +3986,10 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "example": "expense"
                 }
             }
         },
@@ -3533,6 +4004,100 @@
                 },
                 "user": {
                     "$ref": "#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringOverviewResponseDTO": {
+            "type": "object",
+            "properties": {
+                "active_count": {
+                    "type": "integer",
+                    "example": 6
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "IDR"
+                },
+                "due_soon_count": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "due_soon_days": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "due_soon_total": {
+                    "type": "integer",
+                    "example": 5105000
+                },
+                "monthly_commitment": {
+                    "type": "integer",
+                    "example": 5705000
+                },
+                "overdue_count": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "paused_count": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "uncounted_items": {
+                    "type": "integer",
+                    "example": 0
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "example": 425000
+                },
+                "category_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "category_name": {
+                    "type": "string",
+                    "example": "Utilities"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "IDR"
+                },
+                "frequency": {
+                    "type": "string",
+                    "example": "monthly"
+                },
+                "icon": {
+                    "type": "string",
+                    "example": "wifi"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "is_paused": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Biznet Home"
+                },
+                "next_due_date": {
+                    "type": "string",
+                    "example": "2026-09-01"
+                },
+                "wallet_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "wallet_name": {
+                    "type": "string",
+                    "example": "BCA Payroll"
                 }
             }
         },
@@ -3972,14 +4537,45 @@
                     "maxLength": 50,
                     "example": "cup"
                 },
-                "master_category_id": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 },
                 "type": {
                     "type": "string"
+                }
+            }
+        },
+        "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRecurringRequestDTO": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer",
+                    "example": 425000
+                },
+                "category_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
+                },
+                "frequency": {
+                    "type": "string",
+                    "example": "monthly"
+                },
+                "is_paused": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Biznet Home"
+                },
+                "next_due_date": {
+                    "type": "string",
+                    "example": "2026-09-01"
+                },
+                "wallet_id": {
+                    "type": "string",
+                    "example": "b0000000-0000-0000-0000-000000000002"
                 }
             }
         },
@@ -4178,6 +4774,10 @@
         "github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletOptionResponseDTO": {
             "type": "object",
             "properties": {
+                "currency": {
+                    "type": "string",
+                    "example": "IDR"
+                },
                 "id": {
                     "type": "string"
                 },
@@ -4204,7 +4804,6 @@
                     }
                 },
                 "overdrawn": {
-                    "description": "Overdrawn: what the wallets that are not cards are short, stated apart from\ncard debt because being short on a bank account is not the same as owing on a card.",
                     "type": "integer",
                     "example": 0
                 },
@@ -4226,7 +4825,6 @@
             "type": "object",
             "properties": {
                 "balance": {
-                    "description": "Balance: the figure its owner stated, as of BalanceUpdatedAt.",
                     "type": "integer",
                     "example": 41200000
                 },
@@ -4251,7 +4849,6 @@
                     "example": "IDR"
                 },
                 "current_balance": {
-                    "description": "CurrentBalance: that figure moved by every transaction filed since. This is\nthe one to print; `balance` is the statement it was measured from.",
                     "type": "integer",
                     "example": 40870000
                 },
