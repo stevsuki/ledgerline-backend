@@ -67,6 +67,8 @@ func (s *userService) Create(ctx context.Context, input domain.CreateUserInput) 
 	if err := s.userRepo.Create(ctx, user); err != nil {
 		return nil, err
 	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleUsers, domain.AuditVerbCreate, membershipOf(user, ""))
 	return user, nil
 }
 
@@ -76,6 +78,7 @@ func (s *userService) Update(ctx context.Context, id uuid.UUID, input domain.Upd
 		return nil, err
 	}
 
+	reason := ""
 	if input.FullName != nil {
 		name := strings.TrimSpace(*input.FullName)
 		if name == "" {
@@ -87,15 +90,40 @@ func (s *userService) Update(ctx context.Context, id uuid.UUID, input domain.Upd
 		if *input.RoleID == uuid.Nil {
 			return nil, domain.InvalidInput(domain.CodeUserInvalidRole, "role_id must not be empty").WithField("role_id")
 		}
+		if user.RoleID != *input.RoleID {
+			reason = "role changed"
+		}
 		user.RoleID = *input.RoleID
 	}
 
 	if err := s.userRepo.Update(ctx, user); err != nil {
 		return nil, err
 	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleUsers, domain.AuditVerbUpdate, membershipOf(user, reason))
 	return user, nil
 }
 
 func (s *userService) Delete(ctx context.Context, id uuid.UUID) error {
-	return s.userRepo.Delete(ctx, id)
+	user, err := s.userRepo.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if err := s.userRepo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleUsers, domain.AuditVerbDelete, membershipOf(user, ""))
+	return nil
+}
+
+// membershipOf: the role is left out once it changed, since RoleName still names the old one.
+func membershipOf(user *domain.User, reason string) domain.MembershipDetail {
+	detail := domain.NewMembershipDetail(user.FullName)
+	detail.Email = user.Email
+	detail.Reason = reason
+	if reason == "" {
+		detail.Role = user.RoleName
+	}
+	return detail
 }

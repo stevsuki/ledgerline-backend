@@ -126,6 +126,7 @@ type AuditLogOptionsResponseDTO struct {
 var auditModuleLabels = map[domain.AuditModule]string{
 	domain.AuditModuleAuth:         "Auth",
 	domain.AuditModuleBudgets:      "Budgets",
+	domain.AuditModuleCategories:   "Categories",
 	domain.AuditModuleDataExport:   "Data export",
 	domain.AuditModuleInsights:     "Insights & reports",
 	domain.AuditModuleRecurring:    "Recurring items",

@@ -45,6 +45,7 @@ const (
 	RecordTypeGoal        RecordType = "goal"
 	RecordTypeRole        RecordType = "role"
 	RecordTypeBudget      RecordType = "budget"
+	RecordTypeCategory    RecordType = "category"
 	RecordTypeInstitution RecordType = "institution"
 )
 

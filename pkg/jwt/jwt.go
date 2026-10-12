@@ -21,7 +21,9 @@ const (
 type Claims struct {
 	jwt.RegisteredClaims
 	Email     string `json:"email"`
+	FullName  string `json:"full_name,omitempty"`
 	RoleID    string `json:"role_id"`
+	RoleName  string `json:"role_name,omitempty"`
 	TokenType string `json:"token_type"`
 }
 
@@ -79,7 +81,9 @@ func (m *Manager) generate(c domain.TokenClaims, tokenType string, ttl time.Dura
 			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
 		},
 		Email:     c.Email,
+		FullName:  c.FullName,
 		RoleID:    c.RoleID.String(),
+		RoleName:  c.RoleName,
 		TokenType: tokenType,
 	}
 
@@ -148,7 +152,9 @@ func (m *Manager) parse(tokenString, wantType string) (*domain.TokenClaims, erro
 	return &domain.TokenClaims{
 		UserID:   userID,
 		Email:    claims.Email,
+		FullName: claims.FullName,
 		RoleID:   roleID,
+		RoleName: claims.RoleName,
 		IssuedAt: issuedAt,
 	}, nil
 }

@@ -38,6 +38,37 @@ func recordAudit(ctx context.Context, repo domain.AuditLogRepository, entry *dom
 	}
 }
 
+// recordAction: one successful write by the signed-in actor, skipped when ctx names none.
+func recordAction(
+	ctx context.Context, repo domain.AuditLogRepository,
+	module domain.AuditModule, verb string, details domain.AuditDetail,
+) {
+	actor, ok := domain.AuditActorFrom(ctx)
+	if !ok {
+		return
+	}
+
+	severity := domain.AuditSeverityInfo
+	if verb == domain.AuditVerbDelete {
+		severity = domain.AuditSeverityWarning
+	}
+
+	entry := &domain.AuditLog{
+		UserID:       actor.UserID,
+		UserFullName: actor.FullName,
+		RoleName:     actor.RoleName,
+		Action:       string(module) + "." + verb,
+		Status:       domain.AuditStatusSuccess,
+		Severity:     severity,
+		Module:       module,
+		Details:      details,
+	}
+	if actor.IPAddress != "" {
+		entry.IPAddress = &actor.IPAddress
+	}
+	recordAudit(ctx, repo, entry)
+}
+
 const (
 	auditOverviewWindow = 7 * 24 * time.Hour
 	auditRetentionDays  = 365
@@ -77,20 +108,28 @@ func (s *auditLogService) Export(
 	filter.Limit = auditExportBatch
 	filter.Offset = 0
 
+	exported := 0
 	for {
 		rows, err := s.auditLogRepo.ListRows(ctx, filter)
 		if err != nil {
 			return err
 		}
-		if len(rows) == 0 {
-			return nil
-		}
-		if err := yield(rows); err != nil {
-			return err
+		if len(rows) > 0 {
+			if err := yield(rows); err != nil {
+				return err
+			}
+			exported += len(rows)
 		}
 		if len(rows) < auditExportBatch {
-			return nil
+			break
 		}
 		filter.Offset += auditExportBatch
 	}
+
+	detail := domain.NewDataJobDetail(domain.DataJobExport)
+	detail.Format = domain.DataFormatCSV
+	detail.Source = "Audit log"
+	detail.Rows = exported
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleDataExport, domain.AuditVerbCreate, detail)
+	return nil
 }

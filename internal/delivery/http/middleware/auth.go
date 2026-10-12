@@ -36,7 +36,14 @@ func Authenticate(tokenManager domain.TokenManager) gin.HandlerFunc {
 		}
 
 		c.Set(ContextClaims, claims)
-		c.Request = c.Request.WithContext(domain.WithActor(c.Request.Context(), claims.UserID))
+		ctx := domain.WithActor(c.Request.Context(), claims.UserID)
+		ctx = domain.WithAuditActor(ctx, domain.AuditActor{
+			UserID:    claims.UserID,
+			FullName:  claims.FullName,
+			RoleName:  claims.RoleName,
+			IPAddress: domain.NewRequestMeta(c.ClientIP(), "").IPAddress,
+		})
+		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}
 }

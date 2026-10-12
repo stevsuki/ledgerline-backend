@@ -67,6 +67,9 @@ func (s *roleService) Create(ctx context.Context, input domain.CreateRoleInput) 
 	if err := s.roleRepo.Create(ctx, role); err != nil {
 		return nil, err
 	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleRoles, domain.AuditVerbCreate,
+		domain.NewRecordDetail(domain.RecordTypeRole, role.Name))
 	return role, nil
 }
 
@@ -121,6 +124,8 @@ func (s *roleService) Update(ctx context.Context, id uuid.UUID, input domain.Upd
 		role.Icon = strings.TrimSpace(*input.Icon)
 	}
 
+	detail := domain.NewRecordDetail(domain.RecordTypeRole, role.Name)
+
 	var permissions []domain.RoleMenuPermission
 	if input.Permissions != nil {
 		permissions, err = buildPermissions(*input.Permissions)
@@ -130,12 +135,58 @@ func (s *roleService) Update(ctx context.Context, id uuid.UUID, input domain.Upd
 		if permissions == nil {
 			permissions = []domain.RoleMenuPermission{}
 		}
+
+		previous, err := s.roleRepo.GetRolePermissions(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		detail.Note = permissionChangeNote(previous, permissions)
 	}
 
 	if err := s.roleRepo.Update(ctx, role, permissions); err != nil {
 		return nil, err
 	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleRoles, domain.AuditVerbUpdate, detail)
 	return role, nil
+}
+
+// permissionChangeNote: how many flags the new set turned on and off, empty when none moved.
+func permissionChangeNote(previous, next []domain.RoleMenuPermission) string {
+	flags := func(p domain.RoleMenuPermission) [5]bool {
+		return [5]bool{p.CanCreate, p.CanRead, p.CanUpdate, p.CanDelete, p.CanApprove}
+	}
+
+	before := make(map[uuid.UUID][5]bool, len(previous))
+	for _, p := range previous {
+		before[p.MenuID] = flags(p)
+	}
+
+	granted, revoked := 0, 0
+	for _, p := range next {
+		old, now := before[p.MenuID], flags(p)
+		delete(before, p.MenuID)
+		for i := range now {
+			switch {
+			case now[i] && !old[i]:
+				granted++
+			case !now[i] && old[i]:
+				revoked++
+			}
+		}
+	}
+	for _, old := range before {
+		for _, on := range old {
+			if on {
+				revoked++
+			}
+		}
+	}
+
+	if granted == 0 && revoked == 0 {
+		return ""
+	}
+	return fmt.Sprintf("%d permissions granted, %d revoked", granted, revoked)
 }
 
 func (s *roleService) Delete(ctx context.Context, id uuid.UUID) error {
@@ -147,5 +198,11 @@ func (s *roleService) Delete(ctx context.Context, id uuid.UUID) error {
 	if role.IsSystem {
 		return domain.Forbidden(domain.CodeRoleSystemImmutable, "a built-in role cannot be deleted")
 	}
-	return s.roleRepo.Delete(ctx, id)
+	if err := s.roleRepo.Delete(ctx, id); err != nil {
+		return err
+	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleRoles, domain.AuditVerbDelete,
+		domain.NewRecordDetail(domain.RecordTypeRole, role.Name))
+	return nil
 }

@@ -15,10 +15,11 @@ type TransactionService struct {
 	transactionRepo domain.TransactionRepository
 	categoryRepo    domain.CategoryRepository
 	walletRepo      domain.WalletRepository
+	auditLogRepo    domain.AuditLogRepository
 }
 
-func NewTransactionService(transactionRepo domain.TransactionRepository, categoryRepo domain.CategoryRepository, walletRepo domain.WalletRepository) domain.TransactionService {
-	return &TransactionService{transactionRepo: transactionRepo, categoryRepo: categoryRepo, walletRepo: walletRepo}
+func NewTransactionService(transactionRepo domain.TransactionRepository, categoryRepo domain.CategoryRepository, walletRepo domain.WalletRepository, auditLogRepo domain.AuditLogRepository) domain.TransactionService {
+	return &TransactionService{transactionRepo: transactionRepo, categoryRepo: categoryRepo, walletRepo: walletRepo, auditLogRepo: auditLogRepo}
 }
 
 func (t *TransactionService) List(ctx context.Context, userID uuid.UUID, filter domain.TransactionFilter) ([]domain.Transaction, int, error) {
@@ -103,6 +104,8 @@ func (t *TransactionService) Create(ctx context.Context, userID uuid.UUID, input
 		return nil, err
 	}
 
+	recordAction(ctx, t.auditLogRepo, domain.AuditModuleTransactions, domain.AuditVerbCreate,
+		moneyEntryOf(transaction, wallet.Name))
 	return transaction, nil
 }
 
@@ -210,11 +213,35 @@ func (t *TransactionService) Update(ctx context.Context, id, userID uuid.UUID, i
 	if err := t.transactionRepo.Update(ctx, transaction); err != nil {
 		return nil, err
 	}
+
+	walletName := transaction.WalletName
+	if wallet != nil {
+		walletName = wallet.Name
+	}
+	recordAction(ctx, t.auditLogRepo, domain.AuditModuleTransactions, domain.AuditVerbUpdate,
+		moneyEntryOf(transaction, walletName))
 	return transaction, nil
 }
 
 func (t *TransactionService) Delete(ctx context.Context, id, userID uuid.UUID) error {
-	return t.transactionRepo.Delete(ctx, id, userID)
+	transaction, err := t.transactionRepo.GetByID(ctx, id, userID)
+	if err != nil {
+		return err
+	}
+	if err := t.transactionRepo.Delete(ctx, id, userID); err != nil {
+		return err
+	}
+
+	recordAction(ctx, t.auditLogRepo, domain.AuditModuleTransactions, domain.AuditVerbDelete,
+		moneyEntryOf(transaction, transaction.WalletName))
+	return nil
+}
+
+func moneyEntryOf(transaction *domain.Transaction, walletName string) domain.MoneyEntryDetail {
+	detail := domain.NewMoneyEntryDetail(
+		domain.Money{Amount: transaction.Amount, Currency: transaction.Currency}, transaction.Name)
+	detail.Wallet = walletName
+	return detail
 }
 
 func (t *TransactionService) Summary(ctx context.Context, userID uuid.UUID, filter domain.TransactionFilter) (domain.TransactionSummary, error) {

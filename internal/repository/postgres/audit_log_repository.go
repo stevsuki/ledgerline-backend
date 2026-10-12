@@ -102,6 +102,28 @@ func (r *auditLogRepository) Create(ctx context.Context, log *domain.AuditLog) e
 	if err != nil {
 		return err
 	}
+	// a token issued before it carried the names still has to be attributed
+	if row.UserFullName == "" || row.RoleName == "" {
+		var actor struct {
+			FullName string
+			RoleName string
+		}
+		err := dbFrom(ctx, r.db).Table("users").
+			Select("users.full_name, roles.name AS role_name").
+			Joins("JOIN roles ON roles.id = users.role_id").
+			Where("users.id = ?", row.UserID).
+			Scan(&actor).Error
+		if err != nil {
+			return auditLogErrors.wrap("resolve audit actor", err)
+		}
+		if row.UserFullName == "" {
+			row.UserFullName = actor.FullName
+		}
+		if row.RoleName == "" {
+			row.RoleName = actor.RoleName
+		}
+	}
+
 	if err := dbFrom(ctx, r.db).Create(&row).Error; err != nil {
 		return auditLogErrors.wrap("create audit log", err)
 	}

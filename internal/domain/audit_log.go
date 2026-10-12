@@ -37,6 +37,7 @@ type AuditModule string
 const (
 	AuditModuleAuth         AuditModule = "auth"
 	AuditModuleBudgets      AuditModule = "budgets"
+	AuditModuleCategories   AuditModule = "categories"
 	AuditModuleDataExport   AuditModule = "data_export"
 	AuditModuleInsights     AuditModule = "insights"
 	AuditModuleRecurring    AuditModule = "recurring"
@@ -51,7 +52,7 @@ const (
 
 // auditModuleList is in the order the filter dropdown shows them.
 var auditModuleList = []AuditModule{
-	AuditModuleAuth, AuditModuleBudgets, AuditModuleDataExport,
+	AuditModuleAuth, AuditModuleBudgets, AuditModuleCategories, AuditModuleDataExport,
 	AuditModuleInsights, AuditModuleRecurring, AuditModuleRoles,
 	AuditModuleGoals, AuditModuleSettings, AuditModuleShared,
 	AuditModuleTransactions, AuditModuleUsers, AuditModuleWallets,
@@ -82,6 +83,13 @@ func AuditStatuses() []AuditStatus {
 func AuditSeverities() []AuditSeverity {
 	return []AuditSeverity{AuditSeverityInfo, AuditSeverityWarning, AuditSeverityCritical}
 }
+
+// Verbs an audit action ends in, after the module: "wallets.create".
+const (
+	AuditVerbCreate = "create"
+	AuditVerbUpdate = "update"
+	AuditVerbDelete = "delete"
+)
 
 type AuditLog struct {
 	ID           uuid.UUID

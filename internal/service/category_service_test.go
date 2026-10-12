@@ -36,6 +36,7 @@ func TestCategoryService_Delete(t *testing.T) {
 			setupMock: func(r repos) {
 				r.budgets.On("ExistsByCategory", mock.Anything, categoryID, userID).Return(false, nil)
 				r.transactions.On("ExistsByCategory", mock.Anything, categoryID, userID).Return(false, nil)
+				r.categories.On("GetByID", mock.Anything, categoryID, userID).Return(&domain.Category{ID: categoryID}, nil)
 				r.categories.On("Delete", mock.Anything, categoryID, userID).Return(nil)
 			},
 		},
@@ -65,7 +66,7 @@ func TestCategoryService_Delete(t *testing.T) {
 			transactions := &mocks.TransactionRepository{}
 			tt.setupMock(repos{categories, budgets, transactions})
 
-			err := service.NewCategoryService(categories, budgets, transactions).
+			err := service.NewCategoryService(categories, budgets, transactions, new(mocks.AuditLogRepository)).
 				Delete(context.Background(), userID, categoryID)
 
 			if tt.wantCode == "" {

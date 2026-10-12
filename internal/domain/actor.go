@@ -22,3 +22,22 @@ func ActorFrom(ctx context.Context) *uuid.UUID {
 	}
 	return &id
 }
+
+type auditActorKey struct{}
+
+// AuditActor: who an audit entry is written for, as the request named them.
+type AuditActor struct {
+	UserID    uuid.UUID
+	FullName  string
+	RoleName  string
+	IPAddress string
+}
+
+func WithAuditActor(ctx context.Context, actor AuditActor) context.Context {
+	return context.WithValue(ctx, auditActorKey{}, actor)
+}
+
+func AuditActorFrom(ctx context.Context) (AuditActor, bool) {
+	actor, ok := ctx.Value(auditActorKey{}).(AuditActor)
+	return actor, ok && actor.UserID != uuid.Nil
+}

@@ -67,6 +67,9 @@ func (s *WalletService) Create(ctx context.Context, userID uuid.UUID, input doma
 	if err := s.walletRepo.Create(ctx, wallet); err != nil {
 		return nil, err
 	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleWallets, domain.AuditVerbCreate,
+		domain.NewRecordDetail(domain.RecordTypeWallet, wallet.Name))
 	return wallet, nil
 }
 
@@ -134,12 +137,26 @@ func (s *WalletService) Update(ctx context.Context, userID, id uuid.UUID, input 
 	if err := s.walletRepo.Update(ctx, wallet); err != nil {
 		return nil, err
 	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleWallets, domain.AuditVerbUpdate,
+		domain.NewRecordDetail(domain.RecordTypeWallet, wallet.Name))
 	return wallet, nil
 }
 
 func (s *WalletService) Delete(ctx context.Context, userID, id uuid.UUID) error {
-	return s.walletRepo.Delete(ctx, id, userID)
+	wallet, err := s.walletRepo.GetByID(ctx, id, userID)
+	if err != nil {
+		return err
+	}
+	if err := s.walletRepo.Delete(ctx, id, userID); err != nil {
+		return err
+	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleWallets, domain.AuditVerbDelete,
+		domain.NewRecordDetail(domain.RecordTypeWallet, wallet.Name))
+	return nil
 }
+
 func (s *WalletService) Overview(ctx context.Context, userID uuid.UUID) (domain.WalletOverview, error) {
 	return s.walletRepo.Overview(ctx, userID)
 }

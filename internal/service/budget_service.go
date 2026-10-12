@@ -14,13 +14,15 @@ import (
 type BudgetService struct {
 	budgetRepo   domain.BudgetRepository
 	categoryRepo domain.CategoryRepository
+	auditLogRepo domain.AuditLogRepository
 }
 
 func NewBudgetService(
 	budgetRepo domain.BudgetRepository,
 	categoryRepo domain.CategoryRepository,
+	auditLogRepo domain.AuditLogRepository,
 ) domain.BudgetService {
-	return &BudgetService{budgetRepo: budgetRepo, categoryRepo: categoryRepo}
+	return &BudgetService{budgetRepo: budgetRepo, categoryRepo: categoryRepo, auditLogRepo: auditLogRepo}
 }
 
 func (s *BudgetService) List(ctx context.Context, userID uuid.UUID) ([]domain.Budget, error) {
@@ -66,7 +68,13 @@ func (s *BudgetService) Create(ctx context.Context, userID uuid.UUID, input doma
 		return nil, err
 	}
 
-	return s.budgetRepo.GetByID(ctx, budget.ID, userID)
+	created, err := s.budgetRepo.GetByID(ctx, budget.ID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleBudgets, domain.AuditVerbCreate, budgetRecordOf(created))
+	return created, nil
 }
 
 func (s *BudgetService) Update(ctx context.Context, userID, id uuid.UUID, input domain.UpdateBudgetInput) (*domain.Budget, error) {
@@ -74,6 +82,8 @@ func (s *BudgetService) Update(ctx context.Context, userID, id uuid.UUID, input 
 	if err != nil {
 		return nil, err
 	}
+
+	previousLimit := domain.Money{Amount: budget.MonthlyLimit, Currency: budget.Currency}
 
 	if input.CategoryID != nil {
 		categoryID, err := s.checkCategory(ctx, userID, *input.CategoryID)
@@ -113,11 +123,38 @@ func (s *BudgetService) Update(ctx context.Context, userID, id uuid.UUID, input 
 	if err := s.budgetRepo.Update(ctx, budget); err != nil {
 		return nil, err
 	}
-	return s.budgetRepo.GetByID(ctx, budget.ID, userID)
+
+	updated, err := s.budgetRepo.GetByID(ctx, budget.ID, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	var detail domain.AuditDetail = budgetRecordOf(updated)
+	if limit := (domain.Money{Amount: updated.MonthlyLimit, Currency: updated.Currency}); limit != previousLimit {
+		detail = domain.NewLimitChangeDetail(updated.CategoryName, previousLimit, limit)
+	}
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleBudgets, domain.AuditVerbUpdate, detail)
+	return updated, nil
 }
 
 func (s *BudgetService) Delete(ctx context.Context, userID, id uuid.UUID) error {
-	return s.budgetRepo.Delete(ctx, id, userID)
+	budget, err := s.budgetRepo.GetByID(ctx, id, userID)
+	if err != nil {
+		return err
+	}
+	if err := s.budgetRepo.Delete(ctx, id, userID); err != nil {
+		return err
+	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleBudgets, domain.AuditVerbDelete, budgetRecordOf(budget))
+	return nil
+}
+
+// budgetRecordOf: a budget is named by the category it limits.
+func budgetRecordOf(budget *domain.Budget) domain.RecordDetail {
+	detail := domain.NewRecordDetail(domain.RecordTypeBudget, budget.CategoryName)
+	detail.Note = "limit " + domain.Money{Amount: budget.MonthlyLimit, Currency: budget.Currency}.String()
+	return detail
 }
 
 func (s *BudgetService) Overview(ctx context.Context, userID uuid.UUID) (domain.BudgetOverview, error) {

@@ -203,7 +203,7 @@ func TestBudgetService_CreateChecksCategory(t *testing.T) {
 			categories := &mocks.CategoryRepository{}
 			tt.setupMock(budgets, categories)
 
-			budget, err := NewBudgetService(budgets, categories).
+			budget, err := NewBudgetService(budgets, categories, new(mocks.AuditLogRepository)).
 				Create(context.Background(), userID, input)
 
 			if tt.wantCode == "" {

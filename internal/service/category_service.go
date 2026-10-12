@@ -14,17 +14,20 @@ type CategoryService struct {
 	categoryRepo    domain.CategoryRepository
 	budgetRepo      domain.BudgetRepository
 	transactionRepo domain.TransactionRepository
+	auditLogRepo    domain.AuditLogRepository
 }
 
 func NewCategoryService(
 	categoryRepo domain.CategoryRepository,
 	budgetRepo domain.BudgetRepository,
 	transactionRepo domain.TransactionRepository,
+	auditLogRepo domain.AuditLogRepository,
 ) domain.CategoryService {
 	return &CategoryService{
 		categoryRepo:    categoryRepo,
 		budgetRepo:      budgetRepo,
 		transactionRepo: transactionRepo,
+		auditLogRepo:    auditLogRepo,
 	}
 }
 
@@ -63,6 +66,9 @@ func (s *CategoryService) Create(ctx context.Context, userID uuid.UUID, input do
 	if err := s.categoryRepo.Create(ctx, category); err != nil {
 		return nil, err
 	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleCategories, domain.AuditVerbCreate,
+		domain.NewRecordDetail(domain.RecordTypeCategory, category.Name))
 	return category, nil
 }
 
@@ -97,6 +103,9 @@ func (s *CategoryService) Update(ctx context.Context, userID, id uuid.UUID, inpu
 	if err := s.categoryRepo.Update(ctx, category); err != nil {
 		return nil, err
 	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleCategories, domain.AuditVerbUpdate,
+		domain.NewRecordDetail(domain.RecordTypeCategory, category.Name))
 	return category, nil
 }
 
@@ -133,7 +142,17 @@ func (s *CategoryService) Delete(ctx context.Context, userID, id uuid.UUID) erro
 			"transactions are still filed under this category; move or remove them first")
 	}
 
-	return s.categoryRepo.Delete(ctx, id, userID)
+	category, err := s.categoryRepo.GetByID(ctx, id, userID)
+	if err != nil {
+		return err
+	}
+	if err := s.categoryRepo.Delete(ctx, id, userID); err != nil {
+		return err
+	}
+
+	recordAction(ctx, s.auditLogRepo, domain.AuditModuleCategories, domain.AuditVerbDelete,
+		domain.NewRecordDetail(domain.RecordTypeCategory, category.Name))
+	return nil
 }
 
 // OptionsCategoryType: what a picker may offer, narrowed to one direction when named.
