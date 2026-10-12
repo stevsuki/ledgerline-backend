@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"errors"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -58,6 +59,45 @@ func RequireRoles(roleIDs ...uuid.UUID) gin.HandlerFunc {
 			return
 		}
 		c.Next()
+	}
+}
+
+// RequireMenuAccess: gate by the role's flag on one menu, picked from the HTTP method.
+func RequireMenuAccess(menus domain.MenuRepository, code string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		claims, ok := GetClaims(c)
+		if !ok {
+			apierr.Write(c, domain.ErrAuthRequired)
+			return
+		}
+
+		list, err := menus.ListByRole(c.Request.Context(), claims.RoleID)
+		if err != nil {
+			apierr.Write(c, err)
+			return
+		}
+		for _, m := range list {
+			if m.Code == code && methodAllowed(m.Access, c.Request.Method) {
+				c.Next()
+				return
+			}
+		}
+		apierr.Write(c, domain.ErrAccessDenied)
+	}
+}
+
+func methodAllowed(access domain.MenuAccess, method string) bool {
+	switch method {
+	case http.MethodGet, http.MethodHead:
+		return access.CanRead
+	case http.MethodPost:
+		return access.CanCreate
+	case http.MethodPut, http.MethodPatch:
+		return access.CanUpdate
+	case http.MethodDelete:
+		return access.CanDelete
+	default:
+		return false
 	}
 }
 

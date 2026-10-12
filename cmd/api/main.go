@@ -113,6 +113,7 @@ func run() error {
 		Config:       cfg,
 		Logger:       log,
 		TokenManager: tokenManager,
+		Menus:        menuRepo,
 		Auth:         handler.NewAuthHandler(authService),
 		User:         handler.NewUserHandler(userService),
 		Category:     handler.NewCategoryHandler(categoryService),

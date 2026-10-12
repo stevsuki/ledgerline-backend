@@ -21,6 +21,7 @@ type Dependencies struct {
 	Config       *config.Config
 	Logger       *slog.Logger
 	TokenManager domain.TokenManager
+	Menus        domain.MenuRepository
 	Auth         *handler.AuthHandler
 	User         *handler.UserHandler
 	Category     *handler.CategoryHandler
@@ -91,7 +92,7 @@ func registerAuthRoutes(rg *gin.RouterGroup, deps Dependencies) {
 }
 
 func registerUserRoutes(rg *gin.RouterGroup, deps Dependencies) {
-	users := rg.Group("/users", middleware.Authenticate(deps.TokenManager))
+	users := rg.Group("/users", middleware.Authenticate(deps.TokenManager), middleware.RequireMenuAccess(deps.Menus, domain.MenuUsers))
 	{
 		// collection
 		users.GET("", deps.User.List)
@@ -108,7 +109,10 @@ func registerCategoryRoutes(rg *gin.RouterGroup, deps Dependencies) {
 	categories := rg.Group("/categories", middleware.Authenticate(deps.TokenManager))
 	{
 		// static sub-paths first, so none of them can be read as an :id
+		// options feed other menus' forms, so they stay outside the menu guard
 		categories.GET("/options", deps.Category.OptionsCategoryType)
+
+		categories.Use(middleware.RequireMenuAccess(deps.Menus, domain.MenuCategories))
 
 		// collection
 		categories.GET("", deps.Category.List)
@@ -122,7 +126,7 @@ func registerCategoryRoutes(rg *gin.RouterGroup, deps Dependencies) {
 }
 
 func registerRoleRoutes(rg *gin.RouterGroup, deps Dependencies) {
-	roles := rg.Group("/roles", middleware.Authenticate(deps.TokenManager))
+	roles := rg.Group("/roles", middleware.Authenticate(deps.TokenManager), middleware.RequireMenuAccess(deps.Menus, domain.MenuRoles))
 	{
 		// collection
 		roles.GET("", deps.Role.List)
@@ -137,7 +141,7 @@ func registerRoleRoutes(rg *gin.RouterGroup, deps Dependencies) {
 
 // registerAuditLogRoutes: read-only, and no /:id, so there is nothing to shadow.
 func registerAuditLogRoutes(rg *gin.RouterGroup, deps Dependencies) {
-	auditLogs := rg.Group("/audit-logs", middleware.Authenticate(deps.TokenManager))
+	auditLogs := rg.Group("/audit-logs", middleware.Authenticate(deps.TokenManager), middleware.RequireMenuAccess(deps.Menus, domain.MenuAudit))
 	{
 		auditLogs.GET("", deps.AuditLog.List)
 		auditLogs.GET("/overview", deps.AuditLog.Overview)
@@ -150,8 +154,12 @@ func registerWalletRoutes(rg *gin.RouterGroup, deps Dependencies) {
 	wallets := rg.Group("/wallets", middleware.Authenticate(deps.TokenManager))
 	{
 		// static sub-paths first, so none of them can be read as an :id
-		wallets.GET("/overview", deps.Wallet.Overview)
+		// options feed other menus' forms, so they stay outside the menu guard
 		wallets.GET("/options", deps.Wallet.Options)
+
+		wallets.Use(middleware.RequireMenuAccess(deps.Menus, domain.MenuWallets))
+
+		wallets.GET("/overview", deps.Wallet.Overview)
 
 		// collection
 		wallets.GET("", deps.Wallet.List)
@@ -165,7 +173,7 @@ func registerWalletRoutes(rg *gin.RouterGroup, deps Dependencies) {
 }
 
 func registerBudgetRoutes(rg *gin.RouterGroup, deps Dependencies) {
-	budgets := rg.Group("/budgets", middleware.Authenticate(deps.TokenManager))
+	budgets := rg.Group("/budgets", middleware.Authenticate(deps.TokenManager), middleware.RequireMenuAccess(deps.Menus, domain.MenuBudgets))
 	{
 		// static sub-paths first, so none of them can be read as an :id
 		budgets.GET("/overview", deps.Budget.Overview)
@@ -182,7 +190,7 @@ func registerBudgetRoutes(rg *gin.RouterGroup, deps Dependencies) {
 }
 
 func registerTransactionRoutes(rg *gin.RouterGroup, deps Dependencies) {
-	transactions := rg.Group("/transactions", middleware.Authenticate(deps.TokenManager))
+	transactions := rg.Group("/transactions", middleware.Authenticate(deps.TokenManager), middleware.RequireMenuAccess(deps.Menus, domain.MenuTransactions))
 	{
 		// static sub-paths first, so none of them can be read as an :id
 		transactions.GET("/overview", deps.Transaction.Overview)

@@ -6,6 +6,17 @@ import (
 	"github.com/google/uuid"
 )
 
+// Menu codes the route guards check against, as seeded in the menus table.
+const (
+	MenuTransactions = "transactions"
+	MenuBudgets      = "budgets"
+	MenuCategories   = "categories"
+	MenuWallets      = "wallets"
+	MenuUsers        = "users"
+	MenuRoles        = "roles"
+	MenuAudit        = "audit"
+)
+
 // Menu: one entry of the sidebar. Groups carry children, pages carry access.
 type Menu struct {
 	ID        uuid.UUID
