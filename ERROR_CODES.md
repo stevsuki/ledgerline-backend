@@ -88,6 +88,19 @@ The source of truth is [internal/domain/error_codes.go](internal/domain/error_co
 | `BUDGET_INVALID_THRESHOLD` | 400 | `alert_threshold_percent` is outside 1-100 (`field: alert_threshold_percent`) |
 | `BUDGET_INVALID_FIXED` | 400 | `is_fixed` is true but `alert_threshold_percent` is not 100 (`field: alert_threshold_percent`) |
 
+## Recurring
+
+| Code | Status | When |
+|---|---|---|
+| `RECURRING_NOT_FOUND` | 404 | No recurring item with that id for this user |
+| `RECURRING_INVALID_DATA` | 400 | `name` is blank, or another field was rejected (`field: name`) |
+| `RECURRING_INVALID_CATEGORY` | 400 | `category_id` names no category of this user, or one that is not an expense (`field: category_id`) |
+| `RECURRING_INVALID_WALLET` | 400 | `wallet_id` names no wallet of this user (`field: wallet_id`) |
+| `RECURRING_INVALID_AMOUNT` | 400 | `amount` is not greater than 0 (`field: amount`) |
+| `RECURRING_INVALID_FREQUENCY` | 400 | `frequency` is not weekly, monthly, quarterly or annual (`field: frequency`) |
+| `RECURRING_INVALID_DATE` | 400 | `next_due_date` is missing (`field: next_due_date`) |
+| `RECURRING_PAUSED` | 409 | A payment was confirmed on a paused item |
+
 ## Role
 
 | Code | Status | When |

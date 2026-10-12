@@ -73,6 +73,15 @@ const (
 	CodeTransactionCurrencyMismatch = "TRANSACTION_CURRENCY_MISMATCH"
 	CodeTransactionCategoryMismatch = "TRANSACTION_CATEGORY_MISMATCH"
 
+	CodeRecurringNotFound         = "RECURRING_NOT_FOUND"
+	CodeRecurringInvalidData      = "RECURRING_INVALID_DATA"
+	CodeRecurringInvalidCategory  = "RECURRING_INVALID_CATEGORY"
+	CodeRecurringInvalidWallet    = "RECURRING_INVALID_WALLET"
+	CodeRecurringInvalidAmount    = "RECURRING_INVALID_AMOUNT"
+	CodeRecurringInvalidFrequency = "RECURRING_INVALID_FREQUENCY"
+	CodeRecurringInvalidDate      = "RECURRING_INVALID_DATE"
+	CodeRecurringPaused           = "RECURRING_PAUSED"
+
 	CodeMenuNotFound = "MENU_NOT_FOUND"
 
 	CodeAuditLogNotFound = "AUDIT_LOG_NOT_FOUND"

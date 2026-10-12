@@ -222,8 +222,10 @@ definitions:
         type: string
       id:
         type: string
-      master_category_id:
-        type: string
+      is_built_in:
+        type: boolean
+      is_own:
+        type: boolean
       name:
         type: string
       type:
@@ -252,6 +254,19 @@ definitions:
       spent:
         example: 2700000
         type: integer
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ConfirmRecurringRequestDTO:
+    properties:
+      amount:
+        example: 425000
+        type: integer
+      note:
+        example: September bill
+        maxLength: 255
+        type: string
+      occurred_at:
+        example: "2026-09-01T09:00:00+07:00"
+        type: string
     type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateBudgetRequestDTO:
     properties:
@@ -289,12 +304,42 @@ definitions:
         example: cup
         maxLength: 50
         type: string
-      master_category_id:
-        type: string
       name:
         type: string
       type:
         type: string
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRecurringRequestDTO:
+    properties:
+      amount:
+        example: 425000
+        type: integer
+      category_id:
+        example: b0000000-0000-0000-0000-000000000002
+        type: string
+      frequency:
+        example: monthly
+        type: string
+      is_paused:
+        example: false
+        type: boolean
+      name:
+        example: Biznet Home
+        maxLength: 100
+        type: string
+      next_due_date:
+        example: "2026-09-01"
+        type: string
+      wallet_id:
+        example: b0000000-0000-0000-0000-000000000002
+        type: string
+    required:
+    - amount
+    - category_id
+    - frequency
+    - name
+    - next_due_date
+    - wallet_id
     type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRoleMenuPermissionRequestDTO:
     properties:
@@ -569,6 +614,9 @@ definitions:
         type: string
       name:
         type: string
+      type:
+        example: expense
+        type: string
     type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ProfileResponseDTO:
     properties:
@@ -578,6 +626,75 @@ definitions:
         type: array
       user:
         $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UserResponseDTO'
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringOverviewResponseDTO:
+    properties:
+      active_count:
+        example: 6
+        type: integer
+      currency:
+        example: IDR
+        type: string
+      due_soon_count:
+        example: 3
+        type: integer
+      due_soon_days:
+        example: 7
+        type: integer
+      due_soon_total:
+        example: 5105000
+        type: integer
+      monthly_commitment:
+        example: 5705000
+        type: integer
+      overdue_count:
+        example: 0
+        type: integer
+      paused_count:
+        example: 1
+        type: integer
+      uncounted_items:
+        example: 0
+        type: integer
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO:
+    properties:
+      amount:
+        example: 425000
+        type: integer
+      category_id:
+        example: b0000000-0000-0000-0000-000000000002
+        type: string
+      category_name:
+        example: Utilities
+        type: string
+      currency:
+        example: IDR
+        type: string
+      frequency:
+        example: monthly
+        type: string
+      icon:
+        example: wifi
+        type: string
+      id:
+        example: b0000000-0000-0000-0000-000000000002
+        type: string
+      is_paused:
+        example: false
+        type: boolean
+      name:
+        example: Biznet Home
+        type: string
+      next_due_date:
+        example: "2026-09-01"
+        type: string
+      wallet_id:
+        example: b0000000-0000-0000-0000-000000000002
+        type: string
+      wallet_name:
+        example: BCA Payroll
+        type: string
     type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RefreshTokenRequestDTO:
     properties:
@@ -889,11 +1006,34 @@ definitions:
         example: cup
         maxLength: 50
         type: string
-      master_category_id:
-        type: string
       name:
         type: string
       type:
+        type: string
+    type: object
+  github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRecurringRequestDTO:
+    properties:
+      amount:
+        example: 425000
+        type: integer
+      category_id:
+        example: b0000000-0000-0000-0000-000000000002
+        type: string
+      frequency:
+        example: monthly
+        type: string
+      is_paused:
+        example: false
+        type: boolean
+      name:
+        example: Biznet Home
+        maxLength: 100
+        type: string
+      next_due_date:
+        example: "2026-09-01"
+        type: string
+      wallet_id:
+        example: b0000000-0000-0000-0000-000000000002
         type: string
     type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRoleRequestDTO:
@@ -1039,6 +1179,9 @@ definitions:
     type: object
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletOptionResponseDTO:
     properties:
+      currency:
+        example: IDR
+        type: string
       id:
         type: string
       name:
@@ -1057,9 +1200,6 @@ definitions:
           $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CurrencyAmountResponseDTO'
         type: array
       overdrawn:
-        description: |-
-          Overdrawn: what the wallets that are not cards are short, stated apart from
-          card debt because being short on a bank account is not the same as owing on a card.
         example: 0
         type: integer
       overdrawn_wallets:
@@ -1075,7 +1215,6 @@ definitions:
   github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.WalletResponseDTO:
     properties:
       balance:
-        description: 'Balance: the figure its owner stated, as of BalanceUpdatedAt.'
         example: 41200000
         type: integer
       balance_updated_at:
@@ -1094,9 +1233,6 @@ definitions:
         example: IDR
         type: string
       current_balance:
-        description: |-
-          CurrentBalance: that figure moved by every transaction filed since. This is
-          the one to print; `balance` is the statement it was measured from.
         example: 40870000
         type: integer
       due_day:
@@ -1925,13 +2061,12 @@ paths:
   /categories/options:
     get:
       parameters:
-      - description: 'Screen asking: filter takes every type, budget only expense'
+      - description: Narrow to one direction; omit for both
         enum:
-        - filter
-        - budget
+        - income
+        - expense
         in: query
-        name: slug
-        required: true
+        name: type
         type: string
       produces:
       - application/json
@@ -1989,6 +2124,246 @@ paths:
       summary: Readiness probe
       tags:
       - health
+  /recurring:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO'
+                  type: array
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: List recurring items owned by the logged-in user
+      tags:
+      - recurring
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Recurring data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.CreateRecurringRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Create a recurring item
+      tags:
+      - recurring
+  /recurring/{id}:
+    delete:
+      parameters:
+      - description: Recurring ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Delete a recurring item
+      tags:
+      - recurring
+    get:
+      parameters:
+      - description: Recurring ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Recurring item detail
+      tags:
+      - recurring
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Recurring ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.UpdateRecurringRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Update a recurring item
+      tags:
+      - recurring
+  /recurring/{id}/confirm:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Recurring ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Overrides for this payment
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.ConfirmRecurringRequestDTO'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringResponseDTO'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: Record this cycle's payment and move the item to its next due date
+      tags:
+      - recurring
+  /recurring/overview:
+    get:
+      parameters:
+      - description: The caller's today (YYYY-MM-DD)
+        in: query
+        name: date
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Success'
+            - properties:
+                data:
+                  $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_internal_delivery_http_dto.RecurringOverviewResponseDTO'
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_stevensuki_ledgerline-backend_pkg_response.Error'
+      security:
+      - BearerAuth: []
+      summary: 'Recurring summary: monthly commitment and what is due soon'
+      tags:
+      - recurring
   /roles:
     get:
       parameters:

@@ -12,6 +12,7 @@ const (
 	MenuBudgets      = "budgets"
 	MenuCategories   = "categories"
 	MenuWallets      = "wallets"
+	MenuRecurring    = "recurring"
 	MenuUsers        = "users"
 	MenuRoles        = "roles"
 	MenuAudit        = "audit"

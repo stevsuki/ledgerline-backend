@@ -78,6 +78,11 @@ var (
 		invalid:  domain.InvalidInput(domain.CodeTransactionInvalidCategory, "category_id does not refer to an existing category").WithField("category_id"),
 	}
 
+	recurringErrors = resourceErrors{
+		notFound: domain.NotFound(domain.CodeRecurringNotFound, "recurring item not found"),
+		invalid:  domain.InvalidInput(domain.CodeRecurringInvalidData, "category_id or wallet_id does not refer to an existing record"),
+	}
+
 	masterCategoryErrors = resourceErrors{
 		notFound: domain.NotFound(domain.CodeMasterCategoryNotFound, "master category not found"),
 		conflict: domain.Conflict(domain.CodeMasterCategoryNameTaken, "a master category with that name already exists").WithField("name"),

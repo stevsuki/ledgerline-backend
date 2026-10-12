@@ -46,6 +46,7 @@ const (
 	RecordTypeRole        RecordType = "role"
 	RecordTypeBudget      RecordType = "budget"
 	RecordTypeCategory    RecordType = "category"
+	RecordTypeRecurring   RecordType = "recurring"
 	RecordTypeInstitution RecordType = "institution"
 )
 

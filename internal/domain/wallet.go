@@ -81,8 +81,9 @@ type WalletRepository interface {
 
 // WalletOption: id and name only, for the wallet filter dropdown.
 type WalletOption struct {
-	ID   uuid.UUID
-	Name string
+	ID       uuid.UUID
+	Name     string
+	Currency Currency
 }
 
 type CreateWalletInput struct {
